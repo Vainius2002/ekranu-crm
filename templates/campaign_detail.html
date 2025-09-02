@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ campaign.name }}</h1>
+    <div>
+        <a href="{{ url_for('new_dooh_plan') }}?campaign_id={{ campaign.id }}" class="btn btn-success">
+            <i class="fas fa-plus me-2"></i>Sukurti DOOH Planą
+        </a>
+        <a href="{{ url_for('campaigns') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Grįžti
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Kampanijos Informacija</h5>
+                <p><strong>Klientas:</strong><br>
+                    <a href="{{ url_for('client_detail', id=campaign.client.id) }}">
+                        {{ campaign.client.name }}
+                    </a>
+                </p>
+                {% if campaign.description %}
+                    <p><strong>Aprašymas:</strong><br>{{ campaign.description }}</p>
+                {% endif %}
+                {% if campaign.start_date %}
+                    <p><strong>Pradžios data:</strong><br>{{ campaign.start_date.strftime('%Y-%m-%d') }}</p>
+                {% endif %}
+                {% if campaign.end_date %}
+                    <p><strong>Pabaigos data:</strong><br>{{ campaign.end_date.strftime('%Y-%m-%d') }}</p>
+                {% endif %}
+                {% if campaign.budget %}
+                    <p><strong>Biudžetas:</strong><br>{{ "%.2f"|format(campaign.budget) }}€</p>
+                {% endif %}
+                <p><strong>Sukurta:</strong><br>{{ campaign.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">DOOH Planai ({{ campaign.dooh_plans|length }})</h5>
+                {% if campaign.dooh_plans %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Pavadinimas</th>
+                                    <th>Laikotarpis</th>
+                                    <th>Ekranai</th>
+                                    <th>Veiksmai</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for plan in campaign.dooh_plans %}
+                                <tr>
+                                    <td><strong>{{ plan.name }}</strong></td>
+                                    <td>
+                                        {{ plan.start_date.strftime('%Y-%m-%d') }}<br>
+                                        iki<br>
+                                        {{ plan.end_date.strftime('%Y-%m-%d') }}
+                                    </td>
+                                    <td>{{ plan.screen_bookings|length }}</td>
+                                    <td>
+                                        <div class="btn-group-vertical btn-group-sm" role="group">
+                                            <a href="{{ url_for('dooh_plan_detail', id=plan.id) }}" class="btn btn-outline-primary">
+                                                Peržiūrėti
+                                            </a>
+                                            <a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" class="btn btn-outline-info">
+                                                Ekranai
+                                            </a>
+                                            <a href="{{ url_for('dooh_plan_media', id=plan.id) }}" class="btn btn-outline-warning">
+                                                Media Planas
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-tv fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">Ši kampanija dar neturi DOOH planų</p>
+                        <a href="{{ url_for('new_dooh_plan') }}?campaign_id={{ campaign.id }}" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Sukurti Pirmą DOOH Planą
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

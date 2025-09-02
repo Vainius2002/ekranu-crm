@@ -1,0 +1,129 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <h1>Naujas Ekranas</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="provider_id" class="form-label">Teikėjas *</label>
+                            <select class="form-select" id="provider_id" name="provider_id" required>
+                                <option value="">Pasirinkite teikėją</option>
+                                {% for provider in providers %}
+                                <option value="{{ provider.id }}" 
+                                    {{ 'selected' if request.args.get('provider_id') == provider.id|string }}>
+                                    {{ provider.name }}
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="name" class="form-label">Pavadinimas *</label>
+                            <input type="text" class="form-control" id="name" name="name" required>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="image" class="form-label">Nuotrauka</label>
+                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="position_description" class="form-label">Pozicijos aprašymas</label>
+                        <textarea class="form-control" id="position_description" name="position_description" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="comment" class="form-label">Komentaras</label>
+                        <textarea class="form-control" id="comment" name="comment" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="screen_type" class="form-label">Ekrano tipas *</label>
+                            <select class="form-select" id="screen_type" name="screen_type" required>
+                                <option value="">Pasirinkite tipą</option>
+                                <option value="horizontal">Horizontalus</option>
+                                <option value="vertical">Vertikalus</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="content_type" class="form-label">Turinio tipas *</label>
+                            <select class="form-select" id="content_type" name="content_type" required>
+                                <option value="">Pasirinkite tipą</option>
+                                <option value="video">Video (judantis vaizdas)</option>
+                                <option value="static">Statinis (nejudantis)</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="width" class="form-label">Plotis (m) *</label>
+                            <input type="number" step="0.01" class="form-control" id="width" name="width" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="height" class="form-label">Aukštis (m) *</label>
+                            <input type="number" step="0.01" class="form-control" id="height" name="height" required>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="pixel_width" class="form-label">Pikseliai (plotis)</label>
+                            <input type="number" class="form-control" id="pixel_width" name="pixel_width">
+                        </div>
+                        <div class="col-md-6">
+                            <label for="pixel_height" class="form-label">Pikseliai (aukštis)</label>
+                            <input type="number" class="form-control" id="pixel_height" name="pixel_height">
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="pixel_comment" class="form-label">Komentaras apie pikselius</label>
+                        <textarea class="form-control" id="pixel_comment" name="pixel_comment" rows="2"></textarea>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="gps_coordinates" class="form-label">GPS koordinatės</label>
+                        <input type="text" class="form-control" id="gps_coordinates" name="gps_coordinates" placeholder="54.6872, 25.2797">
+                        <div class="form-text">Įveskite platumą ir ilgumą atskirtas kableliu (pvz. 54.6872, 25.2797)</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="city" class="form-label">Miestas *</label>
+                            <input type="text" class="form-control" id="city" name="city" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="address" class="form-label">Adresas *</label>
+                            <input type="text" class="form-control" id="address" name="address" required>
+                        </div>
+                        <div class="col-md-2">
+                            <label for="side" class="form-label">Pusė</label>
+                            <select class="form-select" id="side" name="side">
+                                <option value="">-</option>
+                                <option value="D">Dešinė</option>
+                                <option value="K">Kairė</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-2"></i>Išsaugoti
+                        </button>
+                        <a href="{{ url_for('screens') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Grįžti
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,120 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ plan.name }}</h1>
+    <div>
+        <a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" class="btn btn-info">
+            <i class="fas fa-tv me-2"></i>Valdyti Ekranus
+        </a>
+        <a href="{{ url_for('dooh_plan_media', id=plan.id) }}" class="btn btn-warning">
+            <i class="fas fa-calendar-alt me-2"></i>Media Planas
+        </a>
+        <a href="{{ url_for('dooh_plans') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Grįžti
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Plano Informacija</h5>
+                <p><strong>Kampanija:</strong><br>
+                    <a href="{{ url_for('campaign_detail', id=plan.campaign.id) }}">
+                        {{ plan.campaign.name }}
+                    </a>
+                </p>
+                <p><strong>Klientas:</strong><br>
+                    <a href="{{ url_for('client_detail', id=plan.campaign.client.id) }}">
+                        {{ plan.campaign.client.name }}
+                    </a>
+                </p>
+                <p><strong>Pradžios data:</strong><br>{{ plan.start_date.strftime('%Y-%m-%d') }}</p>
+                <p><strong>Pabaigos data:</strong><br>{{ plan.end_date.strftime('%Y-%m-%d') }}</p>
+                <p><strong>Trukmė:</strong><br>{{ (plan.end_date - plan.start_date).days + 1 }} dienos</p>
+                <p><strong>Sukurtas:</strong><br>{{ plan.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">Statistika</h5>
+                <p><strong>Pasirinkta ekranų:</strong><br>{{ plan.screen_bookings|length }}</p>
+                {% if plan.screen_bookings %}
+                    <p><strong>Miestai:</strong><br>
+                        {% set cities = [] %}
+                        {% for booking in plan.screen_bookings %}
+                            {% if booking.screen.city not in cities %}
+                                {% set _ = cities.append(booking.screen.city) %}
+                            {% endif %}
+                        {% endfor %}
+                        {{ cities|join(', ') }}
+                    </p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Pasirinkti Ekranai ({{ plan.screen_bookings|length }})</h5>
+                {% if plan.screen_bookings %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Ekranas</th>
+                                    <th>Teikėjas</th>
+                                    <th>Lokacija</th>
+                                    <th>Tipas</th>
+                                    <th>Veiksmai</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for booking in plan.screen_bookings %}
+                                <tr>
+                                    <td>
+                                        <strong>{{ booking.screen.name }}</strong>
+                                        <br><small class="text-muted">{{ booking.screen.width }}m × {{ booking.screen.height }}m</small>
+                                    </td>
+                                    <td>{{ booking.screen.provider.name }}</td>
+                                    <td>
+                                        {{ booking.screen.city }}<br>
+                                        <small class="text-muted">{{ booking.screen.address }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if booking.screen.screen_type == 'horizontal' else 'secondary' }}">
+                                            {{ 'Horizontalus' if booking.screen.screen_type == 'horizontal' else 'Vertikalus' }}
+                                        </span>
+                                        <br>
+                                        <span class="badge bg-{{ 'success' if booking.screen.content_type == 'video' else 'info' }}">
+                                            {{ 'Video' if booking.screen.content_type == 'video' else 'Statinis' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a href="{{ url_for('screen_detail', id=booking.screen.id) }}" class="btn btn-sm btn-outline-primary">
+                                            Peržiūrėti
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-tv fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">Šis planas dar neturi pasirinktų ekranų</p>
+                        <a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" class="btn btn-info">
+                            <i class="fas fa-plus me-2"></i>Pasirinkti Ekranus
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

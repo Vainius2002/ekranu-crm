@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <h1>Naujas DOOH Planas</h1>
+        
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    <div class="mb-3">
+                        <label for="campaign_id" class="form-label">Kampanija *</label>
+                        <select class="form-select" id="campaign_id" name="campaign_id" required>
+                            <option value="">Pasirinkite kampaniją</option>
+                            {% for campaign in campaigns %}
+                            <option value="{{ campaign.id }}" 
+                                {{ 'selected' if request.args.get('campaign_id') == campaign.id|string }}>
+                                {{ campaign.name }} ({{ campaign.client.name }})
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Plano pavadinimas *</label>
+                        <input type="text" class="form-control" id="name" name="name" required 
+                               placeholder="pvz. Vasario mėnesio DOOH planas">
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <label for="start_date" class="form-label">Pradžios data *</label>
+                            <input type="date" class="form-control" id="start_date" name="start_date" required>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="end_date" class="form-label">Pabaigos data *</label>
+                            <input type="date" class="form-control" id="end_date" name="end_date" required>
+                        </div>
+                    </div>
+                    
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Kitas žingsnis:</strong> Po plano sukūrimo galėsite pasirinkti ekranus ir sukurti media planą.
+                    </div>
+                    
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save me-2"></i>Sukurti Planą
+                        </button>
+                        <a href="{{ url_for('dooh_plans') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Grįžti
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

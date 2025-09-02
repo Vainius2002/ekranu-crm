@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Ekranų Teikėjai</h1>
+    <a href="{{ url_for('new_provider') }}" class="btn btn-success">
+        <i class="fas fa-plus me-2"></i>Pridėti Naują Teikėją
+    </a>
+</div>
+
+{% if providers %}
+<div class="row">
+    {% for provider in providers %}
+    <div class="col-md-6 col-lg-4 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">{{ provider.name }}</h5>
+                <p class="card-text">
+                    {% if provider.contact_person %}
+                        <i class="fas fa-user me-2"></i>{{ provider.contact_person }}<br>
+                    {% endif %}
+                    {% if provider.email %}
+                        <i class="fas fa-envelope me-2"></i>{{ provider.email }}<br>
+                    {% endif %}
+                    {% if provider.phone %}
+                        <i class="fas fa-phone me-2"></i>{{ provider.phone }}<br>
+                    {% endif %}
+                </p>
+                <div class="d-flex justify-content-between align-items-center">
+                    <small class="text-muted">
+                        <i class="fas fa-tv me-1"></i>{{ provider.screens|length }} ekranai
+                    </small>
+                    <a href="{{ url_for('provider_detail', id=provider.id) }}" class="btn btn-primary btn-sm">
+                        Peržiūrėti
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-building fa-3x text-muted mb-3"></i>
+    <h3>Nėra ekranų teikėjų</h3>
+    <p class="text-muted">Pridėkite pirmą ekranų teikėją</p>
+    <a href="{{ url_for('new_provider') }}" class="btn btn-success">
+        <i class="fas fa-plus me-2"></i>Pridėti Teikėją
+    </a>
+</div>
+{% endif %}
+{% endblock %}

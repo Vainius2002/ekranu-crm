@@ -1,0 +1,74 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>DOOH Planai</h1>
+    <a href="{{ url_for('new_dooh_plan') }}" class="btn btn-success">
+        <i class="fas fa-plus me-2"></i>Sukurti Naują DOOH Planą
+    </a>
+</div>
+
+{% if plans %}
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Pavadinimas</th>
+                <th>Kampanija</th>
+                <th>Klientas</th>
+                <th>Laikotarpis</th>
+                <th>Ekranai</th>
+                <th>Veiksmai</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for plan in plans %}
+            <tr>
+                <td><strong>{{ plan.name }}</strong></td>
+                <td>
+                    <a href="{{ url_for('campaign_detail', id=plan.campaign.id) }}">
+                        {{ plan.campaign.name }}
+                    </a>
+                </td>
+                <td>
+                    <a href="{{ url_for('client_detail', id=plan.campaign.client.id) }}">
+                        {{ plan.campaign.client.name }}
+                    </a>
+                </td>
+                <td>
+                    {{ plan.start_date.strftime('%Y-%m-%d') }}<br>
+                    iki<br>
+                    {{ plan.end_date.strftime('%Y-%m-%d') }}
+                </td>
+                <td>
+                    <span class="badge bg-primary">{{ plan.screen_bookings|length }}</span>
+                </td>
+                <td>
+                    <div class="btn-group-vertical btn-group-sm" role="group">
+                        <a href="{{ url_for('dooh_plan_detail', id=plan.id) }}" class="btn btn-outline-primary">
+                            Peržiūrėti
+                        </a>
+                        <a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" class="btn btn-outline-info">
+                            Ekranai
+                        </a>
+                        <a href="{{ url_for('dooh_plan_media', id=plan.id) }}" class="btn btn-outline-warning">
+                            Media Planas
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-tv fa-3x text-muted mb-3"></i>
+    <h3>Nėra DOOH planų</h3>
+    <p class="text-muted">Sukurkite pirmą DOOH planą</p>
+    <a href="{{ url_for('new_dooh_plan') }}" class="btn btn-success">
+        <i class="fas fa-plus me-2"></i>Sukurti DOOH Planą
+    </a>
+</div>
+{% endif %}
+{% endblock %}

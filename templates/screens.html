@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Ekranai</h1>
+    <a href="{{ url_for('new_screen') }}" class="btn btn-success">
+        <i class="fas fa-plus me-2"></i>Pridėti Naują Ekraną
+    </a>
+</div>
+
+{% if screens %}
+<div class="table-responsive">
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Pavadinimas</th>
+                <th>Teikėjas</th>
+                <th>Tipas</th>
+                <th>Parametrai</th>
+                <th>Lokacija</th>
+                <th>Veiksmai</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for screen in screens %}
+            <tr>
+                <td>
+                    <strong>{{ screen.name }}</strong>
+                    {% if screen.comment %}
+                        <br><small class="text-muted">{{ screen.comment[:50] }}...</small>
+                    {% endif %}
+                </td>
+                <td>
+                    <a href="{{ url_for('provider_detail', id=screen.provider.id) }}">
+                        {{ screen.provider.name }}
+                    </a>
+                </td>
+                <td>
+                    <span class="badge bg-{{ 'primary' if screen.screen_type == 'horizontal' else 'secondary' }}">
+                        {{ 'Horizontalus' if screen.screen_type == 'horizontal' else 'Vertikalus' }}
+                    </span><br>
+                    <span class="badge bg-{{ 'success' if screen.content_type == 'video' else 'info' }}">
+                        {{ 'Video' if screen.content_type == 'video' else 'Statinis' }}
+                    </span>
+                </td>
+                <td>
+                    {{ screen.width }}m × {{ screen.height }}m
+                    {% if screen.pixel_width and screen.pixel_height %}
+                        <br><small class="text-muted">{{ screen.pixel_width }}×{{ screen.pixel_height }}px</small>
+                    {% endif %}
+                </td>
+                <td>
+                    {{ screen.city }}<br>
+                    <small class="text-muted">{{ screen.address }}</small>
+                    {% if screen.side %}
+                        <br><small class="badge bg-light text-dark">{{ 'Dešinė' if screen.side == 'D' else 'Kairė' }}</small>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="btn-group-vertical btn-group-sm" role="group">
+                        <a href="{{ url_for('screen_detail', id=screen.id) }}" class="btn btn-outline-primary">
+                            Peržiūrėti
+                        </a>
+                        <a href="{{ url_for('screen_pricing', id=screen.id) }}" class="btn btn-outline-success">
+                            Įkainis
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<div class="text-center py-5">
+    <i class="fas fa-tv fa-3x text-muted mb-3"></i>
+    <h3>Nėra ekranų</h3>
+    <p class="text-muted">Pradėkite pridėdami pirmą ekraną</p>
+    <a href="{{ url_for('new_screen') }}" class="btn btn-success">
+        <i class="fas fa-plus me-2"></i>Pridėti Ekraną
+    </a>
+</div>
+{% endif %}
+{% endblock %}

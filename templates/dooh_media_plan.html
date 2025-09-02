@@ -1,0 +1,325 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1>Media Planas</h1>
+        <p class="text-muted">{{ plan.name }} ({{ plan.start_date.strftime('%Y-%m-%d') }} - {{ plan.end_date.strftime('%Y-%m-%d') }})</p>
+    </div>
+    <div>
+        <button class="btn btn-info me-2" onclick="calculateTotals()">
+            <i class="fas fa-calculator me-2"></i>Perskaičiuoti
+        </button>
+        <a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" class="btn btn-warning">
+            <i class="fas fa-tv me-2"></i>Valdyti Ekranus
+        </a>
+        <a href="{{ url_for('dooh_plan_detail', id=plan.id) }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Grįžti
+        </a>
+    </div>
+</div>
+
+{% if not plan.screen_bookings %}
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle me-2"></i>
+    <strong>Nėra pasirinktų ekranų!</strong> 
+    <a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" class="alert-link">Pirmiausia pasirinkite ekranus</a>.
+</div>
+{% else %}
+
+<!-- Date range selector -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="row align-items-end">
+            <div class="col-md-3">
+                <label for="weekStart" class="form-label">Savaitės pradžia</label>
+                <input type="date" id="weekStart" class="form-control" value="{{ plan.start_date }}" 
+                       min="{{ plan.start_date }}" max="{{ plan.end_date }}">
+            </div>
+            <div class="col-md-3">
+                <button class="btn btn-primary" onclick="loadWeekData()">
+                    <i class="fas fa-calendar-week me-2"></i>Rodyti Savaitę
+                </button>
+            </div>
+            <div class="col-md-6 text-end">
+                <small class="text-muted">
+                    Plano trukmė: {{ (plan.end_date - plan.start_date).days + 1 }} dienos
+                </small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Media planning grid -->
+{% for booking in plan.screen_bookings %}
+<div class="card mb-4 screen-planning-card">
+    <div class="card-header">
+        <div class="row align-items-center">
+            <div class="col-md-6">
+                <h5 class="mb-0">
+                    <i class="fas fa-tv me-2"></i>{{ booking.screen.name }}
+                </h5>
+                <small class="text-muted">{{ booking.screen.city }} - {{ booking.screen.provider.name }}</small>
+            </div>
+            <div class="col-md-6 text-end">
+                <span class="badge bg-info me-2">CPT: <span class="cpt-value">0.00</span>€</span>
+                <button class="btn btn-sm btn-outline-secondary" onclick="copyToAllDays({{ booking.id }})">
+                    <i class="fas fa-copy me-1"></i>Kopijuoti į visas dienas
+                </button>
+            </div>
+        </div>
+    </div>
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm mb-0 media-planning-table">
+                <thead>
+                    <tr class="bg-light">
+                        <th style="min-width: 100px;">Laikas</th>
+                        <th class="text-center">P</th>
+                        <th class="text-center">A</th>
+                        <th class="text-center">T</th>
+                        <th class="text-center">K</th>
+                        <th class="text-center">P</th>
+                        <th class="text-center">Š</th>
+                        <th class="text-center">S</th>
+                        <th class="text-center">SUMA</th>
+                        <th class="text-center">Kaina</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for hour in range(24) %}
+                    <tr data-hour="{{ hour }}" data-booking="{{ booking.id }}">
+                        <td class="bg-light">
+                            <strong>{{ "{:02d}:00-{:02d}:00".format(hour, hour+1 if hour < 23 else 0) }}</strong>
+                            <br>
+                            <small class="text-muted">
+                                {% set pricing = booking.screen.pricing_hours|selectattr('hour', 'equalto', hour)|first %}
+                                {% if pricing %}
+                                    {{ pricing.contact_count }} kontaktų
+                                    <br>{{ "%.2f"|format(pricing.price_per_thousand_contacts) }}€/1000
+                                {% else %}
+                                    <span class="text-warning">Nėra įkainio</span>
+                                {% endif %}
+                            </small>
+                        </td>
+                        {% for day in range(7) %}
+                        <td class="text-center p-1">
+                            <input type="number" 
+                                   class="form-control form-control-sm slots-input text-center" 
+                                   min="0" max="999" 
+                                   value="0"
+                                   data-booking="{{ booking.id }}"
+                                   data-hour="{{ hour }}"
+                                   data-day="{{ day }}"
+                                   onchange="calculateRowTotal(this)"
+                                   style="width: 60px;">
+                        </td>
+                        {% endfor %}
+                        <td class="text-center bg-light">
+                            <strong class="row-total">0</strong>
+                        </td>
+                        <td class="text-center bg-light">
+                            <strong class="row-cost">0.00€</strong>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    <tr class="bg-secondary text-white">
+                        <td><strong>VISO:</strong></td>
+                        {% for day in range(7) %}
+                        <td class="text-center">
+                            <strong class="day-total" data-day="{{ day }}">0</strong>
+                        </td>
+                        {% endfor %}
+                        <td class="text-center">
+                            <strong class="screen-total">0</strong>
+                        </td>
+                        <td class="text-center">
+                            <strong class="screen-cost">0.00€</strong>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Total summary -->
+<div class="card mt-4">
+    <div class="card-body">
+        <div class="row text-center">
+            <div class="col-md-4">
+                <h3 class="text-primary mb-0" id="totalSlots">0</h3>
+                <p class="mb-0">Iš viso transliacijų</p>
+            </div>
+            <div class="col-md-4">
+                <h3 class="text-success mb-0" id="totalCost">0.00€</h3>
+                <p class="mb-0">Bendra kaina</p>
+            </div>
+            <div class="col-md-4">
+                <h3 class="text-info mb-0" id="avgCPT">0.00€</h3>
+                <p class="mb-0">Vidutinis CPT</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endif %}
+
+<script>
+// Screen pricing data
+const screenPricing = {
+    {% for booking in plan.screen_bookings %}
+    {{ booking.id }}: {
+        {% for pricing in booking.screen.pricing_hours %}
+        {{ pricing.hour }}: {
+            price: {{ pricing.price_per_thousand_contacts }},
+            contacts: {{ pricing.contact_count }}
+        }{{ ',' if not loop.last }}
+        {% endfor %}
+    }{{ ',' if not loop.last }}
+    {% endfor %}
+};
+
+function calculateRowTotal(input) {
+    const row = input.closest('tr');
+    const inputs = row.querySelectorAll('.slots-input');
+    let total = 0;
+    
+    inputs.forEach(inp => {
+        total += parseInt(inp.value || 0);
+    });
+    
+    row.querySelector('.row-total').textContent = total;
+    
+    // Calculate cost for this row
+    const bookingId = parseInt(input.dataset.booking);
+    const hour = parseInt(input.dataset.hour);
+    
+    const pricing = screenPricing[bookingId] && screenPricing[bookingId][hour];
+    let cost = 0;
+    
+    if (pricing && pricing.contacts > 0) {
+        cost = (total * pricing.price) / 1000;
+    }
+    
+    row.querySelector('.row-cost').textContent = cost.toFixed(2) + '€';
+    
+    calculateScreenTotals();
+}
+
+function calculateScreenTotals() {
+    document.querySelectorAll('.screen-planning-card').forEach(card => {
+        const table = card.querySelector('.media-planning-table');
+        
+        // Calculate day totals
+        for (let day = 0; day < 7; day++) {
+            let dayTotal = 0;
+            const dayInputs = table.querySelectorAll(`input[data-day="${day}"]`);
+            dayInputs.forEach(input => {
+                dayTotal += parseInt(input.value || 0);
+            });
+            table.querySelector(`.day-total[data-day="${day}"]`).textContent = dayTotal;
+        }
+        
+        // Calculate screen total and cost
+        let screenTotal = 0;
+        let screenCost = 0;
+        
+        table.querySelectorAll('.row-total').forEach(totalCell => {
+            if (!totalCell.closest('tr').classList.contains('bg-secondary')) {
+                screenTotal += parseInt(totalCell.textContent || 0);
+            }
+        });
+        
+        table.querySelectorAll('.row-cost').forEach(costCell => {
+            if (!costCell.closest('tr').classList.contains('bg-secondary')) {
+                const cost = parseFloat(costCell.textContent.replace('€', '') || 0);
+                screenCost += cost;
+            }
+        });
+        
+        table.querySelector('.screen-total').textContent = screenTotal;
+        table.querySelector('.screen-cost').textContent = screenCost.toFixed(2) + '€';
+    });
+    
+    calculateTotals();
+}
+
+function calculateTotals() {
+    let totalSlots = 0;
+    let totalCost = 0;
+    
+    document.querySelectorAll('.screen-total').forEach(total => {
+        totalSlots += parseInt(total.textContent || 0);
+    });
+    
+    document.querySelectorAll('.screen-cost').forEach(cost => {
+        const costValue = parseFloat(cost.textContent.replace('€', '') || 0);
+        totalCost += costValue;
+    });
+    
+    document.getElementById('totalSlots').textContent = totalSlots;
+    document.getElementById('totalCost').textContent = totalCost.toFixed(2) + '€';
+    
+    const avgCPT = totalSlots > 0 ? (totalCost * 1000) / totalSlots : 0;
+    document.getElementById('avgCPT').textContent = avgCPT.toFixed(2) + '€';
+}
+
+function copyToAllDays(bookingId) {
+    const table = document.querySelector(`[data-booking="${bookingId}"]`).closest('table');
+    
+    if (confirm('Ar tikrai norite nukopijuoti pirmos dienos duomenis į visas kitas dienas?')) {
+        table.querySelectorAll('tr[data-hour]').forEach(row => {
+            const firstDayInput = row.querySelector('input[data-day="0"]');
+            const firstDayValue = firstDayInput.value || 0;
+            
+            row.querySelectorAll('.slots-input').forEach((input, dayIndex) => {
+                if (dayIndex > 0) {
+                    input.value = firstDayValue;
+                    calculateRowTotal(input);
+                }
+            });
+        });
+    }
+}
+
+function loadWeekData() {
+    // This would load data for the selected week
+    // For now, just show a message
+    alert('Savaitės duomenų įkėlimas - funkcionalumas bus pridėtas vėliau');
+}
+
+// Initialize calculations on page load
+document.addEventListener('DOMContentLoaded', function() {
+    calculateTotals();
+});
+</script>
+
+<style>
+.media-planning-table {
+    font-size: 0.85rem;
+}
+
+.media-planning-table th,
+.media-planning-table td {
+    padding: 0.3rem;
+    vertical-align: middle;
+}
+
+.slots-input {
+    border: 1px solid #ddd;
+    padding: 2px 4px;
+    font-size: 0.8rem;
+}
+
+.slots-input:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
+}
+
+.screen-planning-card {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+</style>
+{% endblock %}

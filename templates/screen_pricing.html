@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Įkainis: {{ screen.name }}</h1>
+    <a href="{{ url_for('screen_detail', id=screen.id) }}" class="btn btn-secondary">
+        <i class="fas fa-arrow-left me-2"></i>Grįžti
+    </a>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <p class="text-muted">Nustatykite kainą už tūkstantį kontaktų ir kontaktų kiekį kiekvienai valandai.</p>
+        
+        <form method="POST">
+            <div class="row">
+                {% for hour in range(24) %}
+                <div class="col-md-6 col-lg-4 mb-3">
+                    <div class="card">
+                        <div class="card-header py-2">
+                            <h6 class="mb-0">{{ "{:02d}:00 - {:02d}:59".format(hour, hour) }}</h6>
+                        </div>
+                        <div class="card-body py-2">
+                            <div class="mb-2">
+                                <label class="form-label form-label-sm">Kaina/1000 kontaktų (€)</label>
+                                <input type="number" step="0.01" min="0" class="form-control form-control-sm" 
+                                       name="price_{{ hour }}" 
+                                       value="{{ pricing_data.get(hour, {}).get('price', '') }}"
+                                       placeholder="0.00">
+                            </div>
+                            <div class="mb-0">
+                                <label class="form-label form-label-sm">Kontaktų kiekis</label>
+                                <input type="number" min="0" class="form-control form-control-sm" 
+                                       name="contacts_{{ hour }}" 
+                                       value="{{ pricing_data.get(hour, {}).get('contacts', '') }}"
+                                       placeholder="0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% if loop.index % 3 == 0 and not loop.last %}
+                </div>
+                <div class="row">
+                {% endif %}
+                {% endfor %}
+            </div>
+            
+            <div class="mt-4 text-center">
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save me-2"></i>Išsaugoti Įkainį
+                </button>
+                <button type="button" class="btn btn-info" onclick="fillAllHours()">
+                    <i class="fas fa-copy me-2"></i>Užpildyti Visas Valandas
+                </button>
+                <button type="button" class="btn btn-warning" onclick="clearAll()">
+                    <i class="fas fa-eraser me-2"></i>Išvalyti Visus
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function fillAllHours() {
+    const basePrice = prompt("Įveskite kainą už 1000 kontaktų (€):");
+    const baseContacts = prompt("Įveskite kontaktų kiekį:");
+    
+    if (basePrice && baseContacts) {
+        for (let hour = 0; hour < 24; hour++) {
+            document.querySelector(`input[name="price_${hour}"]`).value = basePrice;
+            document.querySelector(`input[name="contacts_${hour}"]`).value = baseContacts;
+        }
+    }
+}
+
+function clearAll() {
+    if (confirm("Ar tikrai norite išvalyti visą įkainį?")) {
+        for (let hour = 0; hour < 24; hour++) {
+            document.querySelector(`input[name="price_${hour}"]`).value = "";
+            document.querySelector(`input[name="contacts_${hour}"]`).value = "";
+        }
+    }
+}
+</script>
+
+<style>
+.form-label-sm {
+    font-size: 0.8rem;
+    margin-bottom: 0.25rem;
+}
+</style>
+{% endblock %}

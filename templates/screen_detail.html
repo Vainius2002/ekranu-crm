@@ -1,0 +1,160 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ screen.name }}</h1>
+    <div>
+        <a href="{{ url_for('screen_pricing', id=screen.id) }}" class="btn btn-warning">
+            <i class="fas fa-euro-sign me-2"></i>Redaguoti Įkainį
+        </a>
+        <a href="{{ url_for('screens') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Grįžti
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Pagrindinė Informacija</h5>
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Teikėjas:</strong></td>
+                        <td>
+                            <a href="{{ url_for('provider_detail', id=screen.provider.id) }}">
+                                {{ screen.provider.name }}
+                            </a>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tipas:</strong></td>
+                        <td>
+                            <span class="badge bg-{{ 'primary' if screen.screen_type == 'horizontal' else 'secondary' }}">
+                                {{ 'Horizontalus' if screen.screen_type == 'horizontal' else 'Vertikalus' }}
+                            </span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td><strong>Turinys:</strong></td>
+                        <td>
+                            <span class="badge bg-{{ 'success' if screen.content_type == 'video' else 'info' }}">
+                                {{ 'Video (judantis)' if screen.content_type == 'video' else 'Statinis (nejudantis)' }}
+                            </span>
+                        </td>
+                    </tr>
+                    {% if screen.position_description %}
+                    <tr>
+                        <td><strong>Pozicija:</strong></td>
+                        <td>{{ screen.position_description }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if screen.comment %}
+                    <tr>
+                        <td><strong>Komentaras:</strong></td>
+                        <td>{{ screen.comment }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+        
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Parametrai</h5>
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Dydis:</strong></td>
+                        <td>{{ screen.width }}m × {{ screen.height }}m</td>
+                    </tr>
+                    {% if screen.pixel_width and screen.pixel_height %}
+                    <tr>
+                        <td><strong>Pikseliai:</strong></td>
+                        <td>{{ screen.pixel_width }} × {{ screen.pixel_height }}px</td>
+                    </tr>
+                    {% endif %}
+                    <tr>
+                        <td><strong>Plotas:</strong></td>
+                        <td>{{ "%.2f"|format(screen.width * screen.height) }} m²</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-6">
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Lokacija</h5>
+                <table class="table table-borderless">
+                    <tr>
+                        <td><strong>Miestas:</strong></td>
+                        <td>{{ screen.city }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Adresas:</strong></td>
+                        <td>{{ screen.address }}</td>
+                    </tr>
+                    {% if screen.side %}
+                    <tr>
+                        <td><strong>Pusė:</strong></td>
+                        <td>{{ 'Dešinė' if screen.side == 'D' else 'Kairė' }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if screen.gps_latitude and screen.gps_longitude %}
+                    <tr>
+                        <td><strong>GPS:</strong></td>
+                        <td>
+                            {{ screen.gps_latitude }}, {{ screen.gps_longitude }}
+                            <br>
+                            <a href="https://maps.google.com/?q={{ screen.gps_latitude }},{{ screen.gps_longitude }}" 
+                               target="_blank" class="btn btn-sm btn-outline-primary mt-1">
+                                <i class="fas fa-map-marker-alt me-1"></i>Žiūrėti Žemėlapyje
+                            </a>
+                        </td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Įkainis</h5>
+                {% if screen.pricing_hours %}
+                    <p class="text-success">
+                        <i class="fas fa-check-circle me-2"></i>Įkainis sukonfigūruotas {{ screen.pricing_hours|length }} valandoms
+                    </p>
+                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Valanda</th>
+                                    <th>Kaina/1000</th>
+                                    <th>Kontaktai</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for pricing in screen.pricing_hours %}
+                                <tr>
+                                    <td>{{ "{:02d}:00".format(pricing.hour) }}</td>
+                                    <td>{{ "%.2f"|format(pricing.price_per_thousand_contacts) }}€</td>
+                                    <td>{{ pricing.contact_count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-warning">
+                        <i class="fas fa-exclamation-triangle me-2"></i>Įkainis nesukonfigūruotas
+                    </p>
+                {% endif %}
+                <a href="{{ url_for('screen_pricing', id=screen.id) }}" class="btn btn-warning btn-sm">
+                    <i class="fas fa-edit me-2"></i>Redaguoti Įkainį
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

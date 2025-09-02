@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>{{ provider.name }}</h1>
+    <div>
+        <a href="{{ url_for('new_screen') }}?provider_id={{ provider.id }}" class="btn btn-success">
+            <i class="fas fa-plus me-2"></i>Pridėti Ekraną
+        </a>
+        <a href="{{ url_for('providers') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Grįžti
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Kontaktinė Informacija</h5>
+                {% if provider.contact_person %}
+                    <p><strong>Kontaktinis asmuo:</strong><br>{{ provider.contact_person }}</p>
+                {% endif %}
+                {% if provider.email %}
+                    <p><strong>El. paštas:</strong><br>
+                        <a href="mailto:{{ provider.email }}">{{ provider.email }}</a>
+                    </p>
+                {% endif %}
+                {% if provider.phone %}
+                    <p><strong>Telefonas:</strong><br>
+                        <a href="tel:{{ provider.phone }}">{{ provider.phone }}</a>
+                    </p>
+                {% endif %}
+                <p><strong>Registruotas:</strong><br>{{ provider.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Ekranai ({{ provider.screens|length }})</h5>
+                {% if provider.screens %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Pavadinimas</th>
+                                    <th>Tipas</th>
+                                    <th>Miestas</th>
+                                    <th>Adresas</th>
+                                    <th>Veiksmai</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for screen in provider.screens %}
+                                <tr>
+                                    <td>{{ screen.name }}</td>
+                                    <td>
+                                        <span class="badge bg-{{ 'primary' if screen.screen_type == 'horizontal' else 'secondary' }}">
+                                            {{ 'Horizontalus' if screen.screen_type == 'horizontal' else 'Vertikalus' }}
+                                        </span>
+                                        <span class="badge bg-{{ 'success' if screen.content_type == 'video' else 'info' }}">
+                                            {{ 'Video' if screen.content_type == 'video' else 'Statinis' }}
+                                        </span>
+                                    </td>
+                                    <td>{{ screen.city }}</td>
+                                    <td>{{ screen.address }}</td>
+                                    <td>
+                                        <a href="{{ url_for('screen_detail', id=screen.id) }}" class="btn btn-sm btn-outline-primary">
+                                            Peržiūrėti
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-tv fa-2x text-muted mb-3"></i>
+                        <p class="text-muted">Šis teikėjas dar neturi ekranų</p>
+                        <a href="{{ url_for('new_screen') }}?provider_id={{ provider.id }}" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Pridėti Pirmą Ekraną
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
