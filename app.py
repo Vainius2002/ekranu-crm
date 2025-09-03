@@ -120,11 +120,9 @@ class ScreenPricing(db.Model):
 @app.route('/')
 def index():
     providers = ScreenProvider.query.all()
-    clients = Client.query.all()
-    campaigns = Campaign.query.all()
     dooh_plans = DOOHPlan.query.all()
     screens = Screen.query.all()
-    return render_template('index.html', providers=providers, clients=clients, campaigns=campaigns, dooh_plans=dooh_plans, screens=screens)
+    return render_template('index.html', providers=providers, dooh_plans=dooh_plans, screens=screens)
 
 @app.route('/providers')
 def providers():
@@ -257,62 +255,16 @@ def screen_pricing(id):
     
     return render_template('screen_pricing.html', screen=screen, pricing_data=pricing_data)
 
-# Client routes
-@app.route('/clients')
-def clients():
+# API endpoints for dynamic client and campaign loading
+@app.route('/api/clients')
+def api_clients():
     clients = Client.query.all()
-    return render_template('clients.html', clients=clients)
+    return jsonify([{'id': c.id, 'name': c.name} for c in clients])
 
-@app.route('/client/new', methods=['GET', 'POST'])
-def new_client():
-    if request.method == 'POST':
-        client = Client(
-            name=request.form['name'],
-            email=request.form['email'],
-            phone=request.form['phone'],
-            contact_person=request.form['contact_person'],
-            company=request.form['company']
-        )
-        db.session.add(client)
-        db.session.commit()
-        flash('Klientas sėkmingai pridėtas!')
-        return redirect(url_for('clients'))
-    return render_template('client_form.html')
-
-@app.route('/client/<int:id>')
-def client_detail(id):
-    client = Client.query.get_or_404(id)
-    return render_template('client_detail.html', client=client)
-
-# Campaign routes
-@app.route('/campaigns')
-def campaigns():
-    campaigns = Campaign.query.all()
-    return render_template('campaigns.html', campaigns=campaigns)
-
-@app.route('/campaign/new', methods=['GET', 'POST'])
-def new_campaign():
-    if request.method == 'POST':
-        campaign = Campaign(
-            client_id=request.form['client_id'],
-            name=request.form['name'],
-            description=request.form['description'],
-            start_date=datetime.strptime(request.form['start_date'], '%Y-%m-%d').date() if request.form['start_date'] else None,
-            end_date=datetime.strptime(request.form['end_date'], '%Y-%m-%d').date() if request.form['end_date'] else None,
-            budget=float(request.form['budget']) if request.form['budget'] else None
-        )
-        db.session.add(campaign)
-        db.session.commit()
-        flash('Kampanija sėkmingai pridėta!')
-        return redirect(url_for('campaigns'))
-    
-    clients = Client.query.all()
-    return render_template('campaign_form.html', clients=clients)
-
-@app.route('/campaign/<int:id>')
-def campaign_detail(id):
-    campaign = Campaign.query.get_or_404(id)
-    return render_template('campaign_detail.html', campaign=campaign)
+@app.route('/api/campaigns/<int:client_id>')
+def api_campaigns_by_client(client_id):
+    campaigns = Campaign.query.filter_by(client_id=client_id).all()
+    return jsonify([{'id': c.id, 'name': c.name} for c in campaigns])
 
 # DOOH Plan routes
 @app.route('/dooh-plans')
@@ -323,8 +275,46 @@ def dooh_plans():
 @app.route('/dooh-plan/new', methods=['GET', 'POST'])
 def new_dooh_plan():
     if request.method == 'POST':
+        # Handle client creation or selection
+        client_id = None
+        if request.form.get('client_type') == 'new':
+            # Create new client
+            client = Client(
+                name=request.form['new_client_name'],
+                email=request.form.get('new_client_email', ''),
+                phone=request.form.get('new_client_phone', ''),
+                contact_person=request.form.get('new_client_contact', ''),
+                company=request.form.get('new_client_company', '')
+            )
+            db.session.add(client)
+            db.session.flush()  # Get the ID without committing
+            client_id = client.id
+        else:
+            # Use existing client
+            client_id = request.form['existing_client_id']
+        
+        # Handle campaign creation or selection
+        campaign_id = None
+        if request.form.get('campaign_type') == 'new':
+            # Create new campaign
+            campaign = Campaign(
+                client_id=client_id,
+                name=request.form['new_campaign_name'],
+                description=request.form.get('new_campaign_description', ''),
+                start_date=datetime.strptime(request.form['campaign_start_date'], '%Y-%m-%d').date() if request.form.get('campaign_start_date') else None,
+                end_date=datetime.strptime(request.form['campaign_end_date'], '%Y-%m-%d').date() if request.form.get('campaign_end_date') else None,
+                budget=float(request.form['new_campaign_budget']) if request.form.get('new_campaign_budget') else None
+            )
+            db.session.add(campaign)
+            db.session.flush()  # Get the ID without committing
+            campaign_id = campaign.id
+        else:
+            # Use existing campaign
+            campaign_id = request.form['existing_campaign_id']
+        
+        # Create the DOOH plan
         plan = DOOHPlan(
-            campaign_id=request.form['campaign_id'],
+            campaign_id=campaign_id,
             name=request.form['name'],
             start_date=datetime.strptime(request.form['start_date'], '%Y-%m-%d').date(),
             end_date=datetime.strptime(request.form['end_date'], '%Y-%m-%d').date()
@@ -334,8 +324,9 @@ def new_dooh_plan():
         flash('DOOH planas sėkmingai sukurtas!')
         return redirect(url_for('dooh_plan_screens', id=plan.id))
     
+    clients = Client.query.all()
     campaigns = Campaign.query.all()
-    return render_template('dooh_plan_form.html', campaigns=campaigns)
+    return render_template('dooh_plan_form.html', clients=clients, campaigns=campaigns)
 
 @app.route('/dooh-plan/<int:id>')
 def dooh_plan_detail(id):

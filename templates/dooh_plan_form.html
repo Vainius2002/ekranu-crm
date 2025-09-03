@@ -2,39 +2,157 @@
 
 {% block content %}
 <div class="row justify-content-center">
-    <div class="col-md-8">
+    <div class="col-md-10">
         <h1>Naujas DOOH Planas</h1>
         
         <div class="card">
             <div class="card-body">
-                <form method="POST">
-                    <div class="mb-3">
-                        <label for="campaign_id" class="form-label">Kampanija *</label>
-                        <select class="form-select" id="campaign_id" name="campaign_id" required>
-                            <option value="">Pasirinkite kampaniją</option>
-                            {% for campaign in campaigns %}
-                            <option value="{{ campaign.id }}" 
-                                {{ 'selected' if request.args.get('campaign_id') == campaign.id|string }}>
-                                {{ campaign.name }} ({{ campaign.client.name }})
-                            </option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="name" class="form-label">Plano pavadinimas *</label>
-                        <input type="text" class="form-control" id="name" name="name" required 
-                               placeholder="pvz. Vasario mėnesio DOOH planas">
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="start_date" class="form-label">Pradžios data *</label>
-                            <input type="date" class="form-control" id="start_date" name="start_date" required>
+                <form method="POST" id="doohPlanForm">
+                    <!-- Client Selection/Creation -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Klientas</h5>
                         </div>
-                        <div class="col-md-6">
-                            <label for="end_date" class="form-label">Pabaigos data *</label>
-                            <input type="date" class="form-control" id="end_date" name="end_date" required>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="client_type" id="existing_client" value="existing" checked>
+                                    <label class="form-check-label" for="existing_client">
+                                        Esamas klientas
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="client_type" id="new_client" value="new">
+                                    <label class="form-check-label" for="new_client">
+                                        Naujas klientas
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Existing Client Selection -->
+                            <div id="existing_client_section">
+                                <div class="mb-3">
+                                    <label for="existing_client_id" class="form-label">Pasirinkite klientą *</label>
+                                    <select class="form-select" id="existing_client_id" name="existing_client_id">
+                                        <option value="">-- Pasirinkite --</option>
+                                        {% for client in clients %}
+                                        <option value="{{ client.id }}">{{ client.name }}</option>
+                                        {% endfor %}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- New Client Form -->
+                            <div id="new_client_section" style="display: none;">
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="new_client_name" class="form-label">Kliento pavadinimas *</label>
+                                        <input type="text" class="form-control" id="new_client_name" name="new_client_name">
+                                    </div>
+                                    <div class="col-md-6 mb-3">
+                                        <label for="new_client_company" class="form-label">Įmonė</label>
+                                        <input type="text" class="form-control" id="new_client_company" name="new_client_company">
+                                    </div>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="new_client_email" class="form-label">El. paštas</label>
+                                        <input type="email" class="form-control" id="new_client_email" name="new_client_email">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="new_client_phone" class="form-label">Telefonas</label>
+                                        <input type="text" class="form-control" id="new_client_phone" name="new_client_phone">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="new_client_contact" class="form-label">Kontaktinis asmuo</label>
+                                        <input type="text" class="form-control" id="new_client_contact" name="new_client_contact">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Campaign Selection/Creation -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Kampanija</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="campaign_type" id="existing_campaign" value="existing" checked>
+                                    <label class="form-check-label" for="existing_campaign">
+                                        Esama kampanija
+                                    </label>
+                                </div>
+                                <div class="form-check form-check-inline">
+                                    <input class="form-check-input" type="radio" name="campaign_type" id="new_campaign" value="new">
+                                    <label class="form-check-label" for="new_campaign">
+                                        Nauja kampanija
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- Existing Campaign Selection -->
+                            <div id="existing_campaign_section">
+                                <div class="mb-3">
+                                    <label for="existing_campaign_id" class="form-label">Pasirinkite kampaniją *</label>
+                                    <select class="form-select" id="existing_campaign_id" name="existing_campaign_id">
+                                        <option value="">-- Pasirinkite klientą pirmiausia --</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- New Campaign Form -->
+                            <div id="new_campaign_section" style="display: none;">
+                                <div class="mb-3">
+                                    <label for="new_campaign_name" class="form-label">Kampanijos pavadinimas *</label>
+                                    <input type="text" class="form-control" id="new_campaign_name" name="new_campaign_name">
+                                </div>
+                                <div class="mb-3">
+                                    <label for="new_campaign_description" class="form-label">Aprašymas</label>
+                                    <textarea class="form-control" id="new_campaign_description" name="new_campaign_description" rows="3"></textarea>
+                                </div>
+                                <div class="row">
+                                    <div class="col-md-4 mb-3">
+                                        <label for="campaign_start_date" class="form-label">Kampanijos pradžia</label>
+                                        <input type="date" class="form-control" id="campaign_start_date" name="campaign_start_date">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="campaign_end_date" class="form-label">Kampanijos pabaiga</label>
+                                        <input type="date" class="form-control" id="campaign_end_date" name="campaign_end_date">
+                                    </div>
+                                    <div class="col-md-4 mb-3">
+                                        <label for="new_campaign_budget" class="form-label">Biudžetas (€)</label>
+                                        <input type="number" step="0.01" class="form-control" id="new_campaign_budget" name="new_campaign_budget">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- DOOH Plan Details -->
+                    <div class="card mb-4">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">DOOH Plano informacija</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Plano pavadinimas *</label>
+                                <input type="text" class="form-control" id="name" name="name" required 
+                                       placeholder="pvz. Vasario mėnesio DOOH planas">
+                            </div>
+                            
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label for="start_date" class="form-label">Pradžios data *</label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label for="end_date" class="form-label">Pabaigos data *</label>
+                                    <input type="date" class="form-control" id="end_date" name="end_date" required>
+                                </div>
+                            </div>
                         </div>
                     </div>
                     
@@ -56,4 +174,124 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Toggle client sections
+    const clientRadios = document.getElementsByName('client_type');
+    const existingClientSection = document.getElementById('existing_client_section');
+    const newClientSection = document.getElementById('new_client_section');
+    
+    clientRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'new') {
+                existingClientSection.style.display = 'none';
+                newClientSection.style.display = 'block';
+                // Clear required from existing
+                document.getElementById('existing_client_id').removeAttribute('required');
+                document.getElementById('new_client_name').setAttribute('required', 'required');
+            } else {
+                existingClientSection.style.display = 'block';
+                newClientSection.style.display = 'none';
+                // Set required for existing
+                document.getElementById('existing_client_id').setAttribute('required', 'required');
+                document.getElementById('new_client_name').removeAttribute('required');
+            }
+            // Reset campaign selection when client type changes
+            loadCampaigns();
+        });
+    });
+    
+    // Toggle campaign sections
+    const campaignRadios = document.getElementsByName('campaign_type');
+    const existingCampaignSection = document.getElementById('existing_campaign_section');
+    const newCampaignSection = document.getElementById('new_campaign_section');
+    
+    campaignRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+            if (this.value === 'new') {
+                existingCampaignSection.style.display = 'none';
+                newCampaignSection.style.display = 'block';
+                // Clear required from existing
+                document.getElementById('existing_campaign_id').removeAttribute('required');
+                document.getElementById('new_campaign_name').setAttribute('required', 'required');
+            } else {
+                existingCampaignSection.style.display = 'block';
+                newCampaignSection.style.display = 'none';
+                // Set required for existing
+                document.getElementById('existing_campaign_id').setAttribute('required', 'required');
+                document.getElementById('new_campaign_name').removeAttribute('required');
+            }
+        });
+    });
+    
+    // Load campaigns when client is selected
+    document.getElementById('existing_client_id').addEventListener('change', loadCampaigns);
+    
+    function loadCampaigns() {
+        const clientId = document.getElementById('existing_client_id').value;
+        const campaignSelect = document.getElementById('existing_campaign_id');
+        
+        if (!clientId) {
+            campaignSelect.innerHTML = '<option value="">-- Pasirinkite klientą pirmiausia --</option>';
+            return;
+        }
+        
+        // Fetch campaigns for selected client
+        fetch(`/api/campaigns/${clientId}`)
+            .then(response => response.json())
+            .then(campaigns => {
+                campaignSelect.innerHTML = '<option value="">-- Pasirinkite kampaniją --</option>';
+                campaigns.forEach(campaign => {
+                    const option = document.createElement('option');
+                    option.value = campaign.id;
+                    option.textContent = campaign.name;
+                    campaignSelect.appendChild(option);
+                });
+                
+                if (campaigns.length === 0) {
+                    campaignSelect.innerHTML = '<option value="">-- Nėra kampanijų šiam klientui --</option>';
+                }
+            })
+            .catch(error => {
+                console.error('Error loading campaigns:', error);
+                campaignSelect.innerHTML = '<option value="">-- Klaida įkeliant kampanijas --</option>';
+            });
+    }
+    
+    // Form validation
+    document.getElementById('doohPlanForm').addEventListener('submit', function(e) {
+        const clientType = document.querySelector('input[name="client_type"]:checked').value;
+        const campaignType = document.querySelector('input[name="campaign_type"]:checked').value;
+        
+        if (clientType === 'existing' && !document.getElementById('existing_client_id').value) {
+            e.preventDefault();
+            alert('Prašome pasirinkti klientą');
+            return;
+        }
+        
+        if (clientType === 'new' && !document.getElementById('new_client_name').value) {
+            e.preventDefault();
+            alert('Prašome įvesti kliento pavadinimą');
+            return;
+        }
+        
+        if (campaignType === 'existing' && !document.getElementById('existing_campaign_id').value) {
+            e.preventDefault();
+            alert('Prašome pasirinkti kampaniją');
+            return;
+        }
+        
+        if (campaignType === 'new' && !document.getElementById('new_campaign_name').value) {
+            e.preventDefault();
+            alert('Prašome įvesti kampanijos pavadinimą');
+            return;
+        }
+    });
+    
+    // Set initial required attributes
+    document.getElementById('existing_client_id').setAttribute('required', 'required');
+    document.getElementById('existing_campaign_id').setAttribute('required', 'required');
+});
+</script>
 {% endblock %}
