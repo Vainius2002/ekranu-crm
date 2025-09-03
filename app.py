@@ -272,6 +272,16 @@ def dooh_plans():
     plans = DOOHPlan.query.all()
     return render_template('dooh_plans.html', plans=plans)
 
+@app.route('/api/campaigns/<int:client_id>')
+def api_campaigns(client_id):
+    """Get campaigns for a specific client"""
+    campaigns = Campaign.query.filter_by(client_id=client_id).all()
+    return jsonify([{
+        'id': campaign.id,
+        'name': campaign.name,
+        'description': campaign.description
+    } for campaign in campaigns])
+
 @app.route('/dooh-plan/new', methods=['GET', 'POST'])
 def new_dooh_plan():
     if request.method == 'POST':
@@ -360,6 +370,84 @@ def add_screen_to_plan(plan_id, screen_id):
 def dooh_plan_media(id):
     plan = DOOHPlan.query.get_or_404(id)
     return render_template('dooh_media_plan.html', plan=plan)
+
+# API Routes
+@app.route('/api/import-brands', methods=['POST'])
+def import_brands():
+    """Import brands from agency-crm as clients"""
+    # Check API key
+    api_key = request.headers.get('X-API-Key')
+    if not api_key or api_key != 'ekranu-crm-api-key':
+        return jsonify({'error': 'Invalid API key'}), 401
+    
+    try:
+        data = request.get_json()
+        if not data or 'brands' not in data:
+            return jsonify({'error': 'No brands data provided'}), 400
+        
+        imported_count = 0
+        updated_count = 0
+        
+        for brand_data in data['brands']:
+            # Check if client already exists (by external_id or name+company)
+            existing_client = None
+            
+            # First try to find by external_id if provided
+            if 'external_id' in brand_data:
+                # We'll store external_id in the company field with a special prefix
+                existing_client = Client.query.filter_by(
+                    company=brand_data.get('company', ''),
+                    name=brand_data['name']
+                ).first()
+            
+            if existing_client:
+                # Update existing client
+                existing_client.email = brand_data.get('email', existing_client.email)
+                existing_client.phone = brand_data.get('phone', existing_client.phone)
+                existing_client.contact_person = brand_data.get('contact_person', existing_client.contact_person)
+                updated_count += 1
+            else:
+                # Create new client
+                new_client = Client(
+                    name=brand_data['name'],
+                    email=brand_data.get('email', ''),
+                    phone=brand_data.get('phone', ''),
+                    contact_person=brand_data.get('contact_person', ''),
+                    company=brand_data.get('company', '')
+                )
+                db.session.add(new_client)
+                imported_count += 1
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'imported_count': imported_count,
+            'updated_count': updated_count,
+            'message': f'Successfully imported {imported_count} new brands and updated {updated_count} existing ones'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to import brands: {str(e)}'}), 500
+
+@app.route('/api/clients', methods=['GET'])
+def get_api_clients():
+    """Get all clients for external systems"""
+    # Check API key
+    api_key = request.headers.get('X-API-Key')
+    if not api_key or api_key != 'ekranu-crm-api-key':
+        return jsonify({'error': 'Invalid API key'}), 401
+    
+    clients = Client.query.all()
+    return jsonify([{
+        'id': client.id,
+        'name': client.name,
+        'company': client.company,
+        'email': client.email,
+        'phone': client.phone,
+        'contact_person': client.contact_person
+    } for client in clients])
 
 if __name__ == '__main__':
     with app.app_context():

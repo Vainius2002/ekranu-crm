@@ -33,12 +33,18 @@
                             <div id="existing_client_section">
                                 <div class="mb-3">
                                     <label for="existing_client_id" class="form-label">Pasirinkite klientą *</label>
-                                    <select class="form-select" id="existing_client_id" name="existing_client_id">
-                                        <option value="">-- Pasirinkite --</option>
-                                        {% for client in clients %}
-                                        <option value="{{ client.id }}">{{ client.name }}</option>
-                                        {% endfor %}
-                                    </select>
+                                    <div class="input-group">
+                                        <select class="form-select" id="existing_client_id" name="existing_client_id">
+                                            <option value="">-- Pasirinkite --</option>
+                                            {% for client in clients %}
+                                            <option value="{{ client.id }}">{{ client.name }}</option>
+                                            {% endfor %}
+                                        </select>
+                                        <button type="button" class="btn btn-outline-primary" id="syncBrandsBtn" title="Sinchronizuoti su Agency CRM">
+                                            <i class="fas fa-sync me-2"></i>Atnaujinti iš Agency CRM
+                                        </button>
+                                    </div>
+                                    <small class="text-muted">Spauskite "Atnaujinti", kad gautumėte naujausius prekės ženklus iš Agency CRM</small>
                                 </div>
                             </div>
                             
@@ -292,6 +298,85 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set initial required attributes
     document.getElementById('existing_client_id').setAttribute('required', 'required');
     document.getElementById('existing_campaign_id').setAttribute('required', 'required');
+    
+    // Sync brands button
+    document.getElementById('syncBrandsBtn').addEventListener('click', function() {
+        const btn = this;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Sinchronizuojama...';
+        btn.disabled = true;
+        
+        // First, trigger the sync in agency-crm
+        fetch('http://172.20.89.236:5000/api/brands/sync-to-ekranu', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-API-Key': 'dev-api-key'  // Match the API key in agency-crm
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Reload the client list after successful sync
+                return fetch('/api/clients', {
+                    headers: {
+                        'X-API-Key': 'ekranu-crm-api-key'
+                    }
+                });
+            } else {
+                throw new Error(data.message || 'Sync failed');
+            }
+        })
+        .then(response => response.json())
+        .then(clients => {
+            // Update the client dropdown
+            const clientSelect = document.getElementById('existing_client_id');
+            const currentValue = clientSelect.value;
+            clientSelect.innerHTML = '<option value="">-- Pasirinkite --</option>';
+            
+            clients.forEach(client => {
+                const option = document.createElement('option');
+                option.value = client.id;
+                option.textContent = client.name;
+                if (client.company) {
+                    option.textContent += ` (${client.company})`;
+                }
+                clientSelect.appendChild(option);
+            });
+            
+            // Restore previous selection if still exists
+            if (currentValue) {
+                clientSelect.value = currentValue;
+            }
+            
+            // Show success message
+            showNotification('Prekės ženklai sėkmingai atnaujinti!', 'success');
+        })
+        .catch(error => {
+            console.error('Sync error:', error);
+            showNotification('Klaida sinchronizuojant: ' + error.message, 'danger');
+        })
+        .finally(() => {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        });
+    });
+    
+    function showNotification(message, type) {
+        const alertDiv = document.createElement('div');
+        alertDiv.className = `alert alert-${type} alert-dismissible fade show position-fixed top-0 start-50 translate-middle-x mt-3`;
+        alertDiv.style.zIndex = '9999';
+        alertDiv.innerHTML = `
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        `;
+        document.body.appendChild(alertDiv);
+        
+        // Auto-remove after 5 seconds
+        setTimeout(() => {
+            alertDiv.remove();
+        }, 5000);
+    }
 });
 </script>
 {% endblock %}
