@@ -1,70 +1,166 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>DOOH Planai</h1>
-    <a href="{{ url_for('new_dooh_plan') }}" class="btn btn-success">
-        <i class="fas fa-plus me-2"></i>Sukurti Naują DOOH Planą
-    </a>
+<!-- Header Section -->
+<div class="pb-5 border-b border-gray-200 mb-8">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">DOOH Planai</h1>
+            <p class="mt-2 text-sm text-gray-600">Valdykite visus lauko ekranų media planus ir kampanijas</p>
+        </div>
+        <a href="{{ url_for('new_dooh_plan') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <i class="fas fa-plus -ml-1 mr-2"></i>
+            Sukurti Naują DOOH Planą
+        </a>
+    </div>
 </div>
 
 {% if plans %}
-<div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Pavadinimas</th>
-                <th>Kampanija</th>
-                <th>Klientas</th>
-                <th>Laikotarpis</th>
-                <th>Ekranai</th>
-                <th>Veiksmai</th>
-            </tr>
-        </thead>
-        <tbody>
+<!-- Search and Filter Section -->
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+    <div class="px-4 py-5 sm:px-6">
+        <div class="flex justify-between items-center">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">DOOH Planai ({{ plans|length }})</h3>
+            <div class="flex items-center space-x-3">
+                <input type="text" id="planFilter" placeholder="Ieškoti planų..." 
+                       class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                <select id="sortBy" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">Rikiuoti pagal...</option>
+                    <option value="name-asc">Pavadinimas (A-Z)</option>
+                    <option value="name-desc">Pavadinimas (Z-A)</option>
+                    <option value="date-desc">Data (naujausias)</option>
+                    <option value="date-asc">Data (seniausias)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Plans List -->
+    <div class="border-t border-gray-200">
+        <ul class="divide-y divide-gray-200" id="plansList">
             {% for plan in plans %}
-            <tr>
-                <td><strong>{{ plan.name }}</strong></td>
-                <td>
-                    {{ plan.campaign.name }}
-                </td>
-                <td>
-                    {{ plan.campaign.client.name }}
-                </td>
-                <td>
-                    {{ plan.start_date.strftime('%Y-%m-%d') }}<br>
-                    iki<br>
-                    {{ plan.end_date.strftime('%Y-%m-%d') }}
-                </td>
-                <td>
-                    <span class="badge bg-primary">{{ plan.screen_bookings|length }}</span>
-                </td>
-                <td>
-                    <div class="btn-group-vertical btn-group-sm" role="group">
-                        <a href="{{ url_for('dooh_plan_detail', id=plan.id) }}" class="btn btn-outline-primary">
-                            Peržiūrėti
-                        </a>
-                        <a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" class="btn btn-outline-info">
-                            Ekranai
-                        </a>
-                        <a href="{{ url_for('dooh_plan_media', id=plan.id) }}" class="btn btn-outline-warning">
-                            Media Planas
-                        </a>
+            <li class="plan-item hover:bg-gray-50">
+                <div class="px-4 py-6 sm:px-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                                    <i class="fas fa-calendar-alt text-indigo-600 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <div class="flex items-center">
+                                    <p class="text-lg font-medium text-gray-900 plan-name">{{ plan.name }}</p>
+                                    <span class="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                        {{ plan.screen_bookings|length }} ekranai
+                                    </span>
+                                </div>
+                                <div class="mt-2 space-y-1">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-bullhorn w-4 h-4 mr-2 text-gray-400"></i>
+                                        <span class="font-medium">Kampanija:</span>
+                                        <span class="ml-1">{{ plan.campaign.name }}</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-building w-4 h-4 mr-2 text-gray-400"></i>
+                                        <span class="font-medium">Klientas:</span>
+                                        <span class="ml-1">{{ plan.campaign.client.name }}</span>
+                                    </div>
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-calendar w-4 h-4 mr-2 text-gray-400"></i>
+                                        <span class="font-medium">Laikotarpis:</span>
+                                        <span class="ml-1">{{ plan.start_date.strftime('%Y-%m-%d') }} - {{ plan.end_date.strftime('%Y-%m-%d') }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <a href="{{ url_for('dooh_plan_detail', id=plan.id) }}" 
+                               class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <i class="fas fa-eye -ml-0.5 mr-1"></i>
+                                Peržiūrėti
+                            </a>
+                            {% if plan.screen_bookings|length == 1 %}
+                            <a href="{{ url_for('screen_detail', id=plan.screen_bookings[0].screen.id) }}" 
+                               class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <i class="fas fa-tv -ml-0.5 mr-1"></i>
+                                Ekranas
+                            </a>
+                            {% else %}
+                            <a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" 
+                               class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <i class="fas fa-tv -ml-0.5 mr-1"></i>
+                                Ekranai ({{ plan.screen_bookings|length }})
+                            </a>
+                            {% endif %}
+                            <a href="{{ url_for('dooh_plan_media', id=plan.id) }}" 
+                               class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                                <i class="fas fa-play-circle -ml-0.5 mr-1"></i>
+                                Media Planas
+                            </a>
+                        </div>
                     </div>
-                </td>
-            </tr>
+                </div>
+            </li>
             {% endfor %}
-        </tbody>
-    </table>
+        </ul>
+    </div>
 </div>
 {% else %}
-<div class="text-center py-5">
-    <i class="fas fa-tv fa-3x text-muted mb-3"></i>
-    <h3>Nėra DOOH planų</h3>
-    <p class="text-muted">Sukurkite pirmą DOOH planą</p>
-    <a href="{{ url_for('new_dooh_plan') }}" class="btn btn-success">
-        <i class="fas fa-plus me-2"></i>Sukurti DOOH Planą
-    </a>
+<!-- Empty State -->
+<div class="text-center py-12">
+    <div class="mx-auto h-24 w-24 text-gray-400">
+        <i class="fas fa-calendar-alt text-6xl"></i>
+    </div>
+    <h3 class="mt-6 text-lg font-medium text-gray-900">Nėra DOOH planų</h3>
+    <p class="mt-2 text-sm text-gray-500">Pradėkite sukurdami pirmą DOOH media planą.</p>
+    <div class="mt-6">
+        <a href="{{ url_for('new_dooh_plan') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <i class="fas fa-plus -ml-1 mr-2"></i>
+            Sukurti DOOH Planą
+        </a>
+    </div>
 </div>
+{% endif %}
+
+{% if plans %}
+<script>
+// Search functionality
+document.getElementById('planFilter').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const plans = document.querySelectorAll('.plan-item');
+    
+    plans.forEach(plan => {
+        const name = plan.querySelector('.plan-name').textContent.toLowerCase();
+        const isVisible = name.includes(searchTerm);
+        plan.style.display = isVisible ? 'block' : 'none';
+    });
+});
+
+// Sort functionality
+document.getElementById('sortBy').addEventListener('change', function() {
+    const sortBy = this.value;
+    const plansList = document.getElementById('plansList');
+    const plans = Array.from(plansList.querySelectorAll('.plan-item'));
+    
+    if (!sortBy) return;
+    
+    plans.sort((a, b) => {
+        switch(sortBy) {
+            case 'name-asc':
+                return a.querySelector('.plan-name').textContent.localeCompare(b.querySelector('.plan-name').textContent);
+            case 'name-desc':
+                return b.querySelector('.plan-name').textContent.localeCompare(a.querySelector('.plan-name').textContent);
+            case 'date-desc':
+                // For date sorting, you might want to add data attributes with timestamps
+                return 0; // Placeholder - implement based on your data structure
+            case 'date-asc':
+                return 0; // Placeholder - implement based on your data structure
+        }
+    });
+    
+    plans.forEach(plan => plansList.appendChild(plan));
+});
+</script>
 {% endif %}
 {% endblock %}

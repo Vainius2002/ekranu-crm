@@ -1,129 +1,213 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <h1>Naujas Ekranas</h1>
-        
-        <div class="card">
-            <div class="card-body">
-                <form method="POST" enctype="multipart/form-data">
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="provider_id" class="form-label">Teikėjas *</label>
-                            <select class="form-select" id="provider_id" name="provider_id" required>
-                                <option value="">Pasirinkite teikėją</option>
-                                {% for provider in providers %}
-                                <option value="{{ provider.id }}" 
-                                    {{ 'selected' if request.args.get('provider_id') == provider.id|string }}>
-                                    {{ provider.name }}
-                                </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="name" class="form-label">Pavadinimas *</label>
-                            <input type="text" class="form-control" id="name" name="name" required>
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="image" class="form-label">Nuotrauka</label>
-                        <input type="file" class="form-control" id="image" name="image" accept="image/*">
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="position_description" class="form-label">Pozicijos aprašymas</label>
-                        <textarea class="form-control" id="position_description" name="position_description" rows="2"></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="comment" class="form-label">Komentaras</label>
-                        <textarea class="form-control" id="comment" name="comment" rows="2"></textarea>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="screen_type" class="form-label">Ekrano tipas *</label>
-                            <select class="form-select" id="screen_type" name="screen_type" required>
-                                <option value="">Pasirinkite tipą</option>
-                                <option value="horizontal">Horizontalus</option>
-                                <option value="vertical">Vertikalus</option>
-                            </select>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="content_type" class="form-label">Turinio tipas *</label>
-                            <select class="form-select" id="content_type" name="content_type" required>
-                                <option value="">Pasirinkite tipą</option>
-                                <option value="video">Video (judantis vaizdas)</option>
-                                <option value="static">Statinis (nejudantis)</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="width" class="form-label">Plotis (m) *</label>
-                            <input type="number" step="0.01" class="form-control" id="width" name="width" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="height" class="form-label">Aukštis (m) *</label>
-                            <input type="number" step="0.01" class="form-control" id="height" name="height" required>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label for="pixel_width" class="form-label">Pikseliai (plotis)</label>
-                            <input type="number" class="form-control" id="pixel_width" name="pixel_width">
-                        </div>
-                        <div class="col-md-6">
-                            <label for="pixel_height" class="form-label">Pikseliai (aukštis)</label>
-                            <input type="number" class="form-control" id="pixel_height" name="pixel_height">
-                        </div>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="pixel_comment" class="form-label">Komentaras apie pikselius</label>
-                        <textarea class="form-control" id="pixel_comment" name="pixel_comment" rows="2"></textarea>
-                    </div>
-                    
-                    <div class="mb-3">
-                        <label for="gps_coordinates" class="form-label">GPS koordinatės</label>
-                        <input type="text" class="form-control" id="gps_coordinates" name="gps_coordinates" placeholder="54.6872, 25.2797">
-                        <div class="form-text">Įveskite platumą ir ilgumą atskirtas kableliu (pvz. 54.6872, 25.2797)</div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-4">
-                            <label for="city" class="form-label">Miestas *</label>
-                            <input type="text" class="form-control" id="city" name="city" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label for="address" class="form-label">Adresas *</label>
-                            <input type="text" class="form-control" id="address" name="address" required>
-                        </div>
-                        <div class="col-md-2">
-                            <label for="side" class="form-label">Pusė</label>
-                            <select class="form-select" id="side" name="side">
-                                <option value="">-</option>
-                                <option value="D">Dešinė</option>
-                                <option value="K">Kairė</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-save me-2"></i>Išsaugoti
-                        </button>
-                        <a href="{{ url_for('screens') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Grįžti
-                        </a>
-                    </div>
-                </form>
+<!-- Header Section -->
+<div class="pb-5 border-b border-gray-200 mb-8">
+    <div class="flex justify-between items-start">
+        <div class="flex items-center">
+            <div class="h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mr-4">
+                <i class="fas fa-tv text-green-600 text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Naujas Ekranas</h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    Pridėkite naują ekraną į sistemą
+                </p>
             </div>
         </div>
+        <a href="{{ url_for('screens') }}" 
+           class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <i class="fas fa-arrow-left -ml-1 mr-2"></i>
+            Grįžti
+        </a>
     </div>
+</div>
+
+<div class="max-w-4xl mx-auto">
+    <form method="POST" enctype="multipart/form-data" class="space-y-6">
+        <!-- Provider and Name Section -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Pagrindinė informacija</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Nurodyti pagrindinius ekrano duomenis</p>
+            </div>
+            <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                        <label for="provider_id" class="block text-sm font-medium text-gray-700">Teikėjas *</label>
+                        <select id="provider_id" name="provider_id" required class="mt-1 block w-full focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            <option value="">Pasirinkite teikėją</option>
+                            {% for provider in providers %}
+                            <option value="{{ provider.id }}" 
+                                {{ 'selected' if request.args.get('provider_id') == provider.id|string }}>
+                                {{ provider.name }}
+                            </option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700">Pavadinimas *</label>
+                        <input type="text" id="name" name="name" required placeholder="pvz. Gedimino pr. 9" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                    </div>
+                </div>
+                
+                <div class="mt-6">
+                    <label for="image" class="block text-sm font-medium text-gray-700">Nuotrauka</label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-md">
+                        <div class="space-y-1 text-center">
+                            <i class="fas fa-image text-gray-400 text-3xl mb-3"></i>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="image" class="relative cursor-pointer bg-white rounded-md font-medium text-indigo-600 hover:text-indigo-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-indigo-500">
+                                    <span>Įkelti nuotrauką</span>
+                                    <input id="image" name="image" type="file" accept="image/*" class="sr-only">
+                                </label>
+                                <p class="pl-1">arba vilkti ir paleisti</p>
+                            </div>
+                            <p class="text-xs text-gray-500">PNG, JPG, GIF iki 10MB</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 gap-6">
+                    <div>
+                        <label for="position_description" class="block text-sm font-medium text-gray-700">Pozicijos aprašymas</label>
+                        <textarea id="position_description" name="position_description" rows="2" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="Aprašykite ekrano poziciją..."></textarea>
+                    </div>
+                    <div>
+                        <label for="comment" class="block text-sm font-medium text-gray-700">Komentaras</label>
+                        <textarea id="comment" name="comment" rows="2" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="Papildoma informacija..."></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Technical Specifications Section -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Techninės specifikacijos</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Ekrano parametrai ir tipas</p>
+            </div>
+            <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+                <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                        <label for="screen_type" class="block text-sm font-medium text-gray-700">Ekrano tipas *</label>
+                        <select id="screen_type" name="screen_type" required class="mt-1 block w-full focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            <option value="">Pasirinkite tipą</option>
+                            <option value="horizontal">Horizontalus</option>
+                            <option value="vertical">Vertikalus</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label for="content_type" class="block text-sm font-medium text-gray-700">Turinio tipas *</label>
+                        <select id="content_type" name="content_type" required class="mt-1 block w-full focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            <option value="">Pasirinkite tipą</option>
+                            <option value="video">Video (judantis vaizdas)</option>
+                            <option value="static">Statinis (nejudantis)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                        <label for="width" class="block text-sm font-medium text-gray-700">Plotis (m) *</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <input type="number" step="0.01" id="width" name="width" required placeholder="0.00" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-12 sm:text-sm border-gray-300 rounded-md">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">m</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="height" class="block text-sm font-medium text-gray-700">Aukštis (m) *</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <input type="number" step="0.01" id="height" name="height" required placeholder="0.00" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-12 sm:text-sm border-gray-300 rounded-md">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">m</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-2">
+                    <div>
+                        <label for="pixel_width" class="block text-sm font-medium text-gray-700">Pikseliai (plotis)</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <input type="number" id="pixel_width" name="pixel_width" placeholder="1920" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-12 sm:text-sm border-gray-300 rounded-md">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">px</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <label for="pixel_height" class="block text-sm font-medium text-gray-700">Pikseliai (aukštis)</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <input type="number" id="pixel_height" name="pixel_height" placeholder="1080" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pr-12 sm:text-sm border-gray-300 rounded-md">
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">px</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="mt-6">
+                    <label for="pixel_comment" class="block text-sm font-medium text-gray-700">Komentaras apie pikselius</label>
+                    <textarea id="pixel_comment" name="pixel_comment" rows="2" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md" placeholder="Papildoma informacija apie ekrano rezoliuciją..."></textarea>
+                </div>
+            </div>
+        </div>
+
+        <!-- Location Section -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Vieta</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Ekrano vietos informacija</p>
+            </div>
+            <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+                <div class="grid grid-cols-1 gap-6">
+                    <div>
+                        <label for="gps_coordinates" class="block text-sm font-medium text-gray-700">GPS koordinatės</label>
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fas fa-map-marker-alt text-gray-400"></i>
+                            </div>
+                            <input type="text" id="gps_coordinates" name="gps_coordinates" placeholder="54.6872, 25.2797" class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-10 sm:text-sm border-gray-300 rounded-md">
+                        </div>
+                        <p class="mt-2 text-sm text-gray-500">Įveskite platumą ir ilgumą atskirtas kableliu</p>
+                    </div>
+                </div>
+
+                <div class="mt-6 grid grid-cols-1 gap-6 sm:grid-cols-6">
+                    <div class="sm:col-span-2">
+                        <label for="city" class="block text-sm font-medium text-gray-700">Miestas *</label>
+                        <input type="text" id="city" name="city" required placeholder="pvz. Vilnius" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                    </div>
+                    <div class="sm:col-span-3">
+                        <label for="address" class="block text-sm font-medium text-gray-700">Adresas *</label>
+                        <input type="text" id="address" name="address" required placeholder="pvz. Gedimino pr. 9" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                    </div>
+                    <div class="sm:col-span-1">
+                        <label for="side" class="block text-sm font-medium text-gray-700">Pusė</label>
+                        <select id="side" name="side" class="mt-1 block w-full focus:ring-indigo-500 focus:border-indigo-500 shadow-sm sm:text-sm border-gray-300 rounded-md">
+                            <option value="">-</option>
+                            <option value="D">Dešinė</option>
+                            <option value="K">Kairė</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3">
+            <a href="{{ url_for('screens') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fas fa-times -ml-1 mr-2"></i>
+                Atšaukti
+            </a>
+            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <i class="fas fa-save -ml-1 mr-2"></i>
+                Išsaugoti Ekraną
+            </button>
+        </div>
+    </form>
 </div>
 {% endblock %}

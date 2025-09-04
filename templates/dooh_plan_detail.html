@@ -1,116 +1,257 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>{{ plan.name }}</h1>
-    <div>
-        <a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" class="btn btn-info">
-            <i class="fas fa-tv me-2"></i>Valdyti Ekranus
-        </a>
-        <a href="{{ url_for('dooh_plan_media', id=plan.id) }}" class="btn btn-warning">
-            <i class="fas fa-calendar-alt me-2"></i>Media Planas
-        </a>
-        <a href="{{ url_for('dooh_plans') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Grįžti
-        </a>
+<!-- Header Section -->
+<div class="pb-5 border-b border-gray-200 mb-8">
+    <div class="flex justify-between items-start">
+        <div class="flex items-center">
+            <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center mr-4">
+                <i class="fas fa-calendar-alt text-indigo-600 text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">{{ plan.name }}</h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    DOOH Media Planas • Sukurtas {{ plan.created_at.strftime('%Y-%m-%d') }}
+                </p>
+            </div>
+        </div>
+        <div class="flex space-x-3">
+            {% if plan.screen_bookings|length == 1 %}
+            <a href="{{ url_for('screen_detail', id=plan.screen_bookings[0].screen.id) }}" 
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fas fa-tv -ml-1 mr-2"></i>
+                Peržiūrėti Ekraną
+            </a>
+            {% else %}
+            <a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" 
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fas fa-tv -ml-1 mr-2"></i>
+                Valdyti Ekranus
+            </a>
+            {% endif %}
+            <a href="{{ url_for('dooh_plan_media', id=plan.id) }}" 
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                <i class="fas fa-play-circle -ml-1 mr-2"></i>
+                Media Planas
+            </a>
+            <a href="{{ url_for('dooh_plans') }}" 
+               class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fas fa-arrow-left -ml-1 mr-2"></i>
+                Grįžti
+            </a>
+        </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-4">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Plano Informacija</h5>
-                <p><strong>Kampanija:</strong><br>
-                    {{ plan.campaign.name }}
-                </p>
-                <p><strong>Klientas:</strong><br>
-                    {{ plan.campaign.client.name }}
-                </p>
-                <p><strong>Pradžios data:</strong><br>{{ plan.start_date.strftime('%Y-%m-%d') }}</p>
-                <p><strong>Pabaigos data:</strong><br>{{ plan.end_date.strftime('%Y-%m-%d') }}</p>
-                <p><strong>Trukmė:</strong><br>{{ (plan.end_date - plan.start_date).days + 1 }} dienos</p>
-                <p><strong>Sukurtas:</strong><br>{{ plan.created_at.strftime('%Y-%m-%d %H:%M') }}</p>
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+    <!-- Plan Information -->
+    <div class="lg:col-span-1 space-y-6">
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Plano Informacija</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Pagrindinė kampanijos informacija</p>
+            </div>
+            <div class="border-t border-gray-200">
+                <dl>
+                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-1 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-bullhorn w-4 h-4 mr-2 text-gray-400"></i>
+                            Kampanija
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ plan.campaign.name }}</dd>
+                    </div>
+                    
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-1 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-building w-4 h-4 mr-2 text-gray-400"></i>
+                            Klientas
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ plan.campaign.client.name }}</dd>
+                    </div>
+                    
+                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-1 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-calendar-check w-4 h-4 mr-2 text-gray-400"></i>
+                            Pradžios data
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ plan.start_date.strftime('%Y-%m-%d') }}</dd>
+                    </div>
+                    
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-1 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-calendar-times w-4 h-4 mr-2 text-gray-400"></i>
+                            Pabaigos data
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900">{{ plan.end_date.strftime('%Y-%m-%d') }}</dd>
+                    </div>
+                    
+                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-1 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-clock w-4 h-4 mr-2 text-gray-400"></i>
+                            Trukmė
+                        </dt>
+                        <dd class="mt-1">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                {{ (plan.end_date - plan.start_date).days + 1 }} dienos
+                            </span>
+                        </dd>
+                    </div>
+                </dl>
             </div>
         </div>
-        
-        <div class="card mt-3">
-            <div class="card-body">
-                <h5 class="card-title">Statistika</h5>
-                <p><strong>Pasirinkta ekranų:</strong><br>{{ plan.screen_bookings|length }}</p>
-                {% if plan.screen_bookings %}
-                    <p><strong>Miestai:</strong><br>
-                        {% set cities = [] %}
-                        {% for booking in plan.screen_bookings %}
-                            {% if booking.screen.city not in cities %}
-                                {% set _ = cities.append(booking.screen.city) %}
-                            {% endif %}
-                        {% endfor %}
-                        {{ cities|join(', ') }}
-                    </p>
-                {% endif %}
+
+        <!-- Statistics -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Statistika</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Plano apžvalga ir skaičiai</p>
+            </div>
+            <div class="border-t border-gray-200">
+                <dl>
+                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-1 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-tv w-4 h-4 mr-2 text-gray-400"></i>
+                            Pasirinkta ekranų
+                        </dt>
+                        <dd class="mt-1">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800">
+                                {{ plan.screen_bookings|length }} ekranai
+                            </span>
+                        </dd>
+                    </div>
+                    
+                    {% if plan.screen_bookings %}
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-1 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-map-marker-alt w-4 h-4 mr-2 text-gray-400"></i>
+                            Miestai
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900">
+                            {% set cities = [] %}
+                            {% for booking in plan.screen_bookings %}
+                                {% if booking.screen.city not in cities %}
+                                    {% set _ = cities.append(booking.screen.city) %}
+                                {% endif %}
+                            {% endfor %}
+                            {{ cities|join(', ') }}
+                        </dd>
+                    </div>
+                    {% endif %}
+                </dl>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Pasirinkti Ekranai ({{ plan.screen_bookings|length }})</h5>
-                {% if plan.screen_bookings %}
-                    <div class="table-responsive">
-                        <table class="table table-striped">
-                            <thead>
-                                <tr>
-                                    <th>Ekranas</th>
-                                    <th>Teikėjas</th>
-                                    <th>Lokacija</th>
-                                    <th>Tipas</th>
-                                    <th>Veiksmai</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for booking in plan.screen_bookings %}
-                                <tr>
-                                    <td>
-                                        <strong>{{ booking.screen.name }}</strong>
-                                        <br><small class="text-muted">{{ booking.screen.width }}m × {{ booking.screen.height }}m</small>
-                                    </td>
-                                    <td>{{ booking.screen.provider.name }}</td>
-                                    <td>
-                                        {{ booking.screen.city }}<br>
-                                        <small class="text-muted">{{ booking.screen.address }}</small>
-                                    </td>
-                                    <td>
-                                        <span class="badge bg-{{ 'primary' if booking.screen.screen_type == 'horizontal' else 'secondary' }}">
-                                            {{ 'Horizontalus' if booking.screen.screen_type == 'horizontal' else 'Vertikalus' }}
-                                        </span>
-                                        <br>
-                                        <span class="badge bg-{{ 'success' if booking.screen.content_type == 'video' else 'info' }}">
-                                            {{ 'Video' if booking.screen.content_type == 'video' else 'Statinis' }}
-                                        </span>
-                                    </td>
-                                    <td>
-                                        <a href="{{ url_for('screen_detail', id=booking.screen.id) }}" class="btn btn-sm btn-outline-primary">
-                                            Peržiūrėti
-                                        </a>
-                                    </td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+
+    <!-- Selected Screens -->
+    <div class="lg:col-span-2">
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Pasirinkti Ekranai</h3>
+                        <p class="mt-1 text-sm text-gray-500">{{ plan.screen_bookings|length }} registruoti ekranai</p>
                     </div>
-                {% else %}
-                    <div class="text-center py-4">
-                        <i class="fas fa-tv fa-2x text-muted mb-3"></i>
-                        <p class="text-muted">Šis planas dar neturi pasirinktų ekranų</p>
-                        <a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" class="btn btn-info">
-                            <i class="fas fa-plus me-2"></i>Pasirinkti Ekranus
+                    {% if plan.screen_bookings %}
+                    <div class="flex items-center space-x-3">
+                        <input type="text" id="screenFilter" placeholder="Ieškoti ekranų..." 
+                               class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if plan.screen_bookings %}
+            <div class="border-t border-gray-200">
+                <ul class="divide-y divide-gray-200" id="screensList">
+                    {% for booking in plan.screen_bookings %}
+                    <li class="screen-item hover:bg-gray-50">
+                        <div class="px-4 py-4 sm:px-6">
+                            <div class="flex items-center justify-between">
+                                <div class="flex items-center">
+                                    <div class="flex-shrink-0">
+                                        <div class="h-8 w-8 rounded bg-gray-100 flex items-center justify-center">
+                                            <i class="fas fa-tv text-gray-500 text-sm"></i>
+                                        </div>
+                                    </div>
+                                    <div class="ml-4">
+                                        <div class="flex items-center">
+                                            <p class="text-sm font-medium text-gray-900 screen-name">{{ booking.screen.name }}</p>
+                                            <div class="ml-2 flex space-x-1">
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {% if booking.screen.screen_type == 'horizontal' %}bg-indigo-100 text-indigo-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                                    {{ 'Horizontalus' if booking.screen.screen_type == 'horizontal' else 'Vertikalus' }}
+                                                </span>
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {% if booking.screen.content_type == 'video' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                                                    {{ 'Video' if booking.screen.content_type == 'video' else 'Statinis' }}
+                                                </span>
+                                            </div>
+                                        </div>
+                                        <div class="mt-1 flex items-center space-x-4">
+                                            <div class="flex items-center text-xs text-gray-500">
+                                                <i class="fas fa-building w-3 h-3 mr-1"></i>
+                                                <span>{{ booking.screen.provider.name }}</span>
+                                            </div>
+                                            <div class="flex items-center text-xs text-gray-500">
+                                                <i class="fas fa-expand-arrows-alt w-3 h-3 mr-1"></i>
+                                                <span>{{ booking.screen.width }}m × {{ booking.screen.height }}m</span>
+                                            </div>
+                                            {% if booking.screen.city %}
+                                            <div class="flex items-center text-xs text-gray-500">
+                                                <i class="fas fa-map-marker-alt w-3 h-3 mr-1"></i>
+                                                <span>{{ booking.screen.city }}</span>
+                                            </div>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="flex items-center space-x-2">
+                                    <a href="{{ url_for('screen_detail', id=booking.screen.id) }}" 
+                                       class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                        <i class="fas fa-eye -ml-0.5 mr-1"></i>
+                                        Peržiūrėti
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </div>
+            {% else %}
+            <!-- Empty State -->
+            <div class="border-t border-gray-200">
+                <div class="text-center py-12">
+                    <div class="mx-auto h-16 w-16 text-gray-400">
+                        <i class="fas fa-tv text-4xl"></i>
+                    </div>
+                    <h3 class="mt-4 text-sm font-medium text-gray-900">Nėra pasirinktų ekranų</h3>
+                    <p class="mt-2 text-sm text-gray-500">Šis planas dar neturi pasirinktų ekranų.</p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" 
+                           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <i class="fas fa-plus -ml-1 mr-2"></i>
+                            Pasirinkti Ekranus
                         </a>
                     </div>
-                {% endif %}
+                </div>
             </div>
+            {% endif %}
         </div>
     </div>
 </div>
+
+{% if plan.screen_bookings %}
+<script>
+// Screen search functionality
+document.getElementById('screenFilter').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const screens = document.querySelectorAll('.screen-item');
+    
+    screens.forEach(screen => {
+        const name = screen.querySelector('.screen-name').textContent.toLowerCase();
+        const isVisible = name.includes(searchTerm);
+        screen.style.display = isVisible ? 'block' : 'none';
+    });
+});
+</script>
+{% endif %}
 {% endblock %}

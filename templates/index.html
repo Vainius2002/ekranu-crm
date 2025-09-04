@@ -1,79 +1,100 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row">
-    <div class="col-12">
-        <h1>Ekranų CRM Sistema</h1>
-        <p class="lead">Valdykite ekranų teikėjus ir jų ekranus</p>
-    </div>
+<div class="mb-8">
+    <h1 class="text-3xl font-bold text-gray-900">Ekranų CRM Sistema</h1>
+    <p class="mt-2 text-lg text-gray-600">Valdykite ekranų teikėjus ir jų ekranus</p>
 </div>
 
-<div class="row mt-4">
-    <div class="col-md-6 col-lg-3">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-building me-2"></i>Ekranų Teikėjai
-                </h5>
-                <p class="card-text">Valdykite visus ekranų teikėjus ir jų kontaktinius duomenis.</p>
-                <a href="{{ url_for('providers') }}" class="btn btn-primary btn-sm">Žiūrėti Teikėjus</a>
-                <a href="{{ url_for('new_provider') }}" class="btn btn-success btn-sm">Pridėti Naują</a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6 col-lg-3">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-tv me-2"></i>Ekranai
-                </h5>
-                <p class="card-text">Valdykite visus ekranus, jų parametrus ir įkainius.</p>
-                <a href="{{ url_for('screens') }}" class="btn btn-primary btn-sm">Žiūrėti Ekranus</a>
-                <a href="{{ url_for('new_screen') }}" class="btn btn-success btn-sm">Pridėti Naują</a>
-            </div>
-        </div>
-    </div>
-    
-    <div class="col-md-6 col-lg-3">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">
-                    <i class="fas fa-calendar-alt me-2"></i>DOOH Planai
-                </h5>
-                <p class="card-text">Kurkite ir valdykite lauko ekranų media planus.</p>
-                <a href="{{ url_for('dooh_plans') }}" class="btn btn-primary btn-sm">Peržiūrėti</a>
-                <a href="{{ url_for('new_dooh_plan') }}" class="btn btn-success btn-sm">Sukurti Naują</a>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="row mt-4">
-    <div class="col-12">
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Statistika</h5>
-                <div class="row">
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <h3 class="text-primary">{{ providers|length }}</h3>
-                            <p class="mb-0">Teikėjai</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <h3 class="text-success">{{ screens|length }}</h3>
-                            <p class="mb-0">Ekranai</p>
-                        </div>
-                    </div>
-                    <div class="col-md-3">
-                        <div class="text-center">
-                            <h3 class="text-info">{{ dooh_plans|length }}</h3>
-                            <p class="mb-0">DOOH Planai</p>
-                        </div>
-                    </div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-building text-2xl text-indigo-500"></i>
                 </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-medium text-gray-900">Ekranų Teikėjai</h3>
+                </div>
+            </div>
+            <div class="mt-4">
+                <p class="text-sm text-gray-600">Valdykite visus ekranų teikėjus ir jų kontaktinius duomenis.</p>
+            </div>
+            <div class="mt-4 flex space-x-3">
+                <a href="{{ url_for('providers') }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Žiūrėti Teikėjus
+                </a>
+                <a href="{{ url_for('new_provider') }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Pridėti Naują
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-tv text-2xl text-indigo-500"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-medium text-gray-900">Ekranai</h3>
+                </div>
+            </div>
+            <div class="mt-4">
+                <p class="text-sm text-gray-600">Valdykite visus ekranus, jų parametrus ir įkainius.</p>
+            </div>
+            <div class="mt-4 flex space-x-3">
+                <a href="{{ url_for('screens') }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Žiūrėti Ekranus
+                </a>
+                <a href="{{ url_for('new_screen') }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Pridėti Naują
+                </a>
+            </div>
+        </div>
+    </div>
+    
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="p-6">
+            <div class="flex items-center">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-calendar-alt text-2xl text-indigo-500"></i>
+                </div>
+                <div class="ml-4">
+                    <h3 class="text-lg font-medium text-gray-900">DOOH Planai</h3>
+                </div>
+            </div>
+            <div class="mt-4">
+                <p class="text-sm text-gray-600">Kurkite ir valdykite lauko ekranų media planus.</p>
+            </div>
+            <div class="mt-4 flex space-x-3">
+                <a href="{{ url_for('dooh_plans') }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    Peržiūrėti
+                </a>
+                <a href="{{ url_for('new_dooh_plan') }}" class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    Sukurti Naują
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="bg-white overflow-hidden shadow rounded-lg">
+    <div class="p-6">
+        <h3 class="text-lg font-medium text-gray-900 mb-4">Statistika</h3>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="text-center">
+                <div class="text-3xl font-bold text-indigo-600">{{ providers|length }}</div>
+                <div class="text-sm text-gray-500 mt-1">Teikėjai</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-green-600">{{ screens|length }}</div>
+                <div class="text-sm text-gray-500 mt-1">Ekranai</div>
+            </div>
+            <div class="text-center">
+                <div class="text-3xl font-bold text-purple-600">{{ dooh_plans|length }}</div>
+                <div class="text-sm text-gray-500 mt-1">DOOH Planai</div>
             </div>
         </div>
     </div>

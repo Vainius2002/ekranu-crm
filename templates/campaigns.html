@@ -1,74 +1,260 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Kampanijos</h1>
+<!-- Header Section -->
+<div class="pb-5 border-b border-gray-200 mb-8">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Kampanijos</h1>
+            <p class="mt-2 text-sm text-gray-600">Valdykite visas kampanijas ir jų DOOH planus</p>
+        </div>
+    </div>
 </div>
 
 {% if campaigns %}
-<div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Pavadinimas</th>
-                <th>Klientas</th>
-                <th>Laikotarpis</th>
-                <th>Biudžetas</th>
-                <th>DOOH Planai</th>
-                <th>Veiksmai</th>
-            </tr>
-        </thead>
-        <tbody>
+<!-- Search and Filter Section -->
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+    <div class="px-4 py-5 sm:px-6">
+        <div class="flex justify-between items-center">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Kampanijos ({{ campaigns|length }})</h3>
+            <div class="flex items-center space-x-3">
+                <input type="text" id="campaignFilter" placeholder="Ieškoti kampanijų..." 
+                       class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                <select id="filterClient" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">Visi klientai</option>
+                    {% set clients = [] %}
+                    {% for campaign in campaigns %}
+                        {% if campaign.client.name not in clients %}
+                            {% set _ = clients.append(campaign.client.name) %}
+                        {% endif %}
+                    {% endfor %}
+                    {% for client in clients|sort %}
+                    <option value="{{ client }}">{{ client }}</option>
+                    {% endfor %}
+                </select>
+                <select id="sortBy" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">Rikiuoti pagal...</option>
+                    <option value="name-asc">Pavadinimas (A-Z)</option>
+                    <option value="name-desc">Pavadinimas (Z-A)</option>
+                    <option value="client-asc">Klientas (A-Z)</option>
+                    <option value="budget-desc">Biudžetas (daugiausia)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Campaigns List -->
+    <div class="border-t border-gray-200">
+        <ul class="divide-y divide-gray-200" id="campaignsList">
             {% for campaign in campaigns %}
-            <tr>
-                <td>
-                    <strong>{{ campaign.name }}</strong>
-                    {% if campaign.description %}
-                        <br><small class="text-muted">{{ campaign.description[:80] }}...</small>
-                    {% endif %}
-                </td>
-                <td>
-                    {{ campaign.client.name }}
-                </td>
-                <td>
-                    {% if campaign.start_date %}
-                        {{ campaign.start_date.strftime('%Y-%m-%d') }}
-                    {% endif %}
-                    {% if campaign.start_date and campaign.end_date %}
-                        <br>iki<br>
-                    {% endif %}
-                    {% if campaign.end_date %}
-                        {{ campaign.end_date.strftime('%Y-%m-%d') }}
-                    {% endif %}
-                </td>
-                <td>
-                    {% if campaign.budget %}
-                        {{ "%.2f"|format(campaign.budget) }}€
-                    {% else %}
-                        <span class="text-muted">-</span>
-                    {% endif %}
-                </td>
-                <td>
-                    <span class="badge bg-primary">{{ campaign.dooh_plans|length }}</span>
-                </td>
-                <td>
-                    <div class="btn-group-vertical btn-group-sm" role="group">
-                        <span class="text-muted">Kampanija</span>
-                        <a href="{{ url_for('new_dooh_plan') }}?campaign_id={{ campaign.id }}" class="btn btn-outline-success">
-                            DOOH Planas
-                        </a>
+            <li class="campaign-item hover:bg-gray-50" data-client="{{ campaign.client.name }}">
+                <div class="px-4 py-6 sm:px-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                                    <i class="fas fa-bullhorn text-indigo-600 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <div class="flex items-center">
+                                    <p class="text-lg font-medium text-gray-900 campaign-name">{{ campaign.name }}</p>
+                                    <div class="ml-2 flex space-x-1">
+                                        {% if campaign.dooh_plans|length > 0 %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                            <i class="fas fa-calendar-alt mr-1"></i>
+                                            {{ campaign.dooh_plans|length }} DOOH {{ 'planas' if campaign.dooh_plans|length == 1 else 'planai' }}
+                                        </span>
+                                        {% endif %}
+                                        {% if campaign.budget %}
+                                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                            <i class="fas fa-euro-sign mr-1"></i>
+                                            {{ "%.2f"|format(campaign.budget) }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                {% if campaign.description %}
+                                <p class="mt-1 text-sm text-gray-500">{{ campaign.description[:100] }}{% if campaign.description|length > 100 %}...{% endif %}</p>
+                                {% endif %}
+                                <div class="mt-2 flex items-center space-x-4 text-sm">
+                                    <div class="flex items-center text-gray-600">
+                                        <i class="fas fa-building w-4 h-4 mr-2 text-gray-400"></i>
+                                        <span class="campaign-client">{{ campaign.client.name }}</span>
+                                    </div>
+                                    <div class="flex items-center text-gray-600">
+                                        <i class="fas fa-calendar-check w-4 h-4 mr-2 text-gray-400"></i>
+                                        <span>
+                                            {% if campaign.start_date and campaign.end_date %}
+                                                {{ campaign.start_date.strftime('%Y-%m-%d') }} - {{ campaign.end_date.strftime('%Y-%m-%d') }}
+                                            {% elif campaign.start_date %}
+                                                Nuo {{ campaign.start_date.strftime('%Y-%m-%d') }}
+                                            {% elif campaign.end_date %}
+                                                Iki {{ campaign.end_date.strftime('%Y-%m-%d') }}
+                                            {% else %}
+                                                <span class="text-gray-400">Laikotarpis nenurodytas</span>
+                                            {% endif %}
+                                        </span>
+                                    </div>
+                                    {% if campaign.budget %}
+                                    <div class="flex items-center text-gray-600 campaign-budget" data-budget="{{ campaign.budget }}">
+                                        <i class="fas fa-euro-sign w-4 h-4 mr-2 text-gray-400"></i>
+                                        <span>{{ "%.2f"|format(campaign.budget) }} €</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <a href="{{ url_for('new_dooh_plan') }}?campaign_id={{ campaign.id }}" 
+                               class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <i class="fas fa-plus -ml-0.5 mr-1"></i>
+                                Naujas DOOH Planas
+                            </a>
+                            {% if campaign.dooh_plans|length > 0 %}
+                            <div class="relative inline-block text-left">
+                                <button type="button" onclick="toggleDropdown('dropdown-{{ campaign.id }}')" 
+                                        class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                    <i class="fas fa-calendar-alt -ml-0.5 mr-1"></i>
+                                    Peržiūrėti Planus
+                                    <i class="fas fa-chevron-down ml-1 -mr-0.5"></i>
+                                </button>
+                                <div id="dropdown-{{ campaign.id }}" class="hidden origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-10">
+                                    <div class="py-1">
+                                        {% for plan in campaign.dooh_plans %}
+                                        <a href="{{ url_for('dooh_plan_detail', id=plan.id) }}" 
+                                           class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                                            {{ plan.name }}
+                                        </a>
+                                        {% endfor %}
+                                    </div>
+                                </div>
+                            </div>
+                            {% endif %}
+                        </div>
                     </div>
-                </td>
-            </tr>
+                </div>
+            </li>
             {% endfor %}
-        </tbody>
-    </table>
+        </ul>
+    </div>
 </div>
+
+<!-- Summary Statistics -->
+<div class="grid grid-cols-1 gap-5 sm:grid-cols-3">
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <dt class="text-sm font-medium text-gray-500 truncate">Iš viso kampanijų</dt>
+            <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ campaigns|length }}</dd>
+        </div>
+    </div>
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <dt class="text-sm font-medium text-gray-500 truncate">Aktyvios kampanijos</dt>
+            {% set active_count = campaigns|selectattr('start_date')|selectattr('end_date')|list|length %}
+            <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ active_count }}</dd>
+        </div>
+    </div>
+    <div class="bg-white overflow-hidden shadow rounded-lg">
+        <div class="px-4 py-5 sm:p-6">
+            <dt class="text-sm font-medium text-gray-500 truncate">Bendras biudžetas</dt>
+            {% set total_budget = 0 %}
+            {% for campaign in campaigns %}
+                {% if campaign.budget %}
+                    {% set total_budget = total_budget + campaign.budget %}
+                {% endif %}
+            {% endfor %}
+            <dd class="mt-1 text-3xl font-semibold text-gray-900">{{ "%.2f"|format(total_budget) }} €</dd>
+        </div>
+    </div>
+</div>
+
 {% else %}
-<div class="text-center py-5">
-    <i class="fas fa-bullhorn fa-3x text-muted mb-3"></i>
-    <h3>Nėra kampanijų</h3>
-    <p class="text-muted">Pridėkite pirmą kampaniją</p>
+<!-- Empty State -->
+<div class="text-center py-12">
+    <div class="mx-auto h-24 w-24 text-gray-400">
+        <i class="fas fa-bullhorn text-6xl"></i>
+    </div>
+    <h3 class="mt-6 text-lg font-medium text-gray-900">Nėra kampanijų</h3>
+    <p class="mt-2 text-sm text-gray-500">Kampanijos bus importuotos iš Agency CRM arba Projects CRM</p>
 </div>
+{% endif %}
+
+{% if campaigns %}
+<script>
+// Search functionality
+document.getElementById('campaignFilter').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const campaigns = document.querySelectorAll('.campaign-item');
+    
+    campaigns.forEach(campaign => {
+        const name = campaign.querySelector('.campaign-name').textContent.toLowerCase();
+        const client = campaign.querySelector('.campaign-client').textContent.toLowerCase();
+        const isVisible = name.includes(searchTerm) || client.includes(searchTerm);
+        campaign.style.display = isVisible ? 'block' : 'none';
+    });
+});
+
+// Filter by client
+document.getElementById('filterClient').addEventListener('change', function() {
+    const selectedClient = this.value;
+    const campaigns = document.querySelectorAll('.campaign-item');
+    
+    campaigns.forEach(campaign => {
+        const campaignClient = campaign.getAttribute('data-client');
+        const isVisible = !selectedClient || campaignClient === selectedClient;
+        campaign.style.display = isVisible ? 'block' : 'none';
+    });
+});
+
+// Sort functionality
+document.getElementById('sortBy').addEventListener('change', function() {
+    const sortBy = this.value;
+    const campaignsList = document.getElementById('campaignsList');
+    const campaigns = Array.from(campaignsList.querySelectorAll('.campaign-item'));
+    
+    if (!sortBy) return;
+    
+    campaigns.sort((a, b) => {
+        switch(sortBy) {
+            case 'name-asc':
+                return a.querySelector('.campaign-name').textContent.localeCompare(b.querySelector('.campaign-name').textContent);
+            case 'name-desc':
+                return b.querySelector('.campaign-name').textContent.localeCompare(a.querySelector('.campaign-name').textContent);
+            case 'client-asc':
+                return a.querySelector('.campaign-client').textContent.localeCompare(b.querySelector('.campaign-client').textContent);
+            case 'budget-desc':
+                const budgetA = parseFloat(a.querySelector('.campaign-budget')?.getAttribute('data-budget') || '0');
+                const budgetB = parseFloat(b.querySelector('.campaign-budget')?.getAttribute('data-budget') || '0');
+                return budgetB - budgetA;
+            default:
+                return 0;
+        }
+    });
+    
+    campaigns.forEach(campaign => campaignsList.appendChild(campaign));
+});
+
+// Dropdown toggle function
+function toggleDropdown(dropdownId) {
+    const dropdown = document.getElementById(dropdownId);
+    dropdown.classList.toggle('hidden');
+    
+    // Close other dropdowns
+    document.querySelectorAll('[id^="dropdown-"]').forEach(d => {
+        if (d.id !== dropdownId && !d.classList.contains('hidden')) {
+            d.classList.add('hidden');
+        }
+    });
+    
+    // Close dropdown when clicking outside
+    document.addEventListener('click', function closeDropdown(e) {
+        if (!e.target.closest('.relative')) {
+            dropdown.classList.add('hidden');
+            document.removeEventListener('click', closeDropdown);
+        }
+    });
+}
+</script>
 {% endif %}
 {% endblock %}

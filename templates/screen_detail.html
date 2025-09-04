@@ -1,158 +1,301 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>{{ screen.name }}</h1>
-    <div>
-        <a href="{{ url_for('screen_pricing', id=screen.id) }}" class="btn btn-warning">
-            <i class="fas fa-euro-sign me-2"></i>Redaguoti Įkainį
-        </a>
-        <a href="{{ url_for('screens') }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Grįžti
-        </a>
+<!-- Header Section -->
+<div class="pb-5 border-b border-gray-200 mb-8">
+    <div class="flex justify-between items-start">
+        <div class="flex items-center">
+            <div class="h-12 w-12 rounded-lg bg-indigo-100 flex items-center justify-center mr-4">
+                <i class="fas fa-tv text-indigo-600 text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">{{ screen.name }}</h1>
+                <div class="mt-1 flex items-center space-x-4">
+                    <p class="text-sm text-gray-500">
+                        Teikėjas: <a href="{{ url_for('provider_detail', id=screen.provider.id) }}" class="text-indigo-600 hover:text-indigo-500">{{ screen.provider.name }}</a>
+                    </p>
+                    <div class="flex space-x-2">
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if screen.screen_type == 'horizontal' %}bg-indigo-100 text-indigo-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ 'Horizontalus' if screen.screen_type == 'horizontal' else 'Vertikalus' }}
+                        </span>
+                        <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if screen.content_type == 'video' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                            {{ 'Video' if screen.content_type == 'video' else 'Statinis' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{{ url_for('screen_pricing', id=screen.id) }}" 
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                <i class="fas fa-euro-sign -ml-1 mr-2"></i>
+                Redaguoti Įkainį
+            </a>
+            <a href="{{ url_for('screens') }}" 
+               class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fas fa-arrow-left -ml-1 mr-2"></i>
+                Grįžti
+            </a>
+        </div>
     </div>
 </div>
 
-<div class="row">
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Pagrindinė Informacija</h5>
-                <table class="table table-borderless">
-                    <tr>
-                        <td><strong>Teikėjas:</strong></td>
-                        <td>
-                            <a href="{{ url_for('provider_detail', id=screen.provider.id) }}">
-                                {{ screen.provider.name }}
-                            </a>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>Tipas:</strong></td>
-                        <td>
-                            <span class="badge bg-{{ 'primary' if screen.screen_type == 'horizontal' else 'secondary' }}">
+<!-- Content Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+    <!-- Left Column -->
+    <div class="space-y-8">
+        <!-- Basic Information -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Pagrindinė Informacija</h3>
+                <p class="mt-1 text-sm text-gray-500">Ekrano pagrindiniai parametrai</p>
+            </div>
+            <div class="border-t border-gray-200">
+                <dl>
+                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-building w-4 h-4 mr-2 text-gray-400"></i>
+                            Teikėjas
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            <a href="{{ url_for('provider_detail', id=screen.provider.id) }}" class="text-indigo-600 hover:text-indigo-500">{{ screen.provider.name }}</a>
+                        </dd>
+                    </div>
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-arrows-alt-h w-4 h-4 mr-2 text-gray-400"></i>
+                            Orientacija
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if screen.screen_type == 'horizontal' %}bg-indigo-100 text-indigo-800{% else %}bg-gray-100 text-gray-800{% endif %}">
                                 {{ 'Horizontalus' if screen.screen_type == 'horizontal' else 'Vertikalus' }}
                             </span>
-                        </td>
-                    </tr>
-                    <tr>
-                        <td><strong>Turinys:</strong></td>
-                        <td>
-                            <span class="badge bg-{{ 'success' if screen.content_type == 'video' else 'info' }}">
+                        </dd>
+                    </div>
+                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-play w-4 h-4 mr-2 text-gray-400"></i>
+                            Turinio tipas
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium {% if screen.content_type == 'video' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %}">
                                 {{ 'Video (judantis)' if screen.content_type == 'video' else 'Statinis (nejudantis)' }}
                             </span>
-                        </td>
-                    </tr>
+                        </dd>
+                    </div>
                     {% if screen.position_description %}
-                    <tr>
-                        <td><strong>Pozicija:</strong></td>
-                        <td>{{ screen.position_description }}</td>
-                    </tr>
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-map-pin w-4 h-4 mr-2 text-gray-400"></i>
+                            Pozicija
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ screen.position_description }}</dd>
+                    </div>
                     {% endif %}
                     {% if screen.comment %}
-                    <tr>
-                        <td><strong>Komentaras:</strong></td>
-                        <td>{{ screen.comment }}</td>
-                    </tr>
+                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-comment w-4 h-4 mr-2 text-gray-400"></i>
+                            Komentaras
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ screen.comment }}</dd>
+                    </div>
                     {% endif %}
-                </table>
+                </dl>
             </div>
         </div>
-        
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Parametrai</h5>
-                <table class="table table-borderless">
-                    <tr>
-                        <td><strong>Dydis:</strong></td>
-                        <td>{{ screen.width }}m × {{ screen.height }}m</td>
-                    </tr>
+
+        <!-- Technical Parameters -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Techniniai Parametrai</h3>
+                <p class="mt-1 text-sm text-gray-500">Ekrano fiziniai parametrai ir specifikacijos</p>
+            </div>
+            <div class="border-t border-gray-200">
+                <dl>
+                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-ruler-combined w-4 h-4 mr-2 text-gray-400"></i>
+                            Dydis
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            <span class="font-mono">{{ screen.width }}m × {{ screen.height }}m</span>
+                        </dd>
+                    </div>
                     {% if screen.pixel_width and screen.pixel_height %}
-                    <tr>
-                        <td><strong>Pikseliai:</strong></td>
-                        <td>{{ screen.pixel_width }} × {{ screen.pixel_height }}px</td>
-                    </tr>
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-th w-4 h-4 mr-2 text-gray-400"></i>
+                            Raiška
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            <span class="font-mono">{{ screen.pixel_width }} × {{ screen.pixel_height }} px</span>
+                        </dd>
+                    </div>
                     {% endif %}
-                    <tr>
-                        <td><strong>Plotas:</strong></td>
-                        <td>{{ "%.2f"|format(screen.width * screen.height) }} m²</td>
-                    </tr>
-                </table>
+                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-expand-arrows-alt w-4 h-4 mr-2 text-gray-400"></i>
+                            Plotas
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                                {{ "%.2f"|format(screen.width * screen.height) }} m²
+                            </span>
+                        </dd>
+                    </div>
+                </dl>
             </div>
         </div>
     </div>
-    
-    <div class="col-md-6">
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Lokacija</h5>
-                <table class="table table-borderless">
-                    <tr>
-                        <td><strong>Miestas:</strong></td>
-                        <td>{{ screen.city }}</td>
-                    </tr>
-                    <tr>
-                        <td><strong>Adresas:</strong></td>
-                        <td>{{ screen.address }}</td>
-                    </tr>
+
+    <!-- Right Column -->
+    <div class="space-y-8">
+        <!-- Location Information -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Lokacijos Informacija</h3>
+                <p class="mt-1 text-sm text-gray-500">Ekrano geografinė vieta ir adresų duomenys</p>
+            </div>
+            <div class="border-t border-gray-200">
+                <dl>
+                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-city w-4 h-4 mr-2 text-gray-400"></i>
+                            Miestas
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ screen.city }}</dd>
+                    </div>
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-home w-4 h-4 mr-2 text-gray-400"></i>
+                            Adresas
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">{{ screen.address }}</dd>
+                    </div>
                     {% if screen.side %}
-                    <tr>
-                        <td><strong>Pusė:</strong></td>
-                        <td>{{ 'Dešinė' if screen.side == 'D' else 'Kairė' }}</td>
-                    </tr>
+                    <div class="bg-gray-50 px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-exchange-alt w-4 h-4 mr-2 text-gray-400"></i>
+                            Pusė
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                                {{ 'Dešinė' if screen.side == 'D' else 'Kairė' }}
+                            </span>
+                        </dd>
+                    </div>
                     {% endif %}
                     {% if screen.gps_latitude and screen.gps_longitude %}
-                    <tr>
-                        <td><strong>GPS:</strong></td>
-                        <td>
-                            {{ screen.gps_latitude }}, {{ screen.gps_longitude }}
-                            <br>
-                            <a href="https://maps.google.com/?q={{ screen.gps_latitude }},{{ screen.gps_longitude }}" 
-                               target="_blank" class="btn btn-sm btn-outline-primary mt-1">
-                                <i class="fas fa-map-marker-alt me-1"></i>Žiūrėti Žemėlapyje
-                            </a>
-                        </td>
-                    </tr>
+                    <div class="bg-white px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
+                        <dt class="text-sm font-medium text-gray-500 flex items-center">
+                            <i class="fas fa-map-marker-alt w-4 h-4 mr-2 text-gray-400"></i>
+                            GPS koordinatės
+                        </dt>
+                        <dd class="mt-1 text-sm text-gray-900 sm:mt-0 sm:col-span-2">
+                            <div class="space-y-2">
+                                <p class="font-mono text-xs">{{ screen.gps_latitude }}, {{ screen.gps_longitude }}</p>
+                                <a href="https://maps.google.com/?q={{ screen.gps_latitude }},{{ screen.gps_longitude }}" 
+                                   target="_blank" 
+                                   class="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
+                                    <i class="fas fa-map-marker-alt -ml-0.5 mr-1.5"></i>
+                                    Žiūrėti žemėlapyje
+                                </a>
+                            </div>
+                        </dd>
+                    </div>
                     {% endif %}
-                </table>
+                </dl>
             </div>
         </div>
-        
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Įkainis</h5>
-                {% if screen.pricing_hours %}
-                    <p class="text-success">
-                        <i class="fas fa-check-circle me-2"></i>Įkainis sukonfigūruotas {{ screen.pricing_hours|length }} valandoms
-                    </p>
-                    <div class="table-responsive" style="max-height: 300px; overflow-y: auto;">
-                        <table class="table table-sm">
-                            <thead>
-                                <tr>
-                                    <th>Valanda</th>
-                                    <th>Kaina/1000</th>
-                                    <th>Kontaktai</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                {% for pricing in screen.pricing_hours %}
-                                <tr>
-                                    <td>{{ "{:02d}:00".format(pricing.hour) }}</td>
-                                    <td>{{ "%.2f"|format(pricing.price_per_thousand_contacts) }}€</td>
-                                    <td>{{ pricing.contact_count }}</td>
-                                </tr>
-                                {% endfor %}
-                            </tbody>
-                        </table>
+
+        <!-- Pricing Information -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <div class="flex justify-between items-center">
+                    <div>
+                        <h3 class="text-lg leading-6 font-medium text-gray-900">Įkainių Konfigūracija</h3>
+                        <p class="mt-1 text-sm text-gray-500">Valandinių įkainių nustatymai</p>
                     </div>
+                    <a href="{{ url_for('screen_pricing', id=screen.id) }}" 
+                       class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                        <i class="fas fa-edit -ml-0.5 mr-2"></i>
+                        Redaguoti
+                    </a>
+                </div>
+            </div>
+            <div class="border-t border-gray-200">
+                {% if screen.pricing_hours %}
+                <div class="px-4 py-4">
+                    <div class="flex items-center mb-4">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle text-green-400 text-lg"></i>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm font-medium text-green-800">
+                                Įkainis sukonfigūruotas {{ screen.pricing_hours|length }} valandoms
+                            </p>
+                        </div>
+                    </div>
+                    <div class="mt-4 overflow-hidden">
+                        <div class="max-h-60 overflow-y-auto">
+                            <table class="min-w-full divide-y divide-gray-200">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Valanda</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kaina/1000</th>
+                                        <th scope="col" class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Kontaktai</th>
+                                    </tr>
+                                </thead>
+                                <tbody class="bg-white divide-y divide-gray-200">
+                                    {% for pricing in screen.pricing_hours %}
+                                    <tr class="{% if loop.index % 2 == 0 %}bg-gray-50{% endif %}">
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs font-medium text-gray-900">
+                                            {{ "{:02d}:00".format(pricing.hour) }}
+                                        </td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                                            {% set prices = [pricing.price_mon, pricing.price_tue, pricing.price_wed, pricing.price_thu, pricing.price_fri, pricing.price_sat, pricing.price_sun] %}
+                                            {% set valid_prices = prices | reject("none") | list %}
+                                            {% if valid_prices %}
+                                                {% set min_price = valid_prices | min %}
+                                                {% set max_price = valid_prices | max %}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
+                                                    {% if min_price == max_price %}
+                                                        {{ "%.2f"|format(min_price) }}€
+                                                    {% else %}
+                                                        {{ "%.2f"|format(min_price) }}€ - {{ "%.2f"|format(max_price) }}€
+                                                    {% endif %}
+                                                </span>
+                                            {% else %}
+                                                <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                                    -
+                                                </span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ pricing.contact_count }}</td>
+                                    </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
                 {% else %}
-                    <p class="text-warning">
-                        <i class="fas fa-exclamation-triangle me-2"></i>Įkainis nesukonfigūruotas
-                    </p>
+                <div class="px-4 py-6 text-center">
+                    <div class="mx-auto h-12 w-12 text-yellow-400">
+                        <i class="fas fa-exclamation-triangle text-2xl"></i>
+                    </div>
+                    <h3 class="mt-2 text-sm font-medium text-gray-900">Įkainis nesukonfigūruotas</h3>
+                    <p class="mt-1 text-sm text-gray-500">Nustatykite valandinius įkainius šiam ekranui.</p>
+                    <div class="mt-4">
+                        <a href="{{ url_for('screen_pricing', id=screen.id) }}" 
+                           class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                            <i class="fas fa-plus -ml-1 mr-2"></i>
+                            Sukonfigūruoti įkainį
+                        </a>
+                    </div>
+                </div>
                 {% endif %}
-                <a href="{{ url_for('screen_pricing', id=screen.id) }}" class="btn btn-warning btn-sm">
-                    <i class="fas fa-edit me-2"></i>Redaguoti Įkainį
-                </a>
             </div>
         </div>
     </div>

@@ -1,214 +1,160 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-md-10">
-        <h1>Naujas DOOH Planas</h1>
-        
-        <div class="card">
-            <div class="card-body">
-                <form method="POST" id="doohPlanForm">
-                    <!-- Client Selection -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0">Klientas</h5>
+<!-- Header Section -->
+<div class="pb-5 border-b border-gray-200 mb-8">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Naujas DOOH Planas</h1>
+            <p class="mt-2 text-sm text-gray-600">Sukurkite naują lauko ekranų media planą</p>
+        </div>
+        <a href="{{ url_for('dooh_plans') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+            <i class="fas fa-arrow-left -ml-1 mr-2"></i>
+            Grįžti
+        </a>
+    </div>
+</div>
+
+<div class="max-w-4xl mx-auto">
+    <form method="POST" id="doohPlanForm" class="space-y-8">
+        <!-- Client Selection -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Klientas</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Pasirinkite klientą brands lygiu</p>
+            </div>
+            <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+                <div class="space-y-6">
+                    <!-- Agency CRM Client Selection -->
+                    <div>
+                        <label for="existing_client_id" class="block text-sm font-medium text-gray-700">Pasirinkite klientą iš Agency CRM *</label>
+                        <div class="mt-1 flex rounded-md shadow-sm">
+                            <select id="existing_client_id" name="existing_client_id" class="flex-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full min-w-0 rounded-none rounded-l-md sm:text-sm border-gray-300">
+                                <option value="">-- Pasirinkite --</option>
+                                {% for client in clients %}
+                                <option value="{{ client.id }}">{{ client.name }}</option>
+                                {% endfor %}
+                            </select>
+                            <button type="button" id="syncBrandsBtn" class="inline-flex items-center px-4 py-2 border border-l-0 border-gray-300 rounded-r-md bg-gray-50 text-gray-500 text-sm hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-indigo-500 focus:border-indigo-500" title="Sinchronizuoti su Agency CRM">
+                                <i class="fas fa-sync mr-2"></i>Atnaujinti iš Agency CRM
+                            </button>
                         </div>
-                        <div class="card-body">
-                            
-                            <div class="mb-3">
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="client_type" id="existing_client" value="existing" checked>
-                                    <label class="form-check-label" for="existing_client">
-                                        Esamas klientas
-                                    </label>
-                                </div>
-                                <div class="form-check form-check-inline">
-                                    <input class="form-check-input" type="radio" name="client_type" id="new_client" value="new">
-                                    <label class="form-check-label" for="new_client">
-                                        Naujas klientas
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <!-- Existing Client Selection -->
-                            <div id="existing_client_section">
-                                <div class="mb-3">
-                                    <label for="existing_client_id" class="form-label">Pasirinkite klientą *</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="existing_client_id" name="existing_client_id">
-                                            <option value="">-- Pasirinkite --</option>
-                                            {% for client in clients %}
-                                            <option value="{{ client.id }}">{{ client.name }}</option>
-                                            {% endfor %}
-                                        </select>
-                                        <button type="button" class="btn btn-outline-primary" id="syncBrandsBtn" title="Sinchronizuoti su Agency CRM">
-                                            <i class="fas fa-sync me-2"></i>Atnaujinti iš Agency CRM
-                                        </button>
-                                    </div>
-                                    <small class="text-muted">Spauskite "Atnaujinti iš Agency CRM", kad gautumėte naujausius prekės ženklus</small>
-                                </div>
-                            </div>
-                            
-                            <!-- New Client Form -->
-                            <div id="new_client_section" style="display: none;">
-                                <div class="row">
-                                    <div class="col-md-6 mb-3">
-                                        <label for="new_client_name" class="form-label">Kliento pavadinimas *</label>
-                                        <input type="text" class="form-control" id="new_client_name" name="new_client_name">
-                                    </div>
-                                    <div class="col-md-6 mb-3">
-                                        <label for="new_client_company" class="form-label">Įmonė</label>
-                                        <input type="text" class="form-control" id="new_client_company" name="new_client_company">
-                                    </div>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4 mb-3">
-                                        <label for="new_client_email" class="form-label">El. paštas</label>
-                                        <input type="email" class="form-control" id="new_client_email" name="new_client_email">
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label for="new_client_phone" class="form-label">Telefonas</label>
-                                        <input type="text" class="form-control" id="new_client_phone" name="new_client_phone">
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label for="new_client_contact" class="form-label">Kontaktinis asmuo</label>
-                                        <input type="text" class="form-control" id="new_client_contact" name="new_client_contact">
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            </div>
-                        </div>
+                        <p class="mt-2 text-sm text-gray-500">Spauskite "Atnaujinti iš Agency CRM", kad gautumėte naujausius prekės ženklus</p>
                     </div>
-                    
-                    <!-- Campaign Selection/Creation -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0">Kampanija</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="campaign_type" id="existing_campaign" value="existing" checked>
-                                    <label class="form-check-label" for="existing_campaign">
-                                        Esama kampanija
-                                    </label>
-                                </div>
-                                <div class="form-check mb-2">
-                                    <input class="form-check-input" type="radio" name="campaign_type" id="new_campaign" value="new">
-                                    <label class="form-check-label" for="new_campaign">
-                                        Nauja kampanija
-                                    </label>
-                                </div>
-                                <div class="form-check">
-                                    <input class="form-check-input" type="radio" name="campaign_type" id="use_kampanija" value="kampanija">
-                                    <label class="form-check-label" for="use_kampanija">
-                                        <strong>Naudoti kampaniją iš Projects CRM</strong>
-                                    </label>
-                                </div>
-                            </div>
-                            
-                            <!-- Existing Campaign Selection -->
-                            <div id="existing_campaign_section">
-                                <div class="mb-3">
-                                    <label for="existing_campaign_id" class="form-label">Pasirinkite kampaniją *</label>
-                                    <select class="form-select" id="existing_campaign_id" name="existing_campaign_id">
-                                        <option value="">-- Pasirinkite klientą pirmiausia --</option>
-                                    </select>
-                                </div>
-                            </div>
-                            
-                            <!-- New Campaign Form -->
-                            <div id="new_campaign_section" style="display: none;">
-                                <div class="mb-3">
-                                    <label for="new_campaign_name" class="form-label">Kampanijos pavadinimas *</label>
-                                    <input type="text" class="form-control" id="new_campaign_name" name="new_campaign_name">
-                                </div>
-                                <div class="mb-3">
-                                    <label for="new_campaign_description" class="form-label">Aprašymas</label>
-                                    <textarea class="form-control" id="new_campaign_description" name="new_campaign_description" rows="3"></textarea>
-                                </div>
-                                <div class="row">
-                                    <div class="col-md-4 mb-3">
-                                        <label for="campaign_start_date" class="form-label">Kampanijos pradžia</label>
-                                        <input type="date" class="form-control" id="campaign_start_date" name="campaign_start_date">
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label for="campaign_end_date" class="form-label">Kampanijos pabaiga</label>
-                                        <input type="date" class="form-control" id="campaign_end_date" name="campaign_end_date">
-                                    </div>
-                                    <div class="col-md-4 mb-3">
-                                        <label for="new_campaign_budget" class="form-label">Biudžetas (€)</label>
-                                        <input type="number" step="0.01" class="form-control" id="new_campaign_budget" name="new_campaign_budget">
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <!-- Kampanija Section -->
-                            <div id="kampanija_section" class="border rounded p-3 bg-light" style="display: none;">
-                                <h6 class="mb-3 text-success">Kampanijos pasirinkimas iš Projects CRM</h6>
-                                <div class="mb-3">
-                                    <label for="kampanija_id" class="form-label">Pasirinkite kampaniją *</label>
-                                    <div class="input-group">
-                                        <select class="form-select" id="kampanija_id" name="kampanija_id">
-                                            <option value="">-- Pasirinkite kampaniją --</option>
-                                        </select>
-                                        <button type="button" class="btn btn-outline-success" id="syncProjectsBtn" title="Sinchronizuoti su Projects CRM">
-                                            <i class="fas fa-project-diagram me-2"></i>Atnaujinti iš Projects CRM
-                                        </button>
-                                    </div>
-                                    <small class="text-muted">Kampanijos įkeliamos automatiškai iš Projects CRM</small>
-                                    <!-- Hidden fields to store kampanija data -->
-                                    <input type="hidden" id="kampanija_full_name" name="kampanija_full_name">
-                                    <input type="hidden" id="kampanija_brand" name="kampanija_brand">
-                                    <input type="hidden" id="kampanija_campaign" name="kampanija_campaign">
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <!-- DOOH Plan Details -->
-                    <div class="card mb-4">
-                        <div class="card-header bg-light">
-                            <h5 class="mb-0">DOOH Plano informacija</h5>
-                        </div>
-                        <div class="card-body">
-                            <div class="mb-3">
-                                <label for="name" class="form-label">Plano pavadinimas *</label>
-                                <input type="text" class="form-control" id="name" name="name" required 
-                                       placeholder="pvz. Vasario mėnesio DOOH planas">
-                            </div>
-                            
-                            <div class="row mb-3">
-                                <div class="col-md-6">
-                                    <label for="start_date" class="form-label">Pradžios data *</label>
-                                    <input type="date" class="form-control" id="start_date" name="start_date" required>
-                                </div>
-                                <div class="col-md-6">
-                                    <label for="end_date" class="form-label">Pabaigos data *</label>
-                                    <input type="date" class="form-control" id="end_date" name="end_date" required>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="alert alert-info">
-                        <i class="fas fa-info-circle me-2"></i>
-                        <strong>Kitas žingsnis:</strong> Po plano sukūrimo galėsite pasirinkti ekranus ir sukurti media planą.
-                    </div>
-                    
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-success">
-                            <i class="fas fa-save me-2"></i>Sukurti Planą
-                        </button>
-                        <a href="{{ url_for('dooh_plans') }}" class="btn btn-secondary">
-                            <i class="fas fa-arrow-left me-2"></i>Grįžti
-                        </a>
-                    </div>
-                </form>
+                </div>
             </div>
         </div>
-    </div>
+                    
+        <!-- Campaign Selection -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Kampanija</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Pasirinkite esamą kampaniją</p>
+            </div>
+            <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+                <div class="space-y-6">
+                    <!-- Campaign Type Selection -->
+                    <div>
+                        <fieldset>
+                            <legend class="text-sm font-medium text-gray-900">Kampanijos tipas</legend>
+                            <div class="mt-4">
+                                <div class="flex items-center">
+                                    <input id="use_kampanija" name="campaign_type" type="radio" value="kampanija" checked class="focus:ring-indigo-500 h-4 w-4 text-indigo-600 border-gray-300">
+                                    <label for="use_kampanija" class="ml-3 block text-sm font-bold text-gray-900">
+                                        Naudoti kampaniją iš Projects CRM
+                                    </label>
+                                </div>
+                            </div>
+                        </fieldset>
+                    </div>
+                            
+                            
+                    <!-- Projects CRM Kampanija Section -->
+                    <div id="kampanija_section" class="p-4 border-2 border-green-200 rounded-lg bg-green-50" style="display: none;">
+                        <div class="flex items-center mb-4">
+                            <div class="flex-shrink-0">
+                                <i class="fas fa-project-diagram text-green-600 text-xl"></i>
+                            </div>
+                            <div class="ml-3">
+                                <h4 class="text-lg font-medium text-green-900">Kampanijos pasirinkimas iš Projects CRM</h4>
+                                <p class="text-sm text-green-700">Pasirinkite kampaniją tiesiogiai iš projektų valdymo sistemos</p>
+                            </div>
+                        </div>
+                        <div>
+                            <label for="kampanija_id" class="block text-sm font-medium text-gray-700">Pasirinkite kampaniją *</label>
+                            <div class="mt-1 flex rounded-md shadow-sm">
+                                <select id="kampanija_id" name="kampanija_id" class="flex-1 focus:ring-green-500 focus:border-green-500 block w-full min-w-0 rounded-none rounded-l-md sm:text-sm border-gray-300">
+                                    <option value="">-- Pasirinkite kampaniją --</option>
+                                </select>
+                                <button type="button" id="syncProjectsBtn" class="inline-flex items-center px-4 py-2 border border-l-0 border-gray-300 rounded-r-md bg-green-50 text-green-700 text-sm hover:bg-green-100 focus:outline-none focus:ring-1 focus:ring-green-500 focus:border-green-500" title="Sinchronizuoti su Projects CRM">
+                                    <i class="fas fa-project-diagram mr-2"></i>Atnaujinti iš Projects CRM
+                                </button>
+                            </div>
+                            <p class="mt-2 text-sm text-gray-500">Kampanijos įkeliamos automatiškai iš Projects CRM</p>
+                            <!-- Hidden fields to store kampanija data -->
+                            <input type="hidden" id="kampanija_full_name" name="kampanija_full_name">
+                            <input type="hidden" id="kampanija_brand" name="kampanija_brand">
+                            <input type="hidden" id="kampanija_campaign" name="kampanija_campaign">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+                    
+        <!-- DOOH Plan Details -->
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">DOOH Plano informacija</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Nustatykite plano pavadinimą ir laikotarpį</p>
+            </div>
+            <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+                <div class="space-y-6">
+                    <div>
+                        <label for="name" class="block text-sm font-medium text-gray-700">Plano pavadinimas *</label>
+                        <input type="text" id="name" name="name" required placeholder="pvz. Vasario mėnesio DOOH planas" class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                    </div>
+                    
+                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2">
+                        <div>
+                            <label for="start_date" class="block text-sm font-medium text-gray-700">Pradžios data *</label>
+                            <input type="date" id="start_date" name="start_date" required class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+                        <div>
+                            <label for="end_date" class="block text-sm font-medium text-gray-700">Pabaigos data *</label>
+                            <input type="date" id="end_date" name="end_date" required class="mt-1 focus:ring-indigo-500 focus:border-indigo-500 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+                    
+        <!-- Info Alert -->
+        <div class="rounded-md bg-blue-50 p-4">
+            <div class="flex">
+                <div class="flex-shrink-0">
+                    <i class="fas fa-info-circle text-blue-400"></i>
+                </div>
+                <div class="ml-3">
+                    <h3 class="text-sm font-medium text-blue-800">Kitas žingsnis</h3>
+                    <div class="mt-2 text-sm text-blue-700">
+                        <p>Po plano sukūrimo galėsite pasirinkti ekranus ir sukurti media planą.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Form Actions -->
+        <div class="flex justify-end space-x-3">
+            <a href="{{ url_for('dooh_plans') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fas fa-arrow-left -ml-1 mr-2"></i>
+                Grįžti
+            </a>
+            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <i class="fas fa-save -ml-1 mr-2"></i>
+                Sukurti Planą
+            </button>
+        </div>
+    </form>
 </div>
 
 <script>
@@ -234,80 +180,14 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.getElementById('existing_client_id').setAttribute('required', 'required');
                 document.getElementById('new_client_name').removeAttribute('required');
             }
-            // Reset campaign selection when client type changes
-            loadCampaigns();
         });
     });
     
-    // Toggle campaign sections
-    const campaignRadios = document.getElementsByName('campaign_type');
-    const existingCampaignSection = document.getElementById('existing_campaign_section');
-    const newCampaignSection = document.getElementById('new_campaign_section');
+    // Show kampanija section by default (only option available)
     const kampanijaSection = document.getElementById('kampanija_section');
+    kampanijaSection.style.display = 'block';
+    document.getElementById('kampanija_id').setAttribute('required', 'required');
     
-    campaignRadios.forEach(radio => {
-        radio.addEventListener('change', function() {
-            if (this.value === 'new') {
-                existingCampaignSection.style.display = 'none';
-                newCampaignSection.style.display = 'block';
-                kampanijaSection.style.display = 'none';
-                // Clear required from existing and kampanija
-                document.getElementById('existing_campaign_id').removeAttribute('required');
-                document.getElementById('kampanija_id').removeAttribute('required');
-                document.getElementById('new_campaign_name').setAttribute('required', 'required');
-            } else if (this.value === 'kampanija') {
-                existingCampaignSection.style.display = 'none';
-                newCampaignSection.style.display = 'none';
-                kampanijaSection.style.display = 'block';
-                // Clear required from existing and new
-                document.getElementById('existing_campaign_id').removeAttribute('required');
-                document.getElementById('new_campaign_name').removeAttribute('required');
-                document.getElementById('kampanija_id').setAttribute('required', 'required');
-            } else {
-                existingCampaignSection.style.display = 'block';
-                newCampaignSection.style.display = 'none';
-                kampanijaSection.style.display = 'none';
-                // Set required for existing
-                document.getElementById('existing_campaign_id').setAttribute('required', 'required');
-                document.getElementById('new_campaign_name').removeAttribute('required');
-                document.getElementById('kampanija_id').removeAttribute('required');
-            }
-        });
-    });
-    
-    // Load campaigns when client is selected
-    document.getElementById('existing_client_id').addEventListener('change', loadCampaigns);
-    
-    function loadCampaigns() {
-        const clientId = document.getElementById('existing_client_id').value;
-        const campaignSelect = document.getElementById('existing_campaign_id');
-        
-        if (!clientId) {
-            campaignSelect.innerHTML = '<option value="">-- Pasirinkite klientą pirmiausia --</option>';
-            return;
-        }
-        
-        // Fetch campaigns for selected client
-        fetch(`/api/campaigns/${clientId}`)
-            .then(response => response.json())
-            .then(campaigns => {
-                campaignSelect.innerHTML = '<option value="">-- Pasirinkite kampaniją --</option>';
-                campaigns.forEach(campaign => {
-                    const option = document.createElement('option');
-                    option.value = campaign.id;
-                    option.textContent = campaign.name;
-                    campaignSelect.appendChild(option);
-                });
-                
-                if (campaigns.length === 0) {
-                    campaignSelect.innerHTML = '<option value="">-- Nėra kampanijų šiam klientui --</option>';
-                }
-            })
-            .catch(error => {
-                console.error('Error loading campaigns:', error);
-                campaignSelect.innerHTML = '<option value="">-- Klaida įkeliant kampanijas --</option>';
-            });
-    }
     
     // Form validation
     document.getElementById('doohPlanForm').addEventListener('submit', function(e) {
@@ -326,22 +206,8 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
-        // Validate campaign selection
-        const campaignType = document.querySelector('input[name="campaign_type"]:checked').value;
-        
-        if (campaignType === 'existing' && !document.getElementById('existing_campaign_id').value) {
-            e.preventDefault();
-            alert('Prašome pasirinkti kampaniją');
-            return;
-        }
-        
-        if (campaignType === 'new' && !document.getElementById('new_campaign_name').value) {
-            e.preventDefault();
-            alert('Prašome įvesti kampanijos pavadinimą');
-            return;
-        }
-        
-        if (campaignType === 'kampanija' && !document.getElementById('kampanija_id').value) {
+        // Validate kampanija selection (only option available)
+        if (!document.getElementById('kampanija_id').value) {
             e.preventDefault();
             alert('Prašome pasirinkti kampaniją iš Projects CRM');
             return;
@@ -350,7 +216,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Set initial required attributes
     document.getElementById('existing_client_id').setAttribute('required', 'required');
-    document.getElementById('existing_campaign_id').setAttribute('required', 'required');
     
     // Load kampanijos directly from projects-crm
     function loadKampanijos() {

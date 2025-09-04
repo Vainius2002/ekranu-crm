@@ -1,84 +1,197 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <h1>Ekranai</h1>
-    <a href="{{ url_for('new_screen') }}" class="btn btn-success">
-        <i class="fas fa-plus me-2"></i>Pridėti Naują Ekraną
-    </a>
+<!-- Header Section -->
+<div class="pb-5 border-b border-gray-200 mb-8">
+    <div class="flex justify-between items-center">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Ekranai</h1>
+            <p class="mt-2 text-sm text-gray-600">Valdykite visus ekranus, jų parametrus ir įkainius</p>
+        </div>
+        <a href="{{ url_for('new_screen') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <i class="fas fa-plus -ml-1 mr-2"></i>
+            Pridėti Naują Ekraną
+        </a>
+    </div>
 </div>
 
 {% if screens %}
-<div class="table-responsive">
-    <table class="table table-striped">
-        <thead>
-            <tr>
-                <th>Pavadinimas</th>
-                <th>Teikėjas</th>
-                <th>Tipas</th>
-                <th>Parametrai</th>
-                <th>Lokacija</th>
-                <th>Veiksmai</th>
-            </tr>
-        </thead>
-        <tbody>
+<!-- Search and Filter Section -->
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+    <div class="px-4 py-5 sm:px-6">
+        <div class="flex justify-between items-center">
+            <h3 class="text-lg leading-6 font-medium text-gray-900">Ekranai ({{ screens|length }})</h3>
+            <div class="flex items-center space-x-3">
+                <input type="text" id="screenFilter" placeholder="Ieškoti ekranų..." 
+                       class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                <select id="filterType" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">Visi tipai</option>
+                    <option value="horizontal">Horizontalūs</option>
+                    <option value="vertical">Vertikalūs</option>
+                </select>
+                <select id="sortBy" class="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                    <option value="">Rikiuoti pagal...</option>
+                    <option value="name-asc">Pavadinimas (A-Z)</option>
+                    <option value="name-desc">Pavadinimas (Z-A)</option>
+                    <option value="city-asc">Miestas (A-Z)</option>
+                    <option value="provider-asc">Teikėjas (A-Z)</option>
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Screens List -->
+    <div class="border-t border-gray-200">
+        <ul class="divide-y divide-gray-200" id="screensList">
             {% for screen in screens %}
-            <tr>
-                <td>
-                    <strong>{{ screen.name }}</strong>
-                    {% if screen.comment %}
-                        <br><small class="text-muted">{{ screen.comment[:50] }}...</small>
-                    {% endif %}
-                </td>
-                <td>
-                    <a href="{{ url_for('provider_detail', id=screen.provider.id) }}">
-                        {{ screen.provider.name }}
-                    </a>
-                </td>
-                <td>
-                    <span class="badge bg-{{ 'primary' if screen.screen_type == 'horizontal' else 'secondary' }}">
-                        {{ 'Horizontalus' if screen.screen_type == 'horizontal' else 'Vertikalus' }}
-                    </span><br>
-                    <span class="badge bg-{{ 'success' if screen.content_type == 'video' else 'info' }}">
-                        {{ 'Video' if screen.content_type == 'video' else 'Statinis' }}
-                    </span>
-                </td>
-                <td>
-                    {{ screen.width }}m × {{ screen.height }}m
-                    {% if screen.pixel_width and screen.pixel_height %}
-                        <br><small class="text-muted">{{ screen.pixel_width }}×{{ screen.pixel_height }}px</small>
-                    {% endif %}
-                </td>
-                <td>
-                    {{ screen.city }}<br>
-                    <small class="text-muted">{{ screen.address }}</small>
-                    {% if screen.side %}
-                        <br><small class="badge bg-light text-dark">{{ 'Dešinė' if screen.side == 'D' else 'Kairė' }}</small>
-                    {% endif %}
-                </td>
-                <td>
-                    <div class="btn-group-vertical btn-group-sm" role="group">
-                        <a href="{{ url_for('screen_detail', id=screen.id) }}" class="btn btn-outline-primary">
-                            Peržiūrėti
-                        </a>
-                        <a href="{{ url_for('screen_pricing', id=screen.id) }}" class="btn btn-outline-success">
-                            Įkainis
-                        </a>
+            <li class="screen-item hover:bg-gray-50" data-type="{{ screen.screen_type }}">
+                <div class="px-4 py-6 sm:px-6">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center">
+                            <div class="flex-shrink-0">
+                                <div class="h-12 w-12 rounded-full bg-indigo-100 flex items-center justify-center">
+                                    <i class="fas fa-tv text-indigo-600 text-xl"></i>
+                                </div>
+                            </div>
+                            <div class="ml-4">
+                                <div class="flex items-center">
+                                    <p class="text-lg font-medium text-gray-900 screen-name">{{ screen.name }}</p>
+                                    <div class="ml-2 flex space-x-1">
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {% if screen.screen_type == 'horizontal' %}bg-indigo-100 text-indigo-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                            {{ 'Horizontalus' if screen.screen_type == 'horizontal' else 'Vertikalus' }}
+                                        </span>
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {% if screen.content_type == 'video' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                                            {{ 'Video' if screen.content_type == 'video' else 'Statinis' }}
+                                        </span>
+                                        {% if screen.side %}
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                            {{ 'Dešinė' if screen.side == 'D' else 'Kairė' }}
+                                        </span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div class="mt-2 space-y-1">
+                                    <div class="flex items-center text-sm text-gray-600">
+                                        <i class="fas fa-building w-4 h-4 mr-2 text-gray-400"></i>
+                                        <a href="{{ url_for('provider_detail', id=screen.provider.id) }}" class="font-medium hover:text-indigo-600 screen-provider">{{ screen.provider.name }}</a>
+                                    </div>
+                                    <div class="flex items-center space-x-4">
+                                        <div class="flex items-center text-sm text-gray-600">
+                                            <i class="fas fa-expand-arrows-alt w-4 h-4 mr-2 text-gray-400"></i>
+                                            <span>{{ screen.width }}m × {{ screen.height }}m</span>
+                                            {% if screen.pixel_width and screen.pixel_height %}
+                                            <span class="ml-1 text-xs text-gray-500">({{ screen.pixel_width }}×{{ screen.pixel_height }}px)</span>
+                                            {% endif %}
+                                        </div>
+                                        <div class="flex items-center text-sm text-gray-600">
+                                            <i class="fas fa-map-marker-alt w-4 h-4 mr-2 text-gray-400"></i>
+                                            <span class="screen-city">{{ screen.city }}</span>
+                                        </div>
+                                    </div>
+                                    {% if screen.address %}
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        <i class="fas fa-home w-4 h-4 mr-2 text-gray-400"></i>
+                                        <span class="truncate max-w-md">{{ screen.address }}</span>
+                                    </div>
+                                    {% endif %}
+                                    {% if screen.comment %}
+                                    <div class="flex items-center text-sm text-gray-500">
+                                        <i class="fas fa-comment w-4 h-4 mr-2 text-gray-400"></i>
+                                        <span class="truncate max-w-lg">{{ screen.comment[:100] }}{% if screen.comment|length > 100 %}...{% endif %}</span>
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <a href="{{ url_for('screen_detail', id=screen.id) }}" 
+                               class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                                <i class="fas fa-eye -ml-0.5 mr-1"></i>
+                                Peržiūrėti
+                            </a>
+                            <a href="{{ url_for('screen_pricing', id=screen.id) }}" 
+                               class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                <i class="fas fa-euro-sign -ml-0.5 mr-1"></i>
+                                Įkainis
+                            </a>
+                        </div>
                     </div>
-                </td>
-            </tr>
+                </div>
+            </li>
             {% endfor %}
-        </tbody>
-    </table>
+        </ul>
+    </div>
 </div>
 {% else %}
-<div class="text-center py-5">
-    <i class="fas fa-tv fa-3x text-muted mb-3"></i>
-    <h3>Nėra ekranų</h3>
-    <p class="text-muted">Pradėkite pridėdami pirmą ekraną</p>
-    <a href="{{ url_for('new_screen') }}" class="btn btn-success">
-        <i class="fas fa-plus me-2"></i>Pridėti Ekraną
-    </a>
+<!-- Empty State -->
+<div class="text-center py-12">
+    <div class="mx-auto h-24 w-24 text-gray-400">
+        <i class="fas fa-tv text-6xl"></i>
+    </div>
+    <h3 class="mt-6 text-lg font-medium text-gray-900">Nėra ekranų</h3>
+    <p class="mt-2 text-sm text-gray-500">Pradėkite pridėdami pirmą ekraną.</p>
+    <div class="mt-6">
+        <a href="{{ url_for('new_screen') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+            <i class="fas fa-plus -ml-1 mr-2"></i>
+            Pridėti Ekraną
+        </a>
+    </div>
 </div>
+{% endif %}
+
+{% if screens %}
+<script>
+// Search functionality
+document.getElementById('screenFilter').addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase();
+    const screens = document.querySelectorAll('.screen-item');
+    
+    screens.forEach(screen => {
+        const name = screen.querySelector('.screen-name').textContent.toLowerCase();
+        const provider = screen.querySelector('.screen-provider').textContent.toLowerCase();
+        const city = screen.querySelector('.screen-city').textContent.toLowerCase();
+        const isVisible = name.includes(searchTerm) || provider.includes(searchTerm) || city.includes(searchTerm);
+        screen.style.display = isVisible ? 'block' : 'none';
+    });
+});
+
+// Filter by type
+document.getElementById('filterType').addEventListener('change', function() {
+    const selectedType = this.value;
+    const screens = document.querySelectorAll('.screen-item');
+    
+    screens.forEach(screen => {
+        const screenType = screen.getAttribute('data-type');
+        const isVisible = !selectedType || screenType === selectedType;
+        screen.style.display = isVisible ? 'block' : 'none';
+    });
+});
+
+// Sort functionality
+document.getElementById('sortBy').addEventListener('change', function() {
+    const sortBy = this.value;
+    const screensList = document.getElementById('screensList');
+    const screens = Array.from(screensList.querySelectorAll('.screen-item'));
+    
+    if (!sortBy) return;
+    
+    screens.sort((a, b) => {
+        switch(sortBy) {
+            case 'name-asc':
+                return a.querySelector('.screen-name').textContent.localeCompare(b.querySelector('.screen-name').textContent);
+            case 'name-desc':
+                return b.querySelector('.screen-name').textContent.localeCompare(a.querySelector('.screen-name').textContent);
+            case 'city-asc':
+                return a.querySelector('.screen-city').textContent.localeCompare(b.querySelector('.screen-city').textContent);
+            case 'provider-asc':
+                return a.querySelector('.screen-provider').textContent.localeCompare(b.querySelector('.screen-provider').textContent);
+            default:
+                return 0;
+        }
+    });
+    
+    screens.forEach(screen => screensList.appendChild(screen));
+});
+</script>
 {% endif %}
 {% endblock %}

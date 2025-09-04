@@ -120,8 +120,16 @@ class ScreenPricing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     screen_id = db.Column(db.Integer, db.ForeignKey('screen.id'), nullable=False)
     hour = db.Column(db.Integer, nullable=False)  # 0-23
-    price_per_thousand_contacts = db.Column(db.Float, nullable=False)
     contact_count = db.Column(db.Integer, nullable=False)
+    
+    # Day-specific pricing
+    price_mon = db.Column(db.Float)
+    price_tue = db.Column(db.Float)
+    price_wed = db.Column(db.Float)
+    price_thu = db.Column(db.Float)
+    price_fri = db.Column(db.Float)
+    price_sat = db.Column(db.Float)
+    price_sun = db.Column(db.Float)
     
     __table_args__ = (db.UniqueConstraint('screen_id', 'hour'),)
 
@@ -232,21 +240,36 @@ def screen_pricing(id):
         # Clear existing pricing
         ScreenPricing.query.filter_by(screen_id=id).delete()
         
-        # Add new pricing for each hour
-        for hour in range(24):
-            price_field = f'price_{hour}'
+        # Add new pricing for each hour (6-23 as per template)
+        for hour in range(6, 24):
             contact_field = f'contacts_{hour}'
             
-            if price_field in request.form and contact_field in request.form:
-                price = request.form[price_field]
-                contacts = request.form[contact_field]
+            # Check if contacts field exists and has a value
+            if contact_field in request.form and request.form[contact_field]:
+                contacts = int(request.form[contact_field])
                 
-                if price and contacts:
+                # Get day-specific prices
+                price_mon = request.form.get(f'price_{hour}_mon')
+                price_tue = request.form.get(f'price_{hour}_tue')
+                price_wed = request.form.get(f'price_{hour}_wed')
+                price_thu = request.form.get(f'price_{hour}_thu')
+                price_fri = request.form.get(f'price_{hour}_fri')
+                price_sat = request.form.get(f'price_{hour}_sat')
+                price_sun = request.form.get(f'price_{hour}_sun')
+                
+                # Create pricing entry if at least one day has a price or contacts is provided
+                if any([price_mon, price_tue, price_wed, price_thu, price_fri, price_sat, price_sun]) or contacts:
                     pricing = ScreenPricing(
                         screen_id=id,
                         hour=hour,
-                        price_per_thousand_contacts=float(price),
-                        contact_count=int(contacts)
+                        contact_count=contacts,
+                        price_mon=float(price_mon) if price_mon else None,
+                        price_tue=float(price_tue) if price_tue else None,
+                        price_wed=float(price_wed) if price_wed else None,
+                        price_thu=float(price_thu) if price_thu else None,
+                        price_fri=float(price_fri) if price_fri else None,
+                        price_sat=float(price_sat) if price_sat else None,
+                        price_sun=float(price_sun) if price_sun else None
                     )
                     db.session.add(pricing)
         
@@ -258,8 +281,14 @@ def screen_pricing(id):
     pricing_data = {}
     for pricing in screen.pricing_hours:
         pricing_data[pricing.hour] = {
-            'price': pricing.price_per_thousand_contacts,
-            'contacts': pricing.contact_count
+            'contacts': pricing.contact_count,
+            'price_mon': pricing.price_mon,
+            'price_tue': pricing.price_tue,
+            'price_wed': pricing.price_wed,
+            'price_thu': pricing.price_thu,
+            'price_fri': pricing.price_fri,
+            'price_sat': pricing.price_sat,
+            'price_sun': pricing.price_sun
         }
     
     return render_template('screen_pricing.html', screen=screen, pricing_data=pricing_data)
@@ -280,6 +309,11 @@ def api_campaigns_by_client(client_id):
 def dooh_plans():
     plans = DOOHPlan.query.all()
     return render_template('dooh_plans.html', plans=plans)
+
+@app.route('/campaigns')
+def campaigns():
+    campaigns = Campaign.query.all()
+    return render_template('campaigns.html', campaigns=campaigns)
 
 @app.route('/api/campaigns/<int:client_id>')
 def api_campaigns(client_id):

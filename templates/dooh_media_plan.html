@@ -1,98 +1,120 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1>Media Planas</h1>
-        <p class="text-muted">{{ plan.name }} ({{ plan.start_date.strftime('%Y-%m-%d') }} - {{ plan.end_date.strftime('%Y-%m-%d') }})</p>
-    </div>
-    <div>
-        <button class="btn btn-info me-2" onclick="calculateTotals()">
-            <i class="fas fa-calculator me-2"></i>Perskaičiuoti
-        </button>
-        <a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" class="btn btn-warning">
-            <i class="fas fa-tv me-2"></i>Valdyti Ekranus
-        </a>
-        <a href="{{ url_for('dooh_plan_detail', id=plan.id) }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Grįžti
-        </a>
+<!-- Header Section -->
+<div class="pb-5 border-b border-gray-200 mb-8">
+    <div class="flex justify-between items-start">
+        <div class="flex items-center">
+            <div class="h-12 w-12 rounded-full bg-yellow-100 flex items-center justify-center mr-4">
+                <i class="fas fa-play-circle text-yellow-600 text-xl"></i>
+            </div>
+            <div>
+                <h1 class="text-3xl font-bold text-gray-900">Media Planas</h1>
+                <p class="mt-1 text-sm text-gray-500">
+                    {{ plan.name }} • {{ plan.start_date.strftime('%Y-%m-%d') }} - {{ plan.end_date.strftime('%Y-%m-%d') }}
+                </p>
+            </div>
+        </div>
+        <div class="flex space-x-3">
+            <button onclick="calculateTotals()" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                <i class="fas fa-calculator -ml-1 mr-2"></i>
+                Perskaičiuoti
+            </button>
+            {% if plan.screen_bookings|length == 1 %}
+            <a href="{{ url_for('screen_detail', id=plan.screen_bookings[0].screen.id) }}" 
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                <i class="fas fa-tv -ml-1 mr-2"></i>
+                Peržiūrėti Ekraną
+            </a>
+            {% else %}
+            <a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" 
+               class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                <i class="fas fa-tv -ml-1 mr-2"></i>
+                Valdyti Ekranus
+            </a>
+            {% endif %}
+            <a href="{{ url_for('dooh_plan_detail', id=plan.id) }}" 
+               class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fas fa-arrow-left -ml-1 mr-2"></i>
+                Grįžti
+            </a>
+        </div>
     </div>
 </div>
 
 <!-- Media Plan Information Header -->
-<div class="card mb-4">
-    <div class="card-body">
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+    <div class="px-4 py-5 sm:px-6">
         <div class="text-center">
-            <h6 class="text-muted mb-1">Ekranų skaičius</h6>
-            <span class="text-warning fs-4 fw-bold">{{ plan.screen_bookings|length }}</span>
+            <div class="text-4xl font-bold text-yellow-600 mb-2">{{ plan.screen_bookings|length }}</div>
+            <p class="text-sm font-medium text-gray-500 uppercase tracking-wide">Ekranų skaičius</p>
         </div>
     </div>
 </div>
 
 {% if not plan.screen_bookings %}
-<div class="alert alert-warning">
-    <i class="fas fa-exclamation-triangle me-2"></i>
-    <strong>Nėra pasirinktų ekranų!</strong> 
-    <a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" class="alert-link">Pirmiausia pasirinkite ekranus</a>.
-</div>
-{% else %}
-
-<!-- Calendar Selector -->
-<div class="card mb-4">
-    <div class="card-header bg-primary text-white">
-        <div class="d-flex justify-content-between align-items-center">
-            <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Pasirinkite Savaitę</h5>
-            <div>
-                <button class="btn btn-light btn-sm" onclick="previousWeek()">
-                    <i class="fas fa-chevron-left"></i> Ankstesnė
-                </button>
-                <button class="btn btn-light btn-sm" onclick="nextWeek()">
-                    Kita <i class="fas fa-chevron-right"></i>
-                </button>
+<div class="rounded-md bg-yellow-50 p-4">
+    <div class="flex">
+        <div class="flex-shrink-0">
+            <i class="fas fa-exclamation-triangle text-yellow-400"></i>
+        </div>
+        <div class="ml-3">
+            <h3 class="text-sm font-medium text-yellow-800">Nėra pasirinktų ekranų!</h3>
+            <div class="mt-2 text-sm text-yellow-700">
+                <p><a href="{{ url_for('dooh_plan_screens', id=plan.id) }}" class="font-medium underline hover:text-yellow-600">Pirmiausia pasirinkite ekranus</a>.</p>
             </div>
         </div>
     </div>
-    <div class="card-body">
+</div>
+{% else %}
+
+<!-- Calendar Display (No Week Selection) -->
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+    <div class="px-4 py-5 sm:px-6 bg-indigo-600">
+        <h3 class="text-lg leading-6 font-medium text-white">
+            <i class="fas fa-calendar mr-2"></i>Media Plano Kalendorius
+        </h3>
+    </div>
+    <div class="px-4 py-5 sm:px-6">
         <!-- Selected Week Date Display -->
-        <div class="text-center mb-4">
-            <div id="selectedWeekRange" class="text-primary fw-bold fs-3 mb-4">
-                {{ plan.start_date.strftime('%Y-%m-%d') }} - {{ (plan.start_date + timedelta(days=6)).strftime('%Y-%m-%d') }}
+        <div class="text-center mb-6">
+            <div id="selectedDateRange" class="text-3xl font-bold text-indigo-600 mb-4">
+                {{ plan.start_date.strftime('%Y-%m-%d') }} - {{ plan.end_date.strftime('%Y-%m-%d') }}
             </div>
         </div>
         
         <!-- TV-Planning Style Calendar -->
-        <div class="tv-planning-calendar mx-auto" style="max-width: 1000px;">
-            <table class="table table-bordered table-sm mb-0 planning-calendar-table">
-                <thead>
-                    <tr class="bg-primary text-white">
-                        <th class="text-center" style="width: 14.28%;">Pr</th>
-                        <th class="text-center" style="width: 14.28%;">An</th>
-                        <th class="text-center" style="width: 14.28%;">Tr</th>
-                        <th class="text-center" style="width: 14.28%;">Kt</th>
-                        <th class="text-center" style="width: 14.28%;">Pn</th>
-                        <th class="text-center" style="width: 14.28%;">Št</th>
-                        <th class="text-center" style="width: 14.28%;">Sk</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr class="calendar-dates-row" id="calendarDatesRow">
-                        <!-- Calendar dates will be populated by JavaScript -->
-                    </tr>
-                    <tr class="cpt-totals-row bg-success text-white">
-                        <td class="text-center font-weight-bold" id="mondayTotal">0.00€</td>
-                        <td class="text-center font-weight-bold" id="tuesdayTotal">0.00€</td>
-                        <td class="text-center font-weight-bold" id="wednesdayTotal">0.00€</td>
-                        <td class="text-center font-weight-bold" id="thursdayTotal">0.00€</td>
-                        <td class="text-center font-weight-bold" id="fridayTotal">0.00€</td>
-                        <td class="text-center font-weight-bold" id="saturdayTotal">0.00€</td>
-                        <td class="text-center font-weight-bold" id="sundayTotal">0.00€</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+        <div class="max-w-full mx-auto">
+            <div class="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 md:rounded-lg" style="max-height: 400px;">
+                <div class="inline-block min-w-full">
+                    <table class="min-w-full divide-y divide-gray-200" style="min-width: max-content;">
+                    <thead class="bg-indigo-600">
+                        <tr id="calendarHeaderRow">
+                            <!-- Calendar headers will be populated by JavaScript -->
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        <tr class="calendar-dates-row" id="calendarDatesRow">
+                            <!-- Calendar dates will be populated by JavaScript -->
+                        </tr>
+                        <tr class="bg-green-600 text-white" id="totalsRow">
+                            <!-- Total cells will be populated by JavaScript -->
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Scroll hint -->
+            <div class="text-center mt-2">
+                <p class="text-sm text-gray-500 scroll-hint">
+                    <i class="fas fa-arrows-alt-h mr-1"></i>
+                    Slinkite horizontaliai peržiūrėti visas dienas
+                </p>
+            </div>
         </div>
     </div>
 </div>
+
 
 <!-- New Week Calendar (Initially Hidden) -->
 <div class="card mb-4" id="newWeekCalendarCard" style="display: none;">
@@ -153,40 +175,44 @@
 
 <!-- Media planning grid -->
 {% for booking in plan.screen_bookings %}
-<div class="card mb-4 screen-planning-card">
-    <div class="card-header">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <h5 class="mb-0">
-                    <i class="fas fa-tv me-2"></i>{{ booking.screen.name }}
-                </h5>
-                <small class="text-muted">{{ booking.screen.city }} - {{ booking.screen.provider.name }}</small>
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
+        <div class="flex items-center justify-between">
+            <div class="flex-1">
+                <h3 class="text-xl font-semibold text-gray-900 mb-1">
+                    <i class="fas fa-tv mr-2 text-indigo-600"></i>{{ booking.screen.name }}
+                </h3>
+                <p class="text-sm text-gray-500">{{ booking.screen.city }} - {{ booking.screen.provider.name }}</p>
             </div>
-            <div class="col-md-6 text-end">
-                <span class="badge bg-info me-2">CPT: <span class="cpt-value">0.00</span>€</span>
-                <span class="badge bg-secondary me-2">
-                    Klipo trukmė: 
-                    <input type="number" class="clip-duration-input" value="15" min="1" max="60" style="width: 35px; border: none; background: transparent; color: white; text-align: center;">s
-                </span>
-                <button class="btn btn-sm btn-outline-secondary" onclick="copyToAllDays({{ booking.id }})">
-                    <i class="fas fa-copy me-1"></i>Kopijuoti į visas dienas
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
+                        CPT: <span class="cpt-value ml-1">0.00</span>€
+                    </span>
+                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
+                        Klipo trukmė: 
+                        <input type="number" class="clip-duration-input ml-1 w-8 text-center bg-transparent border-none text-gray-800" value="15" min="1" max="60">s
+                    </span>
+                </div>
+                <button class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="copyToAllDays({{ booking.id }})">
+                    <i class="fas fa-copy -ml-1 mr-2"></i>
+                    Kopijuoti į visas dienas
                 </button>
             </div>
         </div>
     </div>
-    <div class="card-body p-0">
-        <div class="table-responsive">
-            <table class="table table-bordered table-sm mb-0 media-planning-table">
-                <thead>
-                    <tr class="bg-primary text-white">
-                        <th class="text-center" style="min-width: 100px;">Laikas</th>
-                        <th class="text-center" style="min-width: 80px;">Kartai</th>
-                        <th class="text-center" style="min-width: 80px;">Suma</th>
-                        <th class="text-center" style="min-width: 80px;">Kartai</th>
-                        <th class="text-center" style="min-width: 80px;">Suma</th>
-                        <th class="text-center" style="min-width: 80px;">VISO</th>
-                    </tr>
-                </thead>
+    <div class="overflow-x-auto">
+        <table class="min-w-full divide-y divide-gray-200">
+            <thead class="bg-indigo-600">
+                <tr>
+                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Laikas</th>
+                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 80px;">Kartai</th>
+                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 80px;">Suma</th>
+                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 80px;">Kartai</th>
+                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 80px;">Suma</th>
+                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 80px;">VISO</th>
+                </tr>
+            </thead>
                 <tbody>
                     {% for hour in range(6, 24) %}
                     <tr class="time-row-{{ hour }}">
@@ -264,25 +290,6 @@
 </div>
 {% endfor %}
 
-<!-- Total summary -->
-<div class="card mt-4">
-    <div class="card-body">
-        <div class="row text-center">
-            <div class="col-md-4">
-                <h3 class="text-primary mb-0" id="totalSlots">0</h3>
-                <p class="mb-0">Iš viso transliacijų</p>
-            </div>
-            <div class="col-md-4">
-                <h3 class="text-success mb-0" id="totalCost">0.00€</h3>
-                <p class="mb-0">Bendra kaina</p>
-            </div>
-            <div class="col-md-4">
-                <h3 class="text-info mb-0" id="avgCPT">0.00€</h3>
-                <p class="mb-0">Vidutinis CPT</p>
-            </div>
-        </div>
-    </div>
-</div>
 
 {% endif %}
 
@@ -299,33 +306,56 @@ function initializeCalendar() {
 }
 
 function generateCalendar() {
+    const calendarHeaderRow = document.getElementById('calendarHeaderRow');
     const calendarDatesRow = document.getElementById('calendarDatesRow');
+    const totalsRow = document.getElementById('totalsRow');
     
-    // Clear previous dates
+    // Clear previous content
+    calendarHeaderRow.innerHTML = '';
     calendarDatesRow.innerHTML = '';
+    totalsRow.innerHTML = '';
     
     const monthNames = ['Sausis', 'Vasaris', 'Kovas', 'Balandis', 'Gegužė', 'Birželis', 'Liepa', 'Rugpjūtis', 'Rugsėjis', 'Spalis', 'Lapkritis', 'Gruodis'];
     
-    // Generate current week (7 days)
-    for (let day = 0; day < 7; day++) {
-        const date = new Date(currentWeekStart);
-        date.setDate(currentWeekStart.getDate() + day);
+    // Calculate total days in plan period
+    const timeDiff = planEndDate - planStartDate;
+    const totalDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) + 1;
+    
+    // Generate headers, days, and totals for all days in the plan period
+    for (let day = 0; day < totalDays; day++) {
+        const date = new Date(planStartDate);
+        date.setDate(planStartDate.getDate() + day);
         
+        // Create header cell
+        const dayNames = ['Sk', 'Pr', 'An', 'Tr', 'Kt', 'Pn', 'Št'];
+        const headerCell = document.createElement('th');
+        headerCell.className = 'px-2 py-3 text-center text-xs font-medium text-white uppercase tracking-wider';
+        headerCell.style.minWidth = '80px';
+        headerCell.textContent = dayNames[date.getDay()];
+        calendarHeaderRow.appendChild(headerCell);
+        
+        // Create day cell
         const dayCell = document.createElement('td');
-        dayCell.className = 'calendar-day-cell text-center';
+        dayCell.className = 'calendar-day-cell text-center px-2 py-2';
+        dayCell.style.minWidth = '80px';
         
-        // Create day structure similar to TV planning
+        // Create day structure
+        const monthStr = (date.getMonth() + 1).toString().padStart(2, '0');
+        const dayStr = date.getDate().toString().padStart(2, '0');
+        
         dayCell.innerHTML = `
-            <div class="date-number">${date.getDate()}</div>
-            <div class="cpt-value" id="cpt_day_${day}">0.00€</div>
+            <div class="date-number font-bold text-sm">${monthStr}-${dayStr}</div>
+            <div class="cpt-value text-xs" id="cpt_day_${day}">0.00€</div>
         `;
         
-        // Add classes based on date status
-        if (date < planStartDate || date > planEndDate) {
-            dayCell.classList.add('disabled');
-        }
-        
         calendarDatesRow.appendChild(dayCell);
+        
+        // Create total cell
+        const totalCell = document.createElement('td');
+        totalCell.className = 'px-2 py-3 text-center font-bold';
+        totalCell.id = `dayTotal_${day}`;
+        totalCell.textContent = '0.00€';
+        totalsRow.appendChild(totalCell);
     }
 }
 
@@ -636,74 +666,27 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-/* TV-Planning Style Calendar */
-.tv-planning-calendar {
-    max-width: 100%;
-}
-
-.planning-calendar-table {
-    border: 2px solid #007bff;
-    font-size: 0.9rem;
-}
-
-.planning-calendar-table th {
-    background-color: #007bff !important;
-    color: white;
-    font-weight: bold;
-    padding: 0.75rem 0.5rem;
-    border: 1px solid #0056b3;
-    font-size: 0.9rem;
-}
-
+/* TV-Planning Style Calendar - Updated for Tailwind */
 .calendar-day-cell {
-    background-color: #fff;
-    padding: 1rem 0.5rem;
-    border: 1px solid #dee2e6;
-    vertical-align: middle;
+    @apply bg-white p-4 border border-gray-200 align-middle;
     min-height: 80px;
 }
 
 .calendar-day-cell.disabled {
-    background-color: #f8f9fa;
-    color: #6c757d;
+    @apply bg-gray-50 text-gray-500;
 }
 
 .date-number {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #007bff;
-    margin-bottom: 0.25rem;
+    @apply text-2xl font-bold text-indigo-600 mb-1;
 }
 
 .date-month {
-    font-size: 0.7rem;
-    color: #6c757d;
-    text-transform: uppercase;
-    margin-bottom: 0.5rem;
-    font-weight: 600;
+    @apply text-xs text-gray-500 uppercase mb-2 font-semibold;
 }
 
 .cpt-value {
-    font-size: 0.85rem;
-    font-weight: bold;
-    color: #28a745;
-    background-color: #f8f9fa;
-    padding: 0.25rem 0.5rem;
-    border: 1px solid #dee2e6;
-    border-radius: 0.25rem;
-    display: inline-block;
+    @apply text-sm font-bold text-green-600 bg-gray-50 px-2 py-1 border border-gray-200 rounded inline-block;
     min-width: 60px;
-}
-
-.cpt-totals-row {
-    background-color: #28a745 !important;
-}
-
-.cpt-totals-row td {
-    padding: 0.75rem 0.5rem;
-    font-size: 1rem;
-    font-weight: bold;
-    border: 1px solid #1e7e34;
 }
 
 .calendar-date:hover:not(.disabled) {
@@ -845,6 +828,40 @@ document.addEventListener('DOMContentLoaded', function() {
         width: 35px;
         font-size: 0.6rem;
     }
+}
+
+/* Smooth horizontal scrolling for calendar */
+.overflow-x-auto {
+    scrollbar-width: thin;
+    scrollbar-color: #cbd5e1 #f1f5f9;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+    height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: #f1f5f9;
+    border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Fade effect for scroll hint */
+@keyframes fadeInOut {
+    0%, 100% { opacity: 0.6; }
+    50% { opacity: 1; }
+}
+
+.scroll-hint {
+    animation: fadeInOut 2s ease-in-out infinite;
 }
 </style>
 {% endblock %}

@@ -1,108 +1,142 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="d-flex justify-content-between align-items-center mb-4">
-    <div>
-        <h1>Ekranų Pasirinkimas</h1>
-        <p class="text-muted">{{ plan.name }} ({{ plan.start_date.strftime('%Y-%m-%d') }} - {{ plan.end_date.strftime('%Y-%m-%d') }})</p>
-    </div>
-    <div>
-        <a href="{{ url_for('dooh_plan_media', id=plan.id) }}" class="btn btn-warning">
-            <i class="fas fa-arrow-right me-2"></i>Pereiti prie Media Plano
-        </a>
-        <a href="{{ url_for('dooh_plan_detail', id=plan.id) }}" class="btn btn-secondary">
-            <i class="fas fa-arrow-left me-2"></i>Grįžti
-        </a>
+<!-- Header Section -->
+<div class="pb-5 border-b border-gray-200 mb-8">
+    <div class="flex justify-between items-start">
+        <div>
+            <h1 class="text-3xl font-bold text-gray-900">Ekranų Pasirinkimas</h1>
+            <p class="mt-2 text-sm text-gray-600">{{ plan.name }} ({{ plan.start_date.strftime('%Y-%m-%d') }} - {{ plan.end_date.strftime('%Y-%m-%d') }})</p>
+        </div>
+        <div class="flex space-x-3">
+            <a href="{{ url_for('dooh_plan_media', id=plan.id) }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-yellow-600 hover:bg-yellow-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500">
+                <i class="fas fa-arrow-right -ml-1 mr-2"></i>
+                Pereiti prie Media Plano
+            </a>
+            <a href="{{ url_for('dooh_plan_detail', id=plan.id) }}" class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                <i class="fas fa-arrow-left -ml-1 mr-2"></i>
+                Grįžti
+            </a>
+        </div>
     </div>
 </div>
 
 <!-- Selected screens summary -->
 {% if plan.screen_bookings %}
-<div class="alert alert-success mb-4">
-    <h5><i class="fas fa-check-circle me-2"></i>Pasirinkti Ekranai ({{ plan.screen_bookings|length }})</h5>
-    <div class="row">
-        {% for booking in plan.screen_bookings %}
-        <div class="col-md-6 col-lg-4 mb-2">
-            <span class="badge bg-success me-2">{{ booking.screen.name }}</span>
-            <small class="text-muted">{{ booking.screen.city }}</small>
+<div class="bg-green-50 border-l-4 border-green-400 p-4 mb-8">
+    <div class="flex items-start">
+        <div class="flex-shrink-0">
+            <i class="fas fa-check-circle text-green-400 text-xl"></i>
         </div>
-        {% endfor %}
+        <div class="ml-3">
+            <h3 class="text-lg font-medium text-green-800">Pasirinkti Ekranai ({{ plan.screen_bookings|length }})</h3>
+            <div class="mt-2 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                {% for booking in plan.screen_bookings %}
+                <div class="flex items-center">
+                    <a href="{{ url_for('screen_detail', id=booking.screen.id) }}" class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 hover:bg-green-200">
+                        {{ booking.screen.name }}
+                    </a>
+                    <span class="ml-2 text-sm text-gray-600">{{ booking.screen.city }}</span>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
     </div>
 </div>
 
 <!-- Broadcast scheduling tables for selected screens -->
-<div class="mb-4">
-    <h4><i class="fas fa-calendar-alt me-2"></i>Transliacijų Skaičius Pagal Valandas</h4>
-    <p class="text-muted">Kiekvienam ekranui galite įvesti, kiek transliacijų pirkti kiekvienai valandai.</p>
+{% if plan.screen_bookings %}
+<div class="mb-8">
+    <div class="mb-4">
+        <h2 class="text-xl font-semibold text-gray-900">
+            <i class="fas fa-calendar-alt mr-2 text-indigo-600"></i>
+            Transliacijų Skaičius Pagal Valandas
+        </h2>
+        <p class="mt-1 text-sm text-gray-500">Kiekvienam ekranui galite įvesti, kiek transliacijų pirkti kiekvienai valandai.</p>
+    </div>
     
     <form id="broadcastScheduleForm" method="POST" action="{{ url_for('update_broadcast_schedule', plan_id=plan.id) }}">
         {% for booking in plan.screen_bookings %}
-        <div class="card mb-4">
-            <div class="card-header bg-light">
-                <h5 class="mb-0">
-                    <i class="fas fa-tv me-2"></i>{{ booking.screen.name }}
-                    <small class="text-muted">- {{ booking.screen.city }}, {{ booking.screen.provider.name }}</small>
-                </h5>
+        <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+            <div class="px-4 py-5 sm:px-6 bg-gray-50 border-b border-gray-200">
+                <div class="flex items-center justify-between">
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">
+                        <i class="fas fa-tv mr-2 text-indigo-600"></i>
+                        <a href="{{ url_for('screen_detail', id=booking.screen.id) }}" class="hover:text-indigo-600">
+                            {{ booking.screen.name }}
+                        </a>
+                        <span class="ml-2 text-sm text-gray-500">- {{ booking.screen.city }}, {{ booking.screen.provider.name }}</span>
+                    </h3>
+                    <a href="{{ url_for('screen_detail', id=booking.screen.id) }}" class="inline-flex items-center px-3 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                        <i class="fas fa-eye -ml-0.5 mr-1"></i>
+                        Peržiūrėti
+                    </a>
+                </div>
             </div>
-            <div class="card-body">
-                <!-- Screen and Plan Information Header -->
-                <div class="row mb-3 p-3 bg-light rounded">
-                    <div class="col-md-3">
-                        <strong>Lokacija:</strong><br>
-                        <span class="text-primary">{{ booking.screen.city }}</span><br>
-                        <small class="text-muted">{{ booking.screen.address }}</small>
+            
+            <div class="px-4 py-5 sm:px-6">
+                <!-- Screen Information Header -->
+                <div class="grid grid-cols-2 sm:grid-cols-5 gap-4 mb-6 p-4 bg-gray-50 rounded-lg">
+                    <div>
+                        <div class="text-xs font-medium text-gray-500 uppercase tracking-wide">Lokacija</div>
+                        <div class="mt-1 text-sm font-medium text-gray-900">{{ booking.screen.city }}</div>
+                        <div class="text-xs text-gray-500">{{ booking.screen.address }}</div>
                     </div>
-                    <div class="col-md-3">
-                        <strong>Plano Pavadinimas:</strong><br>
-                        <span class="text-primary">{{ plan.name }}</span><br>
-                        <small class="text-muted">{{ plan.start_date.strftime('%Y-%m-%d') }} - {{ plan.end_date.strftime('%Y-%m-%d') }}</small>
+                    <div>
+                        <div class="text-xs font-medium text-gray-500 uppercase tracking-wide">Plano Pavadinimas</div>
+                        <div class="mt-1 text-sm font-medium text-gray-900">{{ plan.name }}</div>
+                        <div class="text-xs text-gray-500">{{ plan.start_date.strftime('%Y-%m-%d') }} - {{ plan.end_date.strftime('%Y-%m-%d') }}</div>
                     </div>
-                    <div class="col-md-2">
-                        <strong>CPT:</strong><br>
-                        <span class="text-success">€5.00</span><br>
-                        <small class="text-muted">kaina už transliaciją</small>
+                    <div>
+                        <div class="text-xs font-medium text-gray-500 uppercase tracking-wide">CPT</div>
+                        <div class="mt-1 text-sm font-medium text-green-600">€5.00</div>
+                        <div class="text-xs text-gray-500">kaina už transliaciją</div>
                     </div>
-                    <div class="col-md-2">
-                        <strong>Klipo trukmė:</strong><br>
-                        <div class="input-group input-group-sm mt-1">
-                            <input type="number" class="form-control" value="15" min="1" max="60" style="max-width: 60px;">
-                            <span class="input-group-text">s</span>
+                    <div>
+                        <div class="text-xs font-medium text-gray-500 uppercase tracking-wide">Klipo trukmė</div>
+                        <div class="mt-1 flex items-center">
+                            <input type="number" value="15" min="1" max="60" class="w-16 px-2 py-1 text-sm border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
+                            <span class="ml-1 text-sm text-gray-500">s</span>
                         </div>
-                        <small class="text-muted">trukmė</small>
                     </div>
-                    <div class="col-md-2">
-                        <strong>Ekrano tipas:</strong><br>
-                        <span class="badge bg-{{ 'primary' if booking.screen.screen_type == 'horizontal' else 'secondary' }}">
-                            {{ 'Horizontalus' if booking.screen.screen_type == 'horizontal' else 'Vertikalus' }}
-                        </span><br>
-                        <small class="text-muted">{{ booking.screen.width }}m × {{ booking.screen.height }}m</small>
+                    <div>
+                        <div class="text-xs font-medium text-gray-500 uppercase tracking-wide">Ekrano tipas</div>
+                        <div class="mt-1">
+                            <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {% if booking.screen.screen_type == 'horizontal' %}bg-indigo-100 text-indigo-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                                {{ 'Horizontalus' if booking.screen.screen_type == 'horizontal' else 'Vertikalus' }}
+                            </span>
+                        </div>
+                        <div class="text-xs text-gray-500">{{ booking.screen.width }}m × {{ booking.screen.height }}m</div>
                     </div>
                 </div>
-                <div class="table-responsive">
-                    <table class="table table-bordered table-sm broadcast-schedule-table">
-                        <thead>
-                            <tr class="table-secondary">
-                                <th rowspan="2" class="align-middle text-center" style="min-width: 80px;">Data</th>
+
+                <!-- Broadcast Schedule Table -->
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th rowspan="2" class="px-3 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Data</th>
                                 {% for hour in range(24) %}
-                                <th colspan="2" class="text-center" style="min-width: 90px;">{{ "%02d"|format(hour) }}:00</th>
+                                <th colspan="2" class="px-1 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">{{ "%02d"|format(hour) }}:00</th>
                                 {% endfor %}
-                                <th rowspan="2" class="align-middle text-center" style="min-width: 80px;">Dienų Suma</th>
+                                <th rowspan="2" class="px-3 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">Dienų Suma</th>
                             </tr>
-                            <tr class="table-light">
+                            <tr>
                                 {% for hour in range(24) %}
-                                <th class="text-center small" style="min-width: 45px;">kartai</th>
-                                <th class="text-center small" style="min-width: 45px;">suma</th>
+                                <th class="px-1 py-2 text-center text-xs font-medium text-gray-500">Kiekis</th>
+                                <th class="px-1 py-2 text-center text-xs font-medium text-gray-500">€</th>
                                 {% endfor %}
                             </tr>
                         </thead>
-                        <tbody>
-                            {% set current_date = plan.start_date %}
-                            {% while current_date <= plan.end_date %}
+                        <tbody class="bg-white divide-y divide-gray-200">
+                            {% set date_range = (plan.end_date - plan.start_date).days + 1 %}
+                            {% for day_offset in range(date_range) %}
+                            {% set current_date = plan.start_date + timedelta(days=day_offset) %}
                             {% set weekday = current_date.strftime('%w')|int %}
-                            <tr class="{{ 'weekend-row' if weekday == 0 or weekday == 6 else '' }}">
-                                <td class="align-middle fw-bold text-center">
+                            <tr class="{{ 'bg-yellow-50' if weekday == 0 or weekday == 6 else '' }}">
+                                <td class="px-3 py-2 whitespace-nowrap text-sm font-medium text-gray-900">
                                     <div>{{ current_date.strftime('%m-%d') }}</div>
-                                    <small class="text-muted">{{ current_date.strftime('%a') }}</small>
+                                    <div class="text-xs text-gray-500">{{ current_date.strftime('%a') }}</div>
                                 </td>
                                 {% set daily_total = 0 %}
                                 {% for hour in range(24) %}
@@ -110,9 +144,9 @@
                                 {% set hour_broadcasts = slot_data.slots_purchased if slot_data else 0 %}
                                 {% set hour_cost = hour_broadcasts * 5.0 %}
                                 {% set daily_total = daily_total + hour_cost %}
-                                <td class="p-1">
+                                <td class="px-1 py-1">
                                     <input type="number" 
-                                           class="form-control form-control-sm text-center broadcast-input" 
+                                           class="w-12 px-1 py-0.5 text-xs text-center border border-gray-300 rounded focus:ring-indigo-500 focus:border-indigo-500" 
                                            name="slot_{{ booking.id }}_{{ current_date.strftime('%Y-%m-%d') }}_{{ hour }}"
                                            value="{{ hour_broadcasts }}"
                                            min="0" 
@@ -122,41 +156,39 @@
                                            data-booking="{{ booking.id }}"
                                            onchange="updateHourlySum(this)">
                                 </td>
-                                <td class="p-1 text-center align-middle">
-                                    <span class="hourly-sum text-muted small" 
+                                <td class="px-1 py-1 text-center">
+                                    <span class="text-xs text-gray-500" 
                                           id="sum_{{ booking.id }}_{{ current_date.strftime('%Y-%m-%d') }}_{{ hour }}">
                                         {{ "%.2f"|format(hour_cost) }}€
                                     </span>
                                 </td>
                                 {% endfor %}
-                                <td class="text-center align-middle fw-bold">
-                                    <span class="daily-sum" 
-                                          id="daily_{{ booking.id }}_{{ current_date.strftime('%Y-%m-%d') }}">
+                                <td class="px-3 py-2 text-center whitespace-nowrap text-sm font-medium text-gray-900">
+                                    <span id="daily_{{ booking.id }}_{{ current_date.strftime('%Y-%m-%d') }}">
                                         {{ "%.2f"|format(daily_total) }}€
                                     </span>
                                 </td>
                             </tr>
-                            {% set current_date = current_date + timedelta(days=1) %}
-                            {% endwhile %}
-                            <tr class="table-warning fw-bold">
-                                <td class="text-center">TOTAL</td>
+                            {% endfor %}
+                            <tr class="bg-yellow-100 font-bold">
+                                <td class="px-3 py-2 text-center text-sm">TOTAL</td>
                                 {% set grand_total = 0 %}
                                 {% for hour in range(24) %}
                                 {% set hour_total = 0 %}
-                                {% set current_date_loop = plan.start_date %}
-                                {% while current_date_loop <= plan.end_date %}
+                                {% set date_range_loop = (plan.end_date - plan.start_date).days + 1 %}
+                                {% for day_offset_loop in range(date_range_loop) %}
+                                    {% set current_date_loop = plan.start_date + timedelta(days=day_offset_loop) %}
                                     {% set slot_data = booking.screen_slots|selectattr('date', 'equalto', current_date_loop)|selectattr('hour', 'equalto', hour)|first %}
                                     {% set hour_broadcasts = slot_data.slots_purchased if slot_data else 0 %}
                                     {% set hour_total = hour_total + hour_broadcasts %}
-                                    {% set current_date_loop = current_date_loop + timedelta(days=1) %}
-                                {% endwhile %}
+                                {% endfor %}
                                 {% set hour_total_cost = hour_total * 5.0 %}
                                 {% set grand_total = grand_total + hour_total_cost %}
-                                <td class="text-center align-middle small">{{ hour_total }}</td>
-                                <td class="text-center align-middle small">{{ "%.2f"|format(hour_total_cost) }}€</td>
+                                <td class="px-1 py-2 text-center text-xs">{{ hour_total }}</td>
+                                <td class="px-1 py-2 text-center text-xs">{{ "%.2f"|format(hour_total_cost) }}€</td>
                                 {% endfor %}
-                                <td class="text-center align-middle">
-                                    <span id="grand_total_{{ booking.id }}">{{ "%.2f"|format(grand_total) }}€</span>
+                                <td class="px-3 py-2 text-center text-sm font-bold text-green-600">
+                                    {{ "%.2f"|format(grand_total) }}€
                                 </td>
                             </tr>
                         </tbody>
@@ -166,32 +198,34 @@
         </div>
         {% endfor %}
         
-        <div class="d-flex gap-2 mb-4">
-            <button type="submit" class="btn btn-success">
-                <i class="fas fa-save me-2"></i>Išsaugoti Transliacijų Planą
-            </button>
-            <button type="button" class="btn btn-outline-secondary" onclick="fillAllWithValue()">
-                <i class="fas fa-fill me-2"></i>Užpildyti Visus
-            </button>
-            <button type="button" class="btn btn-outline-warning" onclick="clearAllSlots()">
-                <i class="fas fa-eraser me-2"></i>Išvalyti Visus
+        <div class="flex justify-end">
+            <button type="submit" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                <i class="fas fa-save -ml-1 mr-2"></i>
+                Išsaugoti Transliacijų Planą
             </button>
         </div>
     </form>
 </div>
 {% endif %}
+{% endif %}
 
-<!-- Search and filter controls -->
-<div class="card mb-4">
-    <div class="card-body">
-        <div class="row">
-            <div class="col-md-4">
-                <label for="searchInput" class="form-label">Paieška</label>
-                <input type="text" id="searchInput" class="form-control" placeholder="Ieškoti pagal pavadinimą, miestą...">
+<!-- Available screens section -->
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+    <div class="px-4 py-5 sm:px-6">
+        <h3 class="text-lg leading-6 font-medium text-gray-900">Galimi Ekranai</h3>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">Pasirinkite ekranus, kuriuos norite pridėti į planą</p>
+    </div>
+    <div class="border-t border-gray-200 px-4 py-5 sm:px-6">
+        <!-- Filters -->
+        <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 mb-6">
+            <div>
+                <label for="searchFilter" class="block text-sm font-medium text-gray-700">Paieška</label>
+                <input type="text" id="searchFilter" placeholder="Ieškoti ekranų..." 
+                       class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
             </div>
-            <div class="col-md-3">
-                <label for="cityFilter" class="form-label">Miestas</label>
-                <select id="cityFilter" class="form-select">
+            <div>
+                <label for="cityFilter" class="block text-sm font-medium text-gray-700">Miestas</label>
+                <select id="cityFilter" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
                     <option value="">Visi miestai</option>
                     {% set cities = [] %}
                     {% for screen in screens %}
@@ -204,310 +238,170 @@
                     {% endfor %}
                 </select>
             </div>
-            <div class="col-md-3">
-                <label for="typeFilter" class="form-label">Tipas</label>
-                <select id="typeFilter" class="form-select">
+            <div>
+                <label for="typeFilter" class="block text-sm font-medium text-gray-700">Tipas</label>
+                <select id="typeFilter" class="mt-1 block w-full shadow-sm sm:text-sm border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500">
                     <option value="">Visi tipai</option>
                     <option value="horizontal">Horizontalus</option>
                     <option value="vertical">Vertikalus</option>
                 </select>
             </div>
-            <div class="col-md-2">
-                <label class="form-label">&nbsp;</label>
-                <button type="button" class="btn btn-outline-secondary d-block w-100" onclick="clearFilters()">
+            <div>
+                <label class="block text-sm font-medium text-gray-700">&nbsp;</label>
+                <button type="button" onclick="clearFilters()" class="mt-1 w-full inline-flex justify-center items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                    <i class="fas fa-eraser -ml-1 mr-2"></i>
                     Valyti
                 </button>
             </div>
         </div>
-    </div>
-</div>
 
-<!-- Available screens grid -->
-<div class="row" id="screensGrid">
-    {% for screen in screens %}
-    {% set is_selected = plan.screen_bookings|selectattr('screen_id', 'equalto', screen.id)|list|length > 0 %}
-    <div class="col-md-6 col-lg-4 mb-4 screen-card" 
-         data-city="{{ screen.city }}" 
-         data-type="{{ screen.screen_type }}"
-         data-name="{{ screen.name|lower }}"
-         data-address="{{ screen.address|lower }}">
-        <div class="card {{ 'border-success' if is_selected else '' }}">
-            <div class="card-body">
-                <div class="d-flex justify-content-between align-items-start mb-2">
-                    <h6 class="card-title mb-0">{{ screen.name }}</h6>
-                    {% if is_selected %}
-                        <span class="badge bg-success">Pasirinktas</span>
-                    {% endif %}
-                </div>
-                
-                <p class="card-text small text-muted mb-2">
-                    <i class="fas fa-building me-1"></i>{{ screen.provider.name }}<br>
-                    <i class="fas fa-map-marker-alt me-1"></i>{{ screen.city }}, {{ screen.address }}
-                </p>
-                
-                <div class="mb-2">
-                    <span class="badge bg-{{ 'primary' if screen.screen_type == 'horizontal' else 'secondary' }} me-1">
-                        {{ 'Horizontalus' if screen.screen_type == 'horizontal' else 'Vertikalus' }}
-                    </span>
-                    <span class="badge bg-{{ 'success' if screen.content_type == 'video' else 'info' }}">
-                        {{ 'Video' if screen.content_type == 'video' else 'Statinis' }}
-                    </span>
-                </div>
-                
-                <div class="text-muted small mb-3">
-                    <i class="fas fa-expand me-1"></i>{{ screen.width }}m × {{ screen.height }}m
-                    {% if screen.gps_latitude and screen.gps_longitude %}
-                        <br><i class="fas fa-globe me-1"></i>GPS: {{ screen.gps_latitude }}, {{ screen.gps_longitude }}
-                    {% endif %}
-                </div>
-                
-                <div class="d-flex gap-1">
-                    {% if not is_selected %}
-                        <form method="POST" action="{{ url_for('add_screen_to_plan', plan_id=plan.id, screen_id=screen.id) }}" class="flex-grow-1">
-                            <button type="submit" class="btn btn-success btn-sm w-100">
-                                <i class="fas fa-plus me-1"></i>Pridėti
+        <!-- Available screens grid -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4" id="screensGrid">
+            {% for screen in screens %}
+            {% set is_selected = plan.screen_bookings|selectattr('screen_id', 'equalto', screen.id)|list|length > 0 %}
+            <div class="screen-card bg-white border rounded-lg {{ 'border-green-500 border-2' if is_selected else 'border-gray-200' }}" 
+                 data-city="{{ screen.city }}" 
+                 data-type="{{ screen.screen_type }}"
+                 data-name="{{ screen.name|lower }}"
+                 data-address="{{ screen.address|lower }}">
+                <div class="px-4 py-4">
+                    <div class="flex justify-between items-start mb-2">
+                        <h4 class="text-sm font-medium text-gray-900">{{ screen.name }}</h4>
+                        {% if is_selected %}
+                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <i class="fas fa-check mr-1"></i>
+                                Pasirinktas
+                            </span>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="text-xs text-gray-500 mb-2 space-y-1">
+                        <div><i class="fas fa-building w-4 text-gray-400"></i> {{ screen.provider.name }}</div>
+                        <div><i class="fas fa-map-marker-alt w-4 text-gray-400"></i> {{ screen.city }}, {{ screen.address }}</div>
+                        <div><i class="fas fa-expand-arrows-alt w-4 text-gray-400"></i> {{ screen.width }}m × {{ screen.height }}m</div>
+                    </div>
+                    
+                    <div class="flex space-x-1 mb-3">
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {% if screen.screen_type == 'horizontal' %}bg-indigo-100 text-indigo-800{% else %}bg-gray-100 text-gray-800{% endif %}">
+                            {{ 'Horizontalus' if screen.screen_type == 'horizontal' else 'Vertikalus' }}
+                        </span>
+                        <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium {% if screen.content_type == 'video' %}bg-green-100 text-green-800{% else %}bg-blue-100 text-blue-800{% endif %}">
+                            {{ 'Video' if screen.content_type == 'video' else 'Statinis' }}
+                        </span>
+                    </div>
+                    
+                    <div class="flex space-x-2">
+                        {% if not is_selected %}
+                            <form method="POST" action="{{ url_for('add_screen_to_plan', plan_id=plan.id, screen_id=screen.id) }}" class="flex-1">
+                                <button type="submit" class="w-full inline-flex justify-center items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                                    <i class="fas fa-plus -ml-0.5 mr-1"></i>
+                                    Pridėti
+                                </button>
+                            </form>
+                        {% else %}
+                            <button disabled class="flex-1 inline-flex justify-center items-center px-3 py-1.5 border border-green-300 text-xs font-medium rounded-md text-green-700 bg-green-50 cursor-not-allowed">
+                                <i class="fas fa-check -ml-0.5 mr-1"></i>
+                                Pridėtas
                             </button>
-                        </form>
-                    {% else %}
-                        <button class="btn btn-outline-success btn-sm flex-grow-1" disabled>
-                            <i class="fas fa-check me-1"></i>Pridėtas
-                        </button>
-                    {% endif %}
-                    <a href="{{ url_for('screen_detail', id=screen.id) }}" class="btn btn-outline-primary btn-sm">
-                        <i class="fas fa-eye"></i>
-                    </a>
+                        {% endif %}
+                        <a href="{{ url_for('screen_detail', id=screen.id) }}" 
+                           class="inline-flex items-center px-3 py-1.5 border border-gray-300 text-xs font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                    </div>
                 </div>
             </div>
+            {% endfor %}
         </div>
-    </div>
-    {% endfor %}
-</div>
 
-{% if not screens %}
-<div class="text-center py-5">
-    <i class="fas fa-tv fa-3x text-muted mb-3"></i>
-    <h3>Nėra ekranų</h3>
-    <p class="text-muted">Pirmiausia pridėkite ekranų į sistemą</p>
-    <a href="{{ url_for('new_screen') }}" class="btn btn-success">
-        <i class="fas fa-plus me-2"></i>Pridėti Ekraną
-    </a>
+        {% if not screens %}
+        <div class="text-center py-12">
+            <div class="mx-auto h-24 w-24 text-gray-400">
+                <i class="fas fa-tv text-6xl"></i>
+            </div>
+            <h3 class="mt-6 text-lg font-medium text-gray-900">Nėra ekranų</h3>
+            <p class="mt-2 text-sm text-gray-500">Pirmiausia pridėkite ekranų į sistemą</p>
+            <div class="mt-6">
+                <a href="{{ url_for('new_screen') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
+                    <i class="fas fa-plus -ml-1 mr-2"></i>
+                    Pridėti Ekraną
+                </a>
+            </div>
+        </div>
+        {% endif %}
+    </div>
 </div>
-{% endif %}
 
 <script>
-// Search and filter functionality
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('searchInput');
-    const cityFilter = document.getElementById('cityFilter');
-    const typeFilter = document.getElementById('typeFilter');
-    const screenCards = document.querySelectorAll('.screen-card');
-
-    function filterScreens() {
-        const searchTerm = searchInput.value.toLowerCase();
-        const selectedCity = cityFilter.value;
-        const selectedType = typeFilter.value;
-
-        screenCards.forEach(card => {
-            const name = card.dataset.name;
-            const address = card.dataset.address;
-            const city = card.dataset.city;
-            const type = card.dataset.type;
-
-            const matchesSearch = !searchTerm || name.includes(searchTerm) || address.includes(searchTerm);
-            const matchesCity = !selectedCity || city === selectedCity;
-            const matchesType = !selectedType || type === selectedType;
-
-            if (matchesSearch && matchesCity && matchesType) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
-    }
-
-    searchInput.addEventListener('input', filterScreens);
-    cityFilter.addEventListener('change', filterScreens);
-    typeFilter.addEventListener('change', filterScreens);
-});
-
-function clearFilters() {
-    document.getElementById('searchInput').value = '';
-    document.getElementById('cityFilter').value = '';
-    document.getElementById('typeFilter').value = '';
+// Filter functionality
+function filterScreens() {
+    const searchTerm = document.getElementById('searchFilter').value.toLowerCase();
+    const cityFilter = document.getElementById('cityFilter').value;
+    const typeFilter = document.getElementById('typeFilter').value;
+    const screens = document.querySelectorAll('.screen-card');
     
-    document.querySelectorAll('.screen-card').forEach(card => {
-        card.style.display = 'block';
+    screens.forEach(screen => {
+        const name = screen.dataset.name;
+        const address = screen.dataset.address;
+        const city = screen.dataset.city;
+        const type = screen.dataset.type;
+        
+        const matchesSearch = !searchTerm || name.includes(searchTerm) || address.includes(searchTerm);
+        const matchesCity = !cityFilter || city === cityFilter;
+        const matchesType = !typeFilter || type === typeFilter;
+        
+        if (matchesSearch && matchesCity && matchesType) {
+            screen.style.display = 'block';
+        } else {
+            screen.style.display = 'none';
+        }
     });
 }
 
-function fillAllWithValue() {
-    const value = prompt('Įveskite transliacijų skaičių, kuris bus taikomas visoms valandoms:', '30');
-    if (value !== null && !isNaN(value) && value >= 0) {
-        document.querySelectorAll('#broadcastScheduleForm input[type="number"]').forEach(input => {
-            input.value = value;
-        });
-    }
+// Clear filters
+function clearFilters() {
+    document.getElementById('searchFilter').value = '';
+    document.getElementById('cityFilter').value = '';
+    document.getElementById('typeFilter').value = '';
+    filterScreens();
 }
 
-function clearAllSlots() {
-    if (confirm('Ar tikrai norite išvalyti visus transliacijų duomenis?')) {
-        document.querySelectorAll('#broadcastScheduleForm input[type="number"]').forEach(input => {
-            input.value = '0';
-            updateHourlySum(input);
-        });
-    }
-}
-
+// Update hourly sum
 function updateHourlySum(input) {
-    const broadcasts = parseInt(input.value) || 0;
-    const costPerBroadcast = 5.0; // €5 per broadcast
-    const hourCost = broadcasts * costPerBroadcast;
-    
-    const booking = input.dataset.booking;
+    const bookingId = input.dataset.booking;
     const date = input.dataset.date;
     const hour = input.dataset.hour;
+    const value = parseFloat(input.value) || 0;
+    const cost = value * 5.0;
     
-    // Update hourly sum
-    const hourlySumElement = document.getElementById(`sum_${booking}_${date}_${hour}`);
-    if (hourlySumElement) {
-        hourlySumElement.textContent = hourCost.toFixed(2) + '€';
+    const sumElement = document.getElementById(`sum_${bookingId}_${date}_${hour}`);
+    if (sumElement) {
+        sumElement.textContent = cost.toFixed(2) + '€';
     }
     
-    // Update daily sum for this date
-    updateDailySum(booking, date);
-    
-    // Update grand total for this booking
-    updateGrandTotal(booking);
+    updateDailySum(bookingId, date);
 }
 
-function updateDailySum(booking, date) {
+// Update daily sum
+function updateDailySum(bookingId, date) {
     let dailyTotal = 0;
-    
-    // Sum all hours for this date
     for (let hour = 0; hour < 24; hour++) {
-        const input = document.querySelector(`input[name="slot_${booking}_${date}_${hour}"]`);
+        const input = document.querySelector(`input[name="slot_${bookingId}_${date}_${hour}"]`);
         if (input) {
-            const broadcasts = parseInt(input.value) || 0;
-            dailyTotal += broadcasts * 5.0;
+            const value = parseFloat(input.value) || 0;
+            dailyTotal += value * 5.0;
         }
     }
     
-    // Update daily sum display
-    const dailySumElement = document.getElementById(`daily_${booking}_${date}`);
-    if (dailySumElement) {
-        dailySumElement.textContent = dailyTotal.toFixed(2) + '€';
+    const dailyElement = document.getElementById(`daily_${bookingId}_${date}`);
+    if (dailyElement) {
+        dailyElement.textContent = dailyTotal.toFixed(2) + '€';
     }
 }
 
-function updateGrandTotal(booking) {
-    let grandTotal = 0;
-    
-    // Sum all daily totals for this booking
-    document.querySelectorAll(`[id^="daily_${booking}_"]`).forEach(dailyElement => {
-        const dailyValue = parseFloat(dailyElement.textContent.replace('€', ''));
-        grandTotal += dailyValue;
-    });
-    
-    // Update grand total display
-    const grandTotalElement = document.getElementById(`grand_total_${booking}`);
-    if (grandTotalElement) {
-        grandTotalElement.textContent = grandTotal.toFixed(2) + '€';
-    }
-}
+// Event listeners
+document.getElementById('searchFilter').addEventListener('input', filterScreens);
+document.getElementById('cityFilter').addEventListener('change', filterScreens);
+document.getElementById('typeFilter').addEventListener('change', filterScreens);
 </script>
-
-<style>
-.screen-card {
-    transition: transform 0.2s;
-}
-.screen-card:hover {
-    transform: translateY(-2px);
-}
-
-/* Broadcast schedule table styling */
-.broadcast-schedule-table {
-    font-size: 0.75rem;
-    margin-bottom: 0;
-}
-
-.broadcast-schedule-table th {
-    background-color: #f8f9fa;
-    font-weight: 600;
-    text-align: center;
-    vertical-align: middle;
-    border: 1px solid #dee2e6;
-    padding: 4px;
-}
-
-.broadcast-schedule-table td {
-    border: 1px solid #dee2e6;
-    vertical-align: middle;
-    padding: 2px;
-}
-
-.broadcast-schedule-table .broadcast-input {
-    border: 1px solid #ced4da;
-    padding: 1px 2px;
-    font-size: 0.7rem;
-    width: 40px;
-    margin: 0;
-    text-align: center;
-}
-
-.broadcast-schedule-table .broadcast-input:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.1rem rgba(13, 110, 253, 0.25);
-}
-
-/* Highlight non-zero values */
-.broadcast-schedule-table .broadcast-input:not([value="0"]):not([value=""]) {
-    background-color: #d1e7dd;
-    border-color: #198754;
-}
-
-/* Weekend highlighting */
-.weekend-row {
-    background-color: #fff3cd !important;
-}
-
-.weekend-row td {
-    background-color: #fff3cd !important;
-}
-
-/* Header styling for hour labels */
-.broadcast-schedule-table thead tr:first-child th {
-    background-color: #6c757d;
-    color: white;
-    font-size: 0.7rem;
-}
-
-.broadcast-schedule-table thead tr:last-child th {
-    background-color: #e9ecef;
-    font-size: 0.65rem;
-    padding: 2px;
-}
-
-/* Total row styling */
-.broadcast-schedule-table .table-warning td {
-    background-color: #fff3cd;
-    border-color: #ffeaa7;
-}
-
-/* Hourly sum styling */
-.hourly-sum {
-    font-size: 0.65rem;
-    color: #6c757d;
-}
-
-.daily-sum {
-    font-weight: bold;
-    color: #0d6efd;
-}
-
-/* Compact date column */
-.broadcast-schedule-table td:first-child {
-    min-width: 60px;
-    max-width: 60px;
-}
-</style>
 {% endblock %}
