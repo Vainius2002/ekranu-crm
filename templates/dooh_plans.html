@@ -26,14 +26,10 @@
             <tr>
                 <td><strong>{{ plan.name }}</strong></td>
                 <td>
-                    <a href="{{ url_for('campaign_detail', id=plan.campaign.id) }}">
-                        {{ plan.campaign.name }}
-                    </a>
+                    {{ plan.campaign.name }}
                 </td>
                 <td>
-                    <a href="{{ url_for('client_detail', id=plan.campaign.client.id) }}">
-                        {{ plan.campaign.client.name }}
-                    </a>
+                    {{ plan.campaign.client.name }}
                 </td>
                 <td>
                     {{ plan.start_date.strftime('%Y-%m-%d') }}<br>

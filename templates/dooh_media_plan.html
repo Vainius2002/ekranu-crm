@@ -19,6 +19,16 @@
     </div>
 </div>
 
+<!-- Media Plan Information Header -->
+<div class="card mb-4">
+    <div class="card-body">
+        <div class="text-center">
+            <h6 class="text-muted mb-1">Ekranų skaičius</h6>
+            <span class="text-warning fs-4 fw-bold">{{ plan.screen_bookings|length }}</span>
+        </div>
+    </div>
+</div>
+
 {% if not plan.screen_bookings %}
 <div class="alert alert-warning">
     <i class="fas fa-exclamation-triangle me-2"></i>
@@ -27,24 +37,100 @@
 </div>
 {% else %}
 
-<!-- Date range selector -->
+<!-- Calendar Selector -->
 <div class="card mb-4">
-    <div class="card-body">
-        <div class="row align-items-end">
-            <div class="col-md-3">
-                <label for="weekStart" class="form-label">Savaitės pradžia</label>
-                <input type="date" id="weekStart" class="form-control" value="{{ plan.start_date }}" 
-                       min="{{ plan.start_date }}" max="{{ plan.end_date }}">
-            </div>
-            <div class="col-md-3">
-                <button class="btn btn-primary" onclick="loadWeekData()">
-                    <i class="fas fa-calendar-week me-2"></i>Rodyti Savaitę
+    <div class="card-header bg-primary text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-calendar me-2"></i>Pasirinkite Savaitę</h5>
+            <div>
+                <button class="btn btn-light btn-sm" onclick="previousWeek()">
+                    <i class="fas fa-chevron-left"></i> Ankstesnė
+                </button>
+                <button class="btn btn-light btn-sm" onclick="nextWeek()">
+                    Kita <i class="fas fa-chevron-right"></i>
                 </button>
             </div>
-            <div class="col-md-6 text-end">
-                <small class="text-muted">
-                    Plano trukmė: {{ (plan.end_date - plan.start_date).days + 1 }} dienos
-                </small>
+        </div>
+    </div>
+    <div class="card-body">
+        <!-- Selected Week Date Display -->
+        <div class="text-center mb-4">
+            <div id="selectedWeekRange" class="text-primary fw-bold fs-3 mb-4">
+                {{ plan.start_date.strftime('%Y-%m-%d') }} - {{ (plan.start_date + timedelta(days=6)).strftime('%Y-%m-%d') }}
+            </div>
+        </div>
+        
+        <!-- Calendar Grid -->
+        <div class="calendar-grid mx-auto" style="max-width: 800px;">
+            <div class="calendar-weekdays">
+                <div class="weekday">Pr</div>
+                <div class="weekday">An</div>
+                <div class="weekday">Tr</div>
+                <div class="weekday">Kt</div>
+                <div class="weekday">Pn</div>
+                <div class="weekday">Št</div>
+                <div class="weekday">Sk</div>
+            </div>
+            <div class="calendar-dates" id="calendarDates">
+                <!-- Calendar dates will be populated by JavaScript -->
+            </div>
+        </div>
+        </div>
+    </div>
+</div>
+
+<!-- New Week Calendar (Initially Hidden) -->
+<div class="card mb-4" id="newWeekCalendarCard" style="display: none;">
+    <div class="card-header bg-success text-white">
+        <div class="d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-calendar-plus me-2"></i>Sukurti Naują Savaitę</h5>
+            <button class="btn btn-light btn-sm" onclick="cancelNewWeek()">
+                <i class="fas fa-times"></i> Atšaukti
+            </button>
+        </div>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-8">
+                <!-- New Week Calendar Grid -->
+                <div class="calendar-grid">
+                    <div class="calendar-header">
+                        <div class="calendar-month" id="newWeekCurrentMonth">
+                            {{ plan.start_date.strftime('%Y %B') }}
+                        </div>
+                    </div>
+                    <div class="calendar-weekdays">
+                        <div class="weekday">Pr</div>
+                        <div class="weekday">An</div>
+                        <div class="weekday">Tr</div>
+                        <div class="weekday">Kt</div>
+                        <div class="weekday">Pn</div>
+                        <div class="weekday">Št</div>
+                        <div class="weekday">Sk</div>
+                    </div>
+                    <div class="calendar-dates" id="newWeekCalendarDates">
+                        <!-- Calendar dates will be populated by JavaScript -->
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="new-week-info">
+                    <div id="newWeekRange" class="text-success fw-bold fs-5 mb-3">
+                        Pasirinkite savaitę...
+                    </div>
+                    <div class="mb-3">
+                        <label for="newWeekName" class="form-label">Naujos savaitės pavadinimas:</label>
+                        <input type="text" id="newWeekName" class="form-control mb-2" placeholder="pvz. Savaitė 2">
+                        <button class="btn btn-success w-100" onclick="confirmCreateNewWeek()" disabled id="confirmNewWeekBtn">
+                            <i class="fas fa-save me-2"></i>Sukurti savaitę
+                        </button>
+                    </div>
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            Nauja savaitė bus sukurta pagal pasirinktą datų intervalą
+                        </small>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -63,6 +149,10 @@
             </div>
             <div class="col-md-6 text-end">
                 <span class="badge bg-info me-2">CPT: <span class="cpt-value">0.00</span>€</span>
+                <span class="badge bg-secondary me-2">
+                    Klipo trukmė: 
+                    <input type="number" class="clip-duration-input" value="15" min="1" max="60" style="width: 35px; border: none; background: transparent; color: white; text-align: center;">s
+                </span>
                 <button class="btn btn-sm btn-outline-secondary" onclick="copyToAllDays({{ booking.id }})">
                     <i class="fas fa-copy me-1"></i>Kopijuoti į visas dienas
                 </button>
@@ -73,68 +163,79 @@
         <div class="table-responsive">
             <table class="table table-bordered table-sm mb-0 media-planning-table">
                 <thead>
-                    <tr class="bg-light">
-                        <th style="min-width: 100px;">Laikas</th>
-                        <th class="text-center">P</th>
-                        <th class="text-center">A</th>
-                        <th class="text-center">T</th>
-                        <th class="text-center">K</th>
-                        <th class="text-center">P</th>
-                        <th class="text-center">Š</th>
-                        <th class="text-center">S</th>
-                        <th class="text-center">SUMA</th>
-                        <th class="text-center">Kaina</th>
+                    <tr class="bg-primary text-white">
+                        <th class="text-center" style="min-width: 100px;">Laikas</th>
+                        <th class="text-center" style="min-width: 80px;">Kartai</th>
+                        <th class="text-center" style="min-width: 80px;">Suma</th>
+                        <th class="text-center" style="min-width: 80px;">Kartai</th>
+                        <th class="text-center" style="min-width: 80px;">Suma</th>
+                        <th class="text-center" style="min-width: 80px;">VISO</th>
                     </tr>
                 </thead>
                 <tbody>
-                    {% for hour in range(24) %}
-                    <tr data-hour="{{ hour }}" data-booking="{{ booking.id }}">
-                        <td class="bg-light">
-                            <strong>{{ "{:02d}:00-{:02d}:00".format(hour, hour+1 if hour < 23 else 0) }}</strong>
-                            <br>
-                            <small class="text-muted">
-                                {% set pricing = booking.screen.pricing_hours|selectattr('hour', 'equalto', hour)|first %}
-                                {% if pricing %}
-                                    {{ pricing.contact_count }} kontaktų
-                                    <br>{{ "%.2f"|format(pricing.price_per_thousand_contacts) }}€/1000
-                                {% else %}
-                                    <span class="text-warning">Nėra įkainio</span>
-                                {% endif %}
-                            </small>
+                    {% for hour in range(6, 24) %}
+                    <tr class="time-row-{{ hour }}">
+                        <td class="text-center align-middle bg-light">
+                            <strong>{{ "%02d"|format(hour) }}.00-{{ "%02d"|format(hour + 1) }}.00</strong>
                         </td>
-                        {% for day in range(7) %}
+                        <!-- First kartai column -->
                         <td class="text-center p-1">
                             <input type="number" 
-                                   class="form-control form-control-sm slots-input text-center" 
+                                   class="form-control form-control-sm kartai-input text-center" 
                                    min="0" max="999" 
                                    value="0"
                                    data-booking="{{ booking.id }}"
                                    data-hour="{{ hour }}"
-                                   data-day="{{ day }}"
-                                   onchange="calculateRowTotal(this)"
+                                   data-row="1"
+                                   onchange="calculateTotals()"
                                    style="width: 60px;">
                         </td>
-                        {% endfor %}
-                        <td class="text-center bg-light">
-                            <strong class="row-total">0</strong>
+                        <!-- First suma column -->
+                        <td class="text-center p-1 bg-light">
+                            <span class="suma-display small text-muted" id="suma_{{ booking.id }}_{{ hour }}_1">0.00€</span>
                         </td>
-                        <td class="text-center bg-light">
-                            <strong class="row-cost">0.00€</strong>
+                        <!-- Second kartai column -->
+                        <td class="text-center p-1">
+                            <input type="number" 
+                                   class="form-control form-control-sm kartai-input text-center" 
+                                   min="0" max="999" 
+                                   value="0"
+                                   data-booking="{{ booking.id }}"
+                                   data-hour="{{ hour }}"
+                                   data-row="2"
+                                   onchange="calculateTotals()"
+                                   style="width: 60px;">
+                        </td>
+                        <!-- Second suma column -->
+                        <td class="text-center p-1 bg-light">
+                            <span class="suma-display small text-muted" id="suma_{{ booking.id }}_{{ hour }}_2">0.00€</span>
+                        </td>
+                        <!-- Hour total column -->
+                        <td class="text-center align-middle bg-warning">
+                            <strong class="hour-grand-total" data-hour="{{ hour }}">0</strong>
                         </td>
                     </tr>
                     {% endfor %}
-                    <tr class="bg-secondary text-white">
-                        <td><strong>VISO:</strong></td>
-                        {% for day in range(7) %}
-                        <td class="text-center">
-                            <strong class="day-total" data-day="{{ day }}">0</strong>
+                    
+                    <!-- Grand total row -->
+                    <tr class="bg-success fw-bold text-white">
+                        <td class="text-center align-middle">
+                            <strong>VISO</strong>
                         </td>
-                        {% endfor %}
-                        <td class="text-center">
-                            <strong class="screen-total">0</strong>
+                        <td class="text-center align-middle">
+                            <strong class="row-total-1">0</strong>
                         </td>
-                        <td class="text-center">
-                            <strong class="screen-cost">0.00€</strong>
+                        <td class="text-center align-middle">
+                            <strong class="suma-total-1">0.00€</strong>
+                        </td>
+                        <td class="text-center align-middle">
+                            <strong class="row-total-2">0</strong>
+                        </td>
+                        <td class="text-center align-middle">
+                            <strong class="suma-total-2">0.00€</strong>
+                        </td>
+                        <td class="text-center align-middle">
+                            <strong class="screen-grand-total">0.00€</strong>
                         </td>
                     </tr>
                 </tbody>
@@ -167,96 +268,178 @@
 {% endif %}
 
 <script>
-// Screen pricing data
-const screenPricing = {
-    {% for booking in plan.screen_bookings %}
-    {{ booking.id }}: {
-        {% for pricing in booking.screen.pricing_hours %}
-        {{ pricing.hour }}: {
-            price: {{ pricing.price_per_thousand_contacts }},
-            contacts: {{ pricing.contact_count }}
-        }{{ ',' if not loop.last }}
-        {% endfor %}
-    }{{ ',' if not loop.last }}
-    {% endfor %}
-};
+// Global variables
+let currentWeekStart = new Date('{{ plan.start_date.strftime('%Y-%m-%d') }}');
+const planStartDate = new Date('{{ plan.start_date.strftime('%Y-%m-%d') }}');
+const planEndDate = new Date('{{ plan.end_date.strftime('%Y-%m-%d') }}');
 
-function calculateRowTotal(input) {
-    const row = input.closest('tr');
-    const inputs = row.querySelectorAll('.slots-input');
-    let total = 0;
-    
-    inputs.forEach(inp => {
-        total += parseInt(inp.value || 0);
-    });
-    
-    row.querySelector('.row-total').textContent = total;
-    
-    // Calculate cost for this row
-    const bookingId = parseInt(input.dataset.booking);
-    const hour = parseInt(input.dataset.hour);
-    
-    const pricing = screenPricing[bookingId] && screenPricing[bookingId][hour];
-    let cost = 0;
-    
-    if (pricing && pricing.contacts > 0) {
-        cost = (total * pricing.price) / 1000;
-    }
-    
-    row.querySelector('.row-cost').textContent = cost.toFixed(2) + '€';
-    
-    calculateScreenTotals();
+// Calendar functions
+function initializeCalendar() {
+    generateCalendar();
+    updateSelectedWeekRange();
 }
 
-function calculateScreenTotals() {
-    document.querySelectorAll('.screen-planning-card').forEach(card => {
-        const table = card.querySelector('.media-planning-table');
-        
-        // Calculate day totals
-        for (let day = 0; day < 7; day++) {
-            let dayTotal = 0;
-            const dayInputs = table.querySelectorAll(`input[data-day="${day}"]`);
-            dayInputs.forEach(input => {
-                dayTotal += parseInt(input.value || 0);
-            });
-            table.querySelector(`.day-total[data-day="${day}"]`).textContent = dayTotal;
-        }
-        
-        // Calculate screen total and cost
-        let screenTotal = 0;
-        let screenCost = 0;
-        
-        table.querySelectorAll('.row-total').forEach(totalCell => {
-            if (!totalCell.closest('tr').classList.contains('bg-secondary')) {
-                screenTotal += parseInt(totalCell.textContent || 0);
-            }
-        });
-        
-        table.querySelectorAll('.row-cost').forEach(costCell => {
-            if (!costCell.closest('tr').classList.contains('bg-secondary')) {
-                const cost = parseFloat(costCell.textContent.replace('€', '') || 0);
-                screenCost += cost;
-            }
-        });
-        
-        table.querySelector('.screen-total').textContent = screenTotal;
-        table.querySelector('.screen-cost').textContent = screenCost.toFixed(2) + '€';
-    });
+function generateCalendar() {
+    const calendarDates = document.getElementById('calendarDates');
     
-    calculateTotals();
+    const year = currentWeekStart.getFullYear();
+    const month = currentWeekStart.getMonth();
+    
+    // Clear previous dates
+    calendarDates.innerHTML = '';
+    
+    // Get first day of month and number of days
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay() + 1); // Start from Monday
+    
+    // Generate 6 weeks of calendar
+    for (let week = 0; week < 6; week++) {
+        for (let day = 0; day < 7; day++) {
+            const date = new Date(startDate);
+            date.setDate(startDate.getDate() + week * 7 + day);
+            
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-date';
+            dayElement.textContent = date.getDate();
+            
+            // Add classes based on date status
+            if (date.getMonth() !== month) {
+                dayElement.classList.add('other-month');
+            }
+            if (date < planStartDate || date > planEndDate) {
+                dayElement.classList.add('disabled');
+            } else {
+                dayElement.addEventListener('click', () => selectWeekFromDate(date));
+            }
+            
+            // Highlight current week
+            if (isDateInCurrentWeek(date)) {
+                dayElement.classList.add('selected-week');
+            }
+            
+            calendarDates.appendChild(dayElement);
+        }
+    }
+}
+
+function isDateInCurrentWeek(date) {
+    const weekEnd = new Date(currentWeekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    return date >= currentWeekStart && date <= weekEnd;
+}
+
+function selectWeekFromDate(date) {
+    // Get Monday of the week containing this date
+    const dayOfWeek = date.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Handle Sunday
+    currentWeekStart = new Date(date);
+    currentWeekStart.setDate(date.getDate() + mondayOffset);
+    
+    generateCalendar();
+    updateSelectedWeekRange();
+}
+
+function updateSelectedWeekRange() {
+    const weekEnd = new Date(currentWeekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    
+    const formatDate = (date) => {
+        return date.getFullYear() + '-' + 
+               String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(date.getDate()).padStart(2, '0');
+    };
+    
+    const rangeText = formatDate(currentWeekStart) + ' - ' + formatDate(weekEnd);
+    document.getElementById('selectedWeekRange').textContent = rangeText;
+}
+
+function previousWeek() {
+    const newWeekStart = new Date(currentWeekStart);
+    newWeekStart.setDate(newWeekStart.getDate() - 7);
+    
+    if (newWeekStart >= planStartDate) {
+        currentWeekStart = newWeekStart;
+        generateCalendar();
+        updateSelectedWeekRange();
+    }
+}
+
+function nextWeek() {
+    const newWeekStart = new Date(currentWeekStart);
+    newWeekStart.setDate(newWeekStart.getDate() + 7);
+    
+    if (newWeekStart <= planEndDate) {
+        currentWeekStart = newWeekStart;
+        generateCalendar();
+        updateSelectedWeekRange();
+    }
 }
 
 function calculateTotals() {
+    document.querySelectorAll('.screen-planning-card').forEach(card => {
+        const bookingId = card.querySelector('.kartai-input').dataset.booking;
+        
+        // Calculate totals for each row
+        for (let row = 1; row <= 2; row++) {
+            let rowTotal = 0;
+            let rowCost = 0;
+            
+            // Sum kartai for this row
+            card.querySelectorAll(`.kartai-input[data-row="${row}"]`).forEach(input => {
+                const kartai = parseInt(input.value || 0);
+                rowTotal += kartai;
+                
+                // Calculate cost (assuming 5€ per broadcast)
+                const cost = kartai * 5.0;
+                rowCost += cost;
+                
+                // Update individual suma display
+                const hour = input.dataset.hour;
+                const sumaElement = document.getElementById(`suma_${bookingId}_${hour}_${row}`);
+                if (sumaElement) {
+                    sumaElement.textContent = cost.toFixed(2) + '€';
+                }
+            });
+            
+            // Update row totals
+            card.querySelector(`.row-total-${row}`).textContent = rowTotal;
+            card.querySelector(`.suma-total-${row}`).textContent = rowCost.toFixed(2) + '€';
+        }
+        
+        // Calculate grand totals for each hour
+        for (let hour = 0; hour < 24; hour++) {
+            let hourGrandTotal = 0;
+            card.querySelectorAll(`.kartai-input[data-hour="${hour}"]`).forEach(input => {
+                hourGrandTotal += parseInt(input.value || 0);
+            });
+            
+            const hourTotalElement = card.querySelector(`.hour-grand-total[data-hour="${hour}"]`);
+            if (hourTotalElement) {
+                hourTotalElement.textContent = hourGrandTotal;
+            }
+        }
+        
+        // Calculate screen grand total
+        const row1Total = parseFloat(card.querySelector('.suma-total-1').textContent.replace('€', '') || 0);
+        const row2Total = parseFloat(card.querySelector('.suma-total-2').textContent.replace('€', '') || 0);
+        const screenGrandTotal = row1Total + row2Total;
+        
+        card.querySelector('.screen-grand-total').textContent = screenGrandTotal.toFixed(2) + '€';
+    });
+    
+    // Calculate overall totals
     let totalSlots = 0;
     let totalCost = 0;
     
-    document.querySelectorAll('.screen-total').forEach(total => {
-        totalSlots += parseInt(total.textContent || 0);
+    document.querySelectorAll('.screen-grand-total').forEach(total => {
+        const cost = parseFloat(total.textContent.replace('€', '') || 0);
+        totalCost += cost;
     });
     
-    document.querySelectorAll('.screen-cost').forEach(cost => {
-        const costValue = parseFloat(cost.textContent.replace('€', '') || 0);
-        totalCost += costValue;
+    document.querySelectorAll('.kartai-input').forEach(input => {
+        totalSlots += parseInt(input.value || 0);
     });
     
     document.getElementById('totalSlots').textContent = totalSlots;
@@ -264,62 +447,353 @@ function calculateTotals() {
     
     const avgCPT = totalSlots > 0 ? (totalCost * 1000) / totalSlots : 0;
     document.getElementById('avgCPT').textContent = avgCPT.toFixed(2) + '€';
+    document.getElementById('avgCPTHeader').textContent = '€' + avgCPT.toFixed(2);
 }
 
-function copyToAllDays(bookingId) {
-    const table = document.querySelector(`[data-booking="${bookingId}"]`).closest('table');
+function loadSelectedWeek() {
+    alert('Pasirinktos savaitės duomenų įkėlimas - funkcionalumas bus pridėtas vėliau');
+}
+
+// New week creation functions
+let newWeekStart = null;
+
+function createNewWeek() {
+    const newWeekCard = document.getElementById('newWeekCalendarCard');
+    newWeekCard.style.display = 'block';
     
-    if (confirm('Ar tikrai norite nukopijuoti pirmos dienos duomenis į visas kitas dienas?')) {
-        table.querySelectorAll('tr[data-hour]').forEach(row => {
-            const firstDayInput = row.querySelector('input[data-day="0"]');
-            const firstDayValue = firstDayInput.value || 0;
+    // Initialize new week calendar
+    generateNewWeekCalendar();
+    
+    // Scroll to new week calendar
+    newWeekCard.scrollIntoView({ behavior: 'smooth' });
+}
+
+function cancelNewWeek() {
+    const newWeekCard = document.getElementById('newWeekCalendarCard');
+    newWeekCard.style.display = 'none';
+    
+    // Reset values
+    newWeekStart = null;
+    document.getElementById('newWeekName').value = '';
+    document.getElementById('newWeekRange').textContent = 'Pasirinkite savaitę...';
+    document.getElementById('confirmNewWeekBtn').disabled = true;
+}
+
+function generateNewWeekCalendar() {
+    const calendarDates = document.getElementById('newWeekCalendarDates');
+    const currentMonth = document.getElementById('newWeekCurrentMonth');
+    
+    const year = planStartDate.getFullYear();
+    const month = planStartDate.getMonth();
+    
+    currentMonth.textContent = new Date(year, month).toLocaleDateString('lt-LT', { year: 'numeric', month: 'long' });
+    
+    // Clear previous dates
+    calendarDates.innerHTML = '';
+    
+    // Get first day of month and number of days
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
+    const startDate = new Date(firstDay);
+    startDate.setDate(startDate.getDate() - firstDay.getDay() + 1); // Start from Monday
+    
+    // Generate 6 weeks of calendar
+    for (let week = 0; week < 6; week++) {
+        for (let day = 0; day < 7; day++) {
+            const date = new Date(startDate);
+            date.setDate(startDate.getDate() + week * 7 + day);
             
-            row.querySelectorAll('.slots-input').forEach((input, dayIndex) => {
-                if (dayIndex > 0) {
-                    input.value = firstDayValue;
-                    calculateRowTotal(input);
-                }
-            });
-        });
+            const dayElement = document.createElement('div');
+            dayElement.className = 'calendar-date new-week-calendar-date';
+            dayElement.textContent = date.getDate();
+            
+            // Add classes based on date status
+            if (date.getMonth() !== month) {
+                dayElement.classList.add('other-month');
+            }
+            if (date < planStartDate || date > planEndDate) {
+                dayElement.classList.add('disabled');
+            } else {
+                dayElement.addEventListener('click', () => selectNewWeekFromDate(date));
+            }
+            
+            // Highlight selected week
+            if (newWeekStart && isDateInNewWeek(date)) {
+                dayElement.classList.add('selected-week');
+            }
+            
+            calendarDates.appendChild(dayElement);
+        }
     }
 }
 
-function loadWeekData() {
-    // This would load data for the selected week
-    // For now, just show a message
-    alert('Savaitės duomenų įkėlimas - funkcionalumas bus pridėtas vėliau');
+function isDateInNewWeek(date) {
+    if (!newWeekStart) return false;
+    const weekEnd = new Date(newWeekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    return date >= newWeekStart && date <= weekEnd;
 }
 
-// Initialize calculations on page load
+function selectNewWeekFromDate(date) {
+    // Get Monday of the week containing this date
+    const dayOfWeek = date.getDay();
+    const mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek; // Handle Sunday
+    newWeekStart = new Date(date);
+    newWeekStart.setDate(date.getDate() + mondayOffset);
+    
+    generateNewWeekCalendar();
+    updateNewWeekRange();
+    
+    // Enable confirm button
+    document.getElementById('confirmNewWeekBtn').disabled = false;
+}
+
+function updateNewWeekRange() {
+    if (!newWeekStart) return;
+    
+    const weekEnd = new Date(newWeekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    
+    const formatDate = (date) => {
+        return date.getFullYear() + '-' + 
+               String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(date.getDate()).padStart(2, '0');
+    };
+    
+    const rangeText = formatDate(newWeekStart) + ' - ' + formatDate(weekEnd);
+    document.getElementById('newWeekRange').textContent = rangeText;
+}
+
+function confirmCreateNewWeek() {
+    const weekName = document.getElementById('newWeekName').value.trim();
+    if (!weekName) {
+        alert('Prašome įvesti savaitės pavadinimą');
+        return;
+    }
+    
+    if (!newWeekStart) {
+        alert('Prašome pasirinkti savaitę kalendoriuje');
+        return;
+    }
+    
+    // Here you would typically make an API call to create the new week
+    // For now, just show a success message
+    const weekEnd = new Date(newWeekStart);
+    weekEnd.setDate(weekEnd.getDate() + 6);
+    
+    const formatDate = (date) => {
+        return date.getFullYear() + '-' + 
+               String(date.getMonth() + 1).padStart(2, '0') + '-' + 
+               String(date.getDate()).padStart(2, '0');
+    };
+    
+    const weekRange = formatDate(newWeekStart) + ' - ' + formatDate(weekEnd);
+    
+    alert(`Nauja savaitė "${weekName}" (${weekRange}) bus sukurta!`);
+    
+    // Hide the new week calendar
+    cancelNewWeek();
+}
+
+// Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
+    initializeCalendar();
     calculateTotals();
 });
 </script>
 
 <style>
-.media-planning-table {
+/* Calendar Styles */
+.calendar-grid {
+    max-width: 100%;
+}
+
+.calendar-header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.calendar-month {
+    font-size: 1.2rem;
+    font-weight: bold;
+    color: #495057;
+}
+
+.calendar-weekdays {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    margin-bottom: 1px;
+}
+
+.weekday {
+    background-color: #6c757d;
+    color: white;
+    padding: 0.5rem;
+    text-align: center;
+    font-weight: bold;
     font-size: 0.85rem;
 }
 
-.media-planning-table th,
-.media-planning-table td {
-    padding: 0.3rem;
+.calendar-dates {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 1px;
+    border: 1px solid #dee2e6;
+}
+
+.calendar-date {
+    background-color: #fff;
+    padding: 0.75rem;
+    text-align: center;
+    cursor: pointer;
+    border: 1px solid #e9ecef;
+    transition: background-color 0.2s;
+    min-height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-date:hover:not(.disabled) {
+    background-color: #e3f2fd;
+}
+
+.calendar-date.selected-week {
+    background-color: #007bff;
+    color: white;
+    font-weight: bold;
+}
+
+.calendar-date.other-month {
+    color: #adb5bd;
+    background-color: #f8f9fa;
+}
+
+.calendar-date.disabled {
+    background-color: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.selected-week-info {
+    background-color: #f8f9fa;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    border: 1px solid #dee2e6;
+}
+
+.new-week-info {
+    background-color: #f0f8f0;
+    padding: 1rem;
+    border-radius: 0.375rem;
+    border: 1px solid #d4edda;
+}
+
+/* New week calendar specific styles */
+.new-week-calendar-date:hover:not(.disabled) {
+    background-color: #d4edda;
+}
+
+.new-week-calendar-date.selected-week {
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+}
+
+/* Animation for new week calendar */
+#newWeekCalendarCard {
+    animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Media Planning Table Styles */
+.media-planning-table {
+    font-size: 0.75rem;
+    margin-bottom: 0;
+}
+
+.media-planning-table th {
+    background-color: #007bff;
+    color: white;
+    font-weight: 600;
+    text-align: center;
     vertical-align: middle;
+    border: 1px solid #0056b3;
+    padding: 0.25rem;
 }
 
-.slots-input {
-    border: 1px solid #ddd;
+.media-planning-table td {
+    padding: 0.2rem;
+    vertical-align: middle;
+    border: 1px solid #dee2e6;
+}
+
+.kartai-input {
+    border: 1px solid #ced4da;
     padding: 2px 4px;
-    font-size: 0.8rem;
+    font-size: 0.7rem;
+    text-align: center;
+    width: 100%;
+    max-width: 45px;
 }
 
-.slots-input:focus {
+.kartai-input:focus {
     border-color: #007bff;
     box-shadow: 0 0 0 0.1rem rgba(0, 123, 255, 0.25);
 }
 
+.suma-display {
+    font-size: 0.65rem;
+    color: #28a745;
+    font-weight: 500;
+}
+
 .screen-planning-card {
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+/* Row alternating colors */
+.kartai-row-1 {
+    background-color: #ffffff;
+}
+
+.suma-row-1 {
+    background-color: #f8f9fa !important;
+}
+
+.kartai-row-2 {
+    background-color: #ffffff;
+}
+
+.suma-row-2 {
+    background-color: #f8f9fa !important;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .calendar-grid {
+        font-size: 0.8rem;
+    }
+    
+    .media-planning-table {
+        font-size: 0.65rem;
+    }
+    
+    .kartai-input {
+        width: 35px;
+        font-size: 0.6rem;
+    }
 }
 </style>
 {% endblock %}

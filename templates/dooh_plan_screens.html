@@ -29,6 +29,156 @@
         {% endfor %}
     </div>
 </div>
+
+<!-- Broadcast scheduling tables for selected screens -->
+<div class="mb-4">
+    <h4><i class="fas fa-calendar-alt me-2"></i>Transliacijų Skaičius Pagal Valandas</h4>
+    <p class="text-muted">Kiekvienam ekranui galite įvesti, kiek transliacijų pirkti kiekvienai valandai.</p>
+    
+    <form id="broadcastScheduleForm" method="POST" action="{{ url_for('update_broadcast_schedule', plan_id=plan.id) }}">
+        {% for booking in plan.screen_bookings %}
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">
+                    <i class="fas fa-tv me-2"></i>{{ booking.screen.name }}
+                    <small class="text-muted">- {{ booking.screen.city }}, {{ booking.screen.provider.name }}</small>
+                </h5>
+            </div>
+            <div class="card-body">
+                <!-- Screen and Plan Information Header -->
+                <div class="row mb-3 p-3 bg-light rounded">
+                    <div class="col-md-3">
+                        <strong>Lokacija:</strong><br>
+                        <span class="text-primary">{{ booking.screen.city }}</span><br>
+                        <small class="text-muted">{{ booking.screen.address }}</small>
+                    </div>
+                    <div class="col-md-3">
+                        <strong>Plano Pavadinimas:</strong><br>
+                        <span class="text-primary">{{ plan.name }}</span><br>
+                        <small class="text-muted">{{ plan.start_date.strftime('%Y-%m-%d') }} - {{ plan.end_date.strftime('%Y-%m-%d') }}</small>
+                    </div>
+                    <div class="col-md-2">
+                        <strong>CPT:</strong><br>
+                        <span class="text-success">€5.00</span><br>
+                        <small class="text-muted">kaina už transliaciją</small>
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Klipo trukmė:</strong><br>
+                        <div class="input-group input-group-sm mt-1">
+                            <input type="number" class="form-control" value="15" min="1" max="60" style="max-width: 60px;">
+                            <span class="input-group-text">s</span>
+                        </div>
+                        <small class="text-muted">trukmė</small>
+                    </div>
+                    <div class="col-md-2">
+                        <strong>Ekrano tipas:</strong><br>
+                        <span class="badge bg-{{ 'primary' if booking.screen.screen_type == 'horizontal' else 'secondary' }}">
+                            {{ 'Horizontalus' if booking.screen.screen_type == 'horizontal' else 'Vertikalus' }}
+                        </span><br>
+                        <small class="text-muted">{{ booking.screen.width }}m × {{ booking.screen.height }}m</small>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table table-bordered table-sm broadcast-schedule-table">
+                        <thead>
+                            <tr class="table-secondary">
+                                <th rowspan="2" class="align-middle text-center" style="min-width: 80px;">Data</th>
+                                {% for hour in range(24) %}
+                                <th colspan="2" class="text-center" style="min-width: 90px;">{{ "%02d"|format(hour) }}:00</th>
+                                {% endfor %}
+                                <th rowspan="2" class="align-middle text-center" style="min-width: 80px;">Dienų Suma</th>
+                            </tr>
+                            <tr class="table-light">
+                                {% for hour in range(24) %}
+                                <th class="text-center small" style="min-width: 45px;">kartai</th>
+                                <th class="text-center small" style="min-width: 45px;">suma</th>
+                                {% endfor %}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% set current_date = plan.start_date %}
+                            {% while current_date <= plan.end_date %}
+                            {% set weekday = current_date.strftime('%w')|int %}
+                            <tr class="{{ 'weekend-row' if weekday == 0 or weekday == 6 else '' }}">
+                                <td class="align-middle fw-bold text-center">
+                                    <div>{{ current_date.strftime('%m-%d') }}</div>
+                                    <small class="text-muted">{{ current_date.strftime('%a') }}</small>
+                                </td>
+                                {% set daily_total = 0 %}
+                                {% for hour in range(24) %}
+                                {% set slot_data = booking.screen_slots|selectattr('date', 'equalto', current_date)|selectattr('hour', 'equalto', hour)|first %}
+                                {% set hour_broadcasts = slot_data.slots_purchased if slot_data else 0 %}
+                                {% set hour_cost = hour_broadcasts * 5.0 %}
+                                {% set daily_total = daily_total + hour_cost %}
+                                <td class="p-1">
+                                    <input type="number" 
+                                           class="form-control form-control-sm text-center broadcast-input" 
+                                           name="slot_{{ booking.id }}_{{ current_date.strftime('%Y-%m-%d') }}_{{ hour }}"
+                                           value="{{ hour_broadcasts }}"
+                                           min="0" 
+                                           max="999"
+                                           data-hour="{{ hour }}"
+                                           data-date="{{ current_date.strftime('%Y-%m-%d') }}"
+                                           data-booking="{{ booking.id }}"
+                                           onchange="updateHourlySum(this)">
+                                </td>
+                                <td class="p-1 text-center align-middle">
+                                    <span class="hourly-sum text-muted small" 
+                                          id="sum_{{ booking.id }}_{{ current_date.strftime('%Y-%m-%d') }}_{{ hour }}">
+                                        {{ "%.2f"|format(hour_cost) }}€
+                                    </span>
+                                </td>
+                                {% endfor %}
+                                <td class="text-center align-middle fw-bold">
+                                    <span class="daily-sum" 
+                                          id="daily_{{ booking.id }}_{{ current_date.strftime('%Y-%m-%d') }}">
+                                        {{ "%.2f"|format(daily_total) }}€
+                                    </span>
+                                </td>
+                            </tr>
+                            {% set current_date = current_date + timedelta(days=1) %}
+                            {% endwhile %}
+                            <tr class="table-warning fw-bold">
+                                <td class="text-center">TOTAL</td>
+                                {% set grand_total = 0 %}
+                                {% for hour in range(24) %}
+                                {% set hour_total = 0 %}
+                                {% set current_date_loop = plan.start_date %}
+                                {% while current_date_loop <= plan.end_date %}
+                                    {% set slot_data = booking.screen_slots|selectattr('date', 'equalto', current_date_loop)|selectattr('hour', 'equalto', hour)|first %}
+                                    {% set hour_broadcasts = slot_data.slots_purchased if slot_data else 0 %}
+                                    {% set hour_total = hour_total + hour_broadcasts %}
+                                    {% set current_date_loop = current_date_loop + timedelta(days=1) %}
+                                {% endwhile %}
+                                {% set hour_total_cost = hour_total * 5.0 %}
+                                {% set grand_total = grand_total + hour_total_cost %}
+                                <td class="text-center align-middle small">{{ hour_total }}</td>
+                                <td class="text-center align-middle small">{{ "%.2f"|format(hour_total_cost) }}€</td>
+                                {% endfor %}
+                                <td class="text-center align-middle">
+                                    <span id="grand_total_{{ booking.id }}">{{ "%.2f"|format(grand_total) }}€</span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+        
+        <div class="d-flex gap-2 mb-4">
+            <button type="submit" class="btn btn-success">
+                <i class="fas fa-save me-2"></i>Išsaugoti Transliacijų Planą
+            </button>
+            <button type="button" class="btn btn-outline-secondary" onclick="fillAllWithValue()">
+                <i class="fas fa-fill me-2"></i>Užpildyti Visus
+            </button>
+            <button type="button" class="btn btn-outline-warning" onclick="clearAllSlots()">
+                <i class="fas fa-eraser me-2"></i>Išvalyti Visus
+            </button>
+        </div>
+    </form>
+</div>
 {% endif %}
 
 <!-- Search and filter controls -->
@@ -189,6 +339,81 @@ function clearFilters() {
         card.style.display = 'block';
     });
 }
+
+function fillAllWithValue() {
+    const value = prompt('Įveskite transliacijų skaičių, kuris bus taikomas visoms valandoms:', '30');
+    if (value !== null && !isNaN(value) && value >= 0) {
+        document.querySelectorAll('#broadcastScheduleForm input[type="number"]').forEach(input => {
+            input.value = value;
+        });
+    }
+}
+
+function clearAllSlots() {
+    if (confirm('Ar tikrai norite išvalyti visus transliacijų duomenis?')) {
+        document.querySelectorAll('#broadcastScheduleForm input[type="number"]').forEach(input => {
+            input.value = '0';
+            updateHourlySum(input);
+        });
+    }
+}
+
+function updateHourlySum(input) {
+    const broadcasts = parseInt(input.value) || 0;
+    const costPerBroadcast = 5.0; // €5 per broadcast
+    const hourCost = broadcasts * costPerBroadcast;
+    
+    const booking = input.dataset.booking;
+    const date = input.dataset.date;
+    const hour = input.dataset.hour;
+    
+    // Update hourly sum
+    const hourlySumElement = document.getElementById(`sum_${booking}_${date}_${hour}`);
+    if (hourlySumElement) {
+        hourlySumElement.textContent = hourCost.toFixed(2) + '€';
+    }
+    
+    // Update daily sum for this date
+    updateDailySum(booking, date);
+    
+    // Update grand total for this booking
+    updateGrandTotal(booking);
+}
+
+function updateDailySum(booking, date) {
+    let dailyTotal = 0;
+    
+    // Sum all hours for this date
+    for (let hour = 0; hour < 24; hour++) {
+        const input = document.querySelector(`input[name="slot_${booking}_${date}_${hour}"]`);
+        if (input) {
+            const broadcasts = parseInt(input.value) || 0;
+            dailyTotal += broadcasts * 5.0;
+        }
+    }
+    
+    // Update daily sum display
+    const dailySumElement = document.getElementById(`daily_${booking}_${date}`);
+    if (dailySumElement) {
+        dailySumElement.textContent = dailyTotal.toFixed(2) + '€';
+    }
+}
+
+function updateGrandTotal(booking) {
+    let grandTotal = 0;
+    
+    // Sum all daily totals for this booking
+    document.querySelectorAll(`[id^="daily_${booking}_"]`).forEach(dailyElement => {
+        const dailyValue = parseFloat(dailyElement.textContent.replace('€', ''));
+        grandTotal += dailyValue;
+    });
+    
+    // Update grand total display
+    const grandTotalElement = document.getElementById(`grand_total_${booking}`);
+    if (grandTotalElement) {
+        grandTotalElement.textContent = grandTotal.toFixed(2) + '€';
+    }
+}
 </script>
 
 <style>
@@ -197,6 +422,92 @@ function clearFilters() {
 }
 .screen-card:hover {
     transform: translateY(-2px);
+}
+
+/* Broadcast schedule table styling */
+.broadcast-schedule-table {
+    font-size: 0.75rem;
+    margin-bottom: 0;
+}
+
+.broadcast-schedule-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    text-align: center;
+    vertical-align: middle;
+    border: 1px solid #dee2e6;
+    padding: 4px;
+}
+
+.broadcast-schedule-table td {
+    border: 1px solid #dee2e6;
+    vertical-align: middle;
+    padding: 2px;
+}
+
+.broadcast-schedule-table .broadcast-input {
+    border: 1px solid #ced4da;
+    padding: 1px 2px;
+    font-size: 0.7rem;
+    width: 40px;
+    margin: 0;
+    text-align: center;
+}
+
+.broadcast-schedule-table .broadcast-input:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.1rem rgba(13, 110, 253, 0.25);
+}
+
+/* Highlight non-zero values */
+.broadcast-schedule-table .broadcast-input:not([value="0"]):not([value=""]) {
+    background-color: #d1e7dd;
+    border-color: #198754;
+}
+
+/* Weekend highlighting */
+.weekend-row {
+    background-color: #fff3cd !important;
+}
+
+.weekend-row td {
+    background-color: #fff3cd !important;
+}
+
+/* Header styling for hour labels */
+.broadcast-schedule-table thead tr:first-child th {
+    background-color: #6c757d;
+    color: white;
+    font-size: 0.7rem;
+}
+
+.broadcast-schedule-table thead tr:last-child th {
+    background-color: #e9ecef;
+    font-size: 0.65rem;
+    padding: 2px;
+}
+
+/* Total row styling */
+.broadcast-schedule-table .table-warning td {
+    background-color: #fff3cd;
+    border-color: #ffeaa7;
+}
+
+/* Hourly sum styling */
+.hourly-sum {
+    font-size: 0.65rem;
+    color: #6c757d;
+}
+
+.daily-sum {
+    font-weight: bold;
+    color: #0d6efd;
+}
+
+/* Compact date column */
+.broadcast-schedule-table td:first-child {
+    min-width: 60px;
+    max-width: 60px;
 }
 </style>
 {% endblock %}

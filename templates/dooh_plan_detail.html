@@ -22,14 +22,10 @@
             <div class="card-body">
                 <h5 class="card-title">Plano Informacija</h5>
                 <p><strong>Kampanija:</strong><br>
-                    <a href="{{ url_for('campaign_detail', id=plan.campaign.id) }}">
-                        {{ plan.campaign.name }}
-                    </a>
+                    {{ plan.campaign.name }}
                 </p>
                 <p><strong>Klientas:</strong><br>
-                    <a href="{{ url_for('client_detail', id=plan.campaign.client.id) }}">
-                        {{ plan.campaign.client.name }}
-                    </a>
+                    {{ plan.campaign.client.name }}
                 </p>
                 <p><strong>Pradžios data:</strong><br>{{ plan.start_date.strftime('%Y-%m-%d') }}</p>
                 <p><strong>Pabaigos data:</strong><br>{{ plan.end_date.strftime('%Y-%m-%d') }}</p>

@@ -389,9 +389,10 @@ def dooh_plan_detail(id):
 
 @app.route('/dooh-plan/<int:id>/screens')
 def dooh_plan_screens(id):
+    from datetime import timedelta
     plan = DOOHPlan.query.get_or_404(id)
     screens = Screen.query.all()
-    return render_template('dooh_plan_screens.html', plan=plan, screens=screens)
+    return render_template('dooh_plan_screens.html', plan=plan, screens=screens, timedelta=timedelta)
 
 @app.route('/dooh-plan/<int:plan_id>/add-screen/<int:screen_id>', methods=['POST'])
 def add_screen_to_plan(plan_id, screen_id):
@@ -410,10 +411,62 @@ def add_screen_to_plan(plan_id, screen_id):
     flash(f'Ekranas "{screen.name}" pridėtas į planą!')
     return redirect(url_for('dooh_plan_screens', id=plan_id))
 
+@app.route('/dooh-plan/<int:plan_id>/update-broadcast-schedule', methods=['POST'])
+def update_broadcast_schedule(plan_id):
+    from datetime import datetime, timedelta
+    plan = DOOHPlan.query.get_or_404(plan_id)
+    
+    # Process form data for each booking
+    for booking in plan.screen_bookings:
+        current_date = plan.start_date
+        
+        while current_date <= plan.end_date:
+            for hour in range(24):
+                # Get the form field name
+                field_name = f"slot_{booking.id}_{current_date.strftime('%Y-%m-%d')}_{hour}"
+                slots_purchased = request.form.get(field_name, '0')
+                
+                try:
+                    slots_purchased = int(slots_purchased) if slots_purchased else 0
+                except ValueError:
+                    slots_purchased = 0
+                
+                # Find existing slot or create new one
+                existing_slot = ScreenSlot.query.filter_by(
+                    booking_id=booking.id,
+                    date=current_date,
+                    hour=hour
+                ).first()
+                
+                if existing_slot:
+                    existing_slot.slots_purchased = slots_purchased
+                else:
+                    # Only create slot if slots_purchased > 0
+                    if slots_purchased > 0:
+                        slot = ScreenSlot(
+                            booking_id=booking.id,
+                            date=current_date,
+                            hour=hour,
+                            slots_purchased=slots_purchased
+                        )
+                        db.session.add(slot)
+                
+            current_date += timedelta(days=1)
+    
+    try:
+        db.session.commit()
+        flash('Transliacijų planas sėkmingai išsaugotas!', 'success')
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Klaida išsaugojant transliacijų planą: {str(e)}', 'error')
+    
+    return redirect(url_for('dooh_plan_screens', id=plan_id))
+
 @app.route('/dooh-plan/<int:id>/media-plan')
 def dooh_plan_media(id):
+    from datetime import timedelta
     plan = DOOHPlan.query.get_or_404(id)
-    return render_template('dooh_media_plan.html', plan=plan)
+    return render_template('dooh_media_plan.html', plan=plan, timedelta=timedelta)
 
 # API Routes
 @app.route('/api/import-brands', methods=['POST'])
