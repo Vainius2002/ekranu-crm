@@ -72,12 +72,65 @@
 </div>
 {% else %}
 
-<!-- Media Plan Calendar (TV-Planner Style) -->
-<div class="mb-6">
-    <h3 class="font-medium text-slate-700 mb-3">Media plano paskirstymas pagal dienas</h3>
-    <div id="mediaPlanCalendar" class="bg-white border border-slate-200 rounded-lg overflow-x-auto">
-        <!-- Calendar table will be generated here -->
-        <div class="p-4 text-sm text-slate-500">Kalendorius kraunasi...</div>
+<!-- Calendar Display (No Week Selection) -->
+<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
+    <div class="px-4 py-5 sm:px-6 bg-indigo-600">
+        <h3 class="text-lg leading-6 font-medium text-white">
+            <i class="fas fa-calendar mr-2"></i>Media Plano Kalendorius
+        </h3>
+    </div>
+    <div class="px-4 py-5 sm:px-6">
+        <!-- Selected Week Date Display -->
+        <div class="text-center mb-6">
+            <div id="selectedDateRange" class="text-3xl font-bold text-indigo-600 mb-4">
+                {{ plan.start_date.strftime('%Y-%m-%d') }} - {{ plan.end_date.strftime('%Y-%m-%d') }}
+            </div>
+        </div>
+        
+        <!-- TV-Planning Style Calendar -->
+        <div class="max-w-full mx-auto">
+            <div class="overflow-x-auto shadow ring-1 ring-black ring-opacity-5 md:rounded-lg" style="max-height: 400px;">
+                <div class="inline-block min-w-full">
+                    <table class="min-w-full divide-y divide-gray-200" style="min-width: max-content;">
+                    <thead class="bg-indigo-600">
+                        <tr id="calendarHeaderRow">
+                            <th class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider" style="min-width: 200px;">Ekranas</th>
+                            <!-- Calendar headers will be populated by JavaScript -->
+                        </tr>
+                    </thead>
+                    <tbody class="bg-white divide-y divide-gray-200">
+                        {% for booking in plan.screen_bookings %}
+                        <tr class="calendar-screen-row" data-screen-id="{{ booking.screen.id }}">
+                            <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50" style="min-width: 200px;">
+                                <div class="flex items-center">
+                                    <div class="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
+                                        <i class="fas fa-tv text-yellow-600 text-sm"></i>
+                                    </div>
+                                    <div>
+                                        <div class="font-semibold">{{ booking.screen.name }}</div>
+                                        <div class="text-xs text-gray-500">{{ booking.screen.provider.name }}</div>
+                                    </div>
+                                </div>
+                            </td>
+                            <!-- Screen-specific calendar cells will be populated by JavaScript -->
+                        </tr>
+                        {% endfor %}
+                        <tr class="bg-green-600 text-white" id="totalsRow">
+                            <td class="px-4 py-3 font-bold text-center">VISO</td>
+                            <!-- Total cells will be populated by JavaScript -->
+                        </tr>
+                    </tbody>
+                    </table>
+                </div>
+            </div>
+            <!-- Scroll hint -->
+            <div class="text-center mt-2">
+                <p class="text-sm text-gray-500 scroll-hint">
+                    <i class="fas fa-arrows-alt-h mr-1"></i>
+                    Slinkite horizontaliai peržiūrėti visas dienas
+                </p>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -257,28 +310,18 @@
     </div>
 </div>
 
-<!-- Screen Planning Forms (Below Calendar) -->
-{% for booking in plan.screen_bookings %}
-<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6 screen-planning-card">
-    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center">
-                <div class="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
-                    <i class="fas fa-tv text-yellow-600 text-sm"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg leading-6 font-medium text-gray-900">{{ booking.screen.name }}</h3>
-                    <p class="text-sm text-gray-500">{{ booking.screen.provider.name }} • {{ booking.screen.city }}</p>
-                </div>
+{% endif %}
+
+<script>
             </div>
             <div class="flex items-center space-x-4">
                 <div class="flex items-center space-x-2">
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                        CPT: <span class="cpt-value ml-1" data-booking="{{ booking.id }}">0.00</span>€
+                        CPT: <span class="cpt-value ml-1">0.00</span>€
                     </span>
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-gray-100 text-gray-800">
                         Klipo trukmė: 
-                        <input type="number" class="clip-duration-input ml-1 w-8 text-center bg-transparent border-none text-gray-800" value="15" min="1" max="60" data-booking="{{ booking.id }}">s
+                        <input type="number" class="clip-duration-input ml-1 w-8 text-center bg-transparent border-none text-gray-800" value="15" min="1" max="60">s
                     </span>
                 </div>
                 <button class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="copyToAllDays({{ booking.id }})">
@@ -289,7 +332,7 @@
         </div>
     </div>
     <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 media-planning-table">
+        <table class="min-w-full divide-y divide-gray-200">
             <thead class="bg-indigo-600">
                 <tr>
                     <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Laikas</th>
@@ -300,82 +343,83 @@
                     <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 80px;">VISO</th>
                 </tr>
             </thead>
-            <tbody class="bg-white divide-y divide-gray-200">
-                {% for hour in range(6, 24) %}
-                <tr class="time-row-{{ hour }}">
-                    <td class="text-center align-middle bg-gray-50 px-2 py-3">
-                        <strong class="text-sm">{{ "%02d"|format(hour) }}.00-{{ "%02d"|format(hour + 1) }}.00</strong>
-                    </td>
-                    <!-- First kartai column -->
-                    <td class="text-center p-1">
-                        <input type="number" 
-                               class="w-16 px-1 py-1 text-xs border border-gray-300 rounded text-center kartai-input" 
-                               min="0" max="999" 
-                               value="0"
-                               data-booking="{{ booking.id }}"
-                               data-hour="{{ hour }}"
-                               data-row="1"
-                               onchange="calculateScreenTotals({{ booking.id }})"
-                               style="width: 60px;">
-                    </td>
-                    <!-- First suma column -->
-                    <td class="text-center p-1 bg-gray-50">
-                        <span class="suma-display text-xs text-green-600 font-medium" id="suma_{{ booking.id }}_{{ hour }}_1">0.00€</span>
-                    </td>
-                    <!-- Second kartai column -->
-                    <td class="text-center p-1">
-                        <input type="number" 
-                               class="w-16 px-1 py-1 text-xs border border-gray-300 rounded text-center kartai-input" 
-                               min="0" max="999" 
-                               value="0"
-                               data-booking="{{ booking.id }}"
-                               data-hour="{{ hour }}"
-                               data-row="2"
-                               onchange="calculateScreenTotals({{ booking.id }})"
-                               style="width: 60px;">
-                    </td>
-                    <!-- Second suma column -->
-                    <td class="text-center p-1 bg-gray-50">
-                        <span class="suma-display text-xs text-green-600 font-medium" id="suma_{{ booking.id }}_{{ hour }}_2">0.00€</span>
-                    </td>
-                    <!-- Hour total column -->
-                    <td class="text-center align-middle bg-yellow-100 px-2 py-3">
-                        <strong class="hour-grand-total text-sm text-yellow-800" data-booking="{{ booking.id }}" data-hour="{{ hour }}">0.00€</strong>
-                    </td>
-                </tr>
-                {% endfor %}
-                
-                <!-- Grand total row -->
-                <tr class="bg-green-600 text-white">
-                    <td class="text-center align-middle px-4 py-3">
-                        <strong class="text-sm">BENDRAI</strong>
-                    </td>
-                    <td class="text-center align-middle px-2 py-3">
-                        <div class="text-xs opacity-75 mb-1">VISO</div>
-                        <strong class="row-total-1 text-sm" data-booking="{{ booking.id }}">0</strong>
-                    </td>
-                    <td class="text-center align-middle px-2 py-3">
-                        <div class="text-xs opacity-75 mb-1">€</div>
-                        <strong class="suma-total-1 text-sm" data-booking="{{ booking.id }}">0.00€</strong>
-                    </td>
-                    <td class="text-center align-middle px-2 py-3">
-                        <div class="text-xs opacity-75 mb-1">VISO</div>
-                        <strong class="row-total-2 text-sm" data-booking="{{ booking.id }}">0</strong>
-                    </td>
-                    <td class="text-center align-middle px-2 py-3">
-                        <div class="text-xs opacity-75 mb-1">€</div>
-                        <strong class="suma-total-2 text-sm" data-booking="{{ booking.id }}">0.00€</strong>
-                    </td>
-                    <td class="text-center align-middle px-2 py-3">
-                        <div class="text-xs opacity-75 mb-1">BENDRAI</div>
-                        <strong class="screen-grand-total text-sm" data-booking="{{ booking.id }}">0.00€</strong>
-                    </td>
-                </tr>
-            </tbody>
-        </table>
+                <tbody>
+                    {% for hour in range(6, 24) %}
+                    <tr class="time-row-{{ hour }}">
+                        <td class="text-center align-middle bg-light">
+                            <strong>{{ "%02d"|format(hour) }}.00-{{ "%02d"|format(hour + 1) }}.00</strong>
+                        </td>
+                        <!-- First kartai column -->
+                        <td class="text-center p-1">
+                            <input type="number" 
+                                   class="form-control form-control-sm kartai-input text-center" 
+                                   min="0" max="999" 
+                                   value="0"
+                                   data-booking="{{ booking.id }}"
+                                   data-hour="{{ hour }}"
+                                   data-row="1"
+                                   onchange="calculateTotals()"
+                                   style="width: 60px;">
+                        </td>
+                        <!-- First suma column -->
+                        <td class="text-center p-1 bg-light">
+                            <span class="suma-display small text-muted" id="suma_{{ booking.id }}_{{ hour }}_1">0.00€</span>
+                        </td>
+                        <!-- Second kartai column -->
+                        <td class="text-center p-1">
+                            <input type="number" 
+                                   class="form-control form-control-sm kartai-input text-center" 
+                                   min="0" max="999" 
+                                   value="0"
+                                   data-booking="{{ booking.id }}"
+                                   data-hour="{{ hour }}"
+                                   data-row="2"
+                                   onchange="calculateTotals()"
+                                   style="width: 60px;">
+                        </td>
+                        <!-- Second suma column -->
+                        <td class="text-center p-1 bg-light">
+                            <span class="suma-display small text-muted" id="suma_{{ booking.id }}_{{ hour }}_2">0.00€</span>
+                        </td>
+                        <!-- Hour total column -->
+                        <td class="text-center align-middle bg-warning">
+                            <strong class="hour-grand-total" data-hour="{{ hour }}">0</strong>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                    
+                    <!-- Grand total row -->
+                    <tr class="bg-success fw-bold text-white">
+                        <td class="text-center align-middle">
+                        </td>
+                        <td class="text-center align-middle">
+                            <div class="mb-1"><small>VISO</small></div>
+                            <strong class="row-total-1">0</strong>
+                        </td>
+                        <td class="text-center align-middle">
+                            <div class="mb-1"><small>€</small></div>
+                            <strong class="suma-total-1">0.00€</strong>
+                        </td>
+                        <td class="text-center align-middle">
+                            <div class="mb-1"><small>VISO</small></div>
+                            <strong class="row-total-2">0</strong>
+                        </td>
+                        <td class="text-center align-middle">
+                            <div class="mb-1"><small>€</small></div>
+                            <strong class="suma-total-2">0.00€</strong>
+                        </td>
+                        <td class="text-center align-middle">
+                            <div class="mb-1"><small>BENDRAI</small></div>
+                            <strong class="screen-grand-total">0.00€</strong>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
     </div>
 </div>
 {% endfor %}
+
 
 {% endif %}
 
@@ -449,113 +493,84 @@ function addScreenToMediaPlan() {
 
 // Calendar functions
 function initializeCalendar() {
-    generateMediaPlanCalendar();
+    generateCalendar();
+    updateSelectedWeekRange();
 }
 
-function generateMediaPlanCalendar() {
-    const calendarDiv = document.querySelector('#mediaPlanCalendar');
-    if (!calendarDiv || !planStartDate || !planEndDate) return;
+function generateCalendar() {
+    const calendarHeaderRow = document.getElementById('calendarHeaderRow');
+    const totalsRow = document.getElementById('totalsRow');
+    const screenRows = document.querySelectorAll('.calendar-screen-row');
+    
+    // Clear previous calendar content (keep the first header cell "Ekranas")
+    while (calendarHeaderRow.children.length > 1) {
+        calendarHeaderRow.removeChild(calendarHeaderRow.lastChild);
+    }
+    
+    // Clear screen row cells (keep the first cell with screen info)
+    screenRows.forEach(row => {
+        while (row.children.length > 1) {
+            row.removeChild(row.lastChild);
+        }
+    });
+    
+    // Clear totals row (keep the first cell "VISO")
+    while (totalsRow.children.length > 1) {
+        totalsRow.removeChild(totalsRow.lastChild);
+    }
+    
+    const monthNames = ['Sausis', 'Vasaris', 'Kovas', 'Balandis', 'Gegužė', 'Birželis', 'Liepa', 'Rugpjūtis', 'Rugsėjis', 'Spalis', 'Lapkritis', 'Gruodis'];
     
     // Calculate total days in plan period
     const timeDiff = planEndDate - planStartDate;
     const totalDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) + 1;
     
-    let html = '<table class="min-w-full text-sm" style="min-width: max-content;">';
-    
-    // Header row with dates
-    html += '<thead class="bg-slate-50 text-slate-700 border-b border-slate-200">';
-    html += '<tr>';
-    html += '<th class="text-left font-medium px-4 py-3 bg-slate-100 border-r border-slate-300 sticky left-0 z-10" style="min-width: 200px;">Ekranas</th>';
-    
+    // Generate headers and cells for all days in the plan period
     for (let day = 0; day < totalDays; day++) {
         const date = new Date(planStartDate);
         date.setDate(planStartDate.getDate() + day);
         
+        // Create header cell
         const dayNames = ['Sk', 'Pr', 'An', 'Tr', 'Kt', 'Pn', 'Št'];
+        const headerCell = document.createElement('th');
+        headerCell.className = 'px-2 py-3 text-center text-xs font-medium text-white uppercase tracking-wider';
+        headerCell.style.minWidth = '100px';
+        
         const monthStr = (date.getMonth() + 1).toString().padStart(2, '0');
         const dayStr = date.getDate().toString().padStart(2, '0');
-        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
+        headerCell.innerHTML = `
+            <div>${dayNames[date.getDay()]}</div>
+            <div class="text-xs font-normal">${monthStr}-${dayStr}</div>
+        `;
+        calendarHeaderRow.appendChild(headerCell);
         
-        html += `<th class="text-center font-medium px-2 py-3 border-r border-slate-300 ${isWeekend ? 'bg-slate-200 text-slate-600' : ''}" style="min-width: 80px;">`;
-        html += `<div class="text-xs font-medium">${dayNames[date.getDay()]}</div>`;
-        html += `<div class="text-xs">${monthStr}-${dayStr}</div>`;
-        html += `</th>`;
+        // Create cells for each screen row
+        screenRows.forEach(screenRow => {
+            const screenId = screenRow.dataset.screenId;
+            const dayCell = document.createElement('td');
+            dayCell.className = 'px-2 py-3 text-center border border-gray-200';
+            dayCell.style.minWidth = '100px';
+            dayCell.innerHTML = `
+                <div class="space-y-1">
+                    <input type="number" 
+                           class="w-16 px-1 py-1 text-xs border border-gray-300 rounded text-center slots-input" 
+                           placeholder="0" 
+                           data-screen-id="${screenId}" 
+                           data-day="${day}"
+                           onchange="calculateTotals()">
+                    <div class="text-xs text-gray-500 daily-cost" id="cost_${screenId}_${day}">0.00€</div>
+                </div>
+            `;
+            screenRow.appendChild(dayCell);
+        });
+        
+        // Create total cell
+        const totalCell = document.createElement('td');
+        totalCell.className = 'px-2 py-3 text-center font-bold text-white';
+        totalCell.id = `dayTotal_${day}`;
+        totalCell.textContent = '0.00€';
+        totalsRow.appendChild(totalCell);
     }
-    
-    html += '</tr>';
-    html += '</thead>';
-    
-    // Body with screen rows
-    html += '<tbody>';
-    
-    // Get screen bookings data (this should be passed from the template)
-    const screenRows = document.querySelectorAll('.screen-booking-data');
-    const screenBookings = [];
-    
-    // If we have the plan object, get the bookings
-    {% if plan.screen_bookings %}
-    {% for booking in plan.screen_bookings %}
-    screenBookings.push({
-        id: {{ booking.screen.id }},
-        name: "{{ booking.screen.name }}",
-        provider: "{{ booking.screen.provider.name }}"
-    });
-    {% endfor %}
-    {% endif %}
-    
-    screenBookings.forEach((booking, screenIndex) => {
-        html += `<tr class="border-b border-slate-200 hover:bg-slate-50">`;
-        html += `<td class="px-4 py-3 text-xs font-medium bg-slate-100 border-r border-slate-300 sticky left-0 z-10" style="min-width: 200px;">`;
-        html += `<div class="flex items-center">`;
-        html += `<div class="h-6 w-6 rounded bg-yellow-100 flex items-center justify-center mr-2">`;
-        html += `<i class="fas fa-tv text-yellow-600 text-xs"></i>`;
-        html += `</div>`;
-        html += `<div>`;
-        html += `<div class="font-medium text-slate-900">${booking.name}</div>`;
-        html += `<div class="text-xs text-slate-500">${booking.provider}</div>`;
-        html += `</div>`;
-        html += `</div>`;
-        html += `</td>`;
-        
-        // Generate cells for each day
-        for (let day = 0; day < totalDays; day++) {
-            const date = new Date(planStartDate);
-            date.setDate(planStartDate.getDate() + day);
-            const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-            
-            html += `<td class="px-2 py-3 text-center border-r border-slate-300 ${isWeekend ? 'bg-slate-50' : ''}" style="min-width: 80px;">`;
-            html += `<input type="number" class="w-14 px-1 py-1 text-xs border border-slate-300 rounded text-center slots-input focus:ring-2 focus:ring-slate-500 focus:border-slate-500" `;
-            html += `placeholder="0" value="" data-screen-id="${booking.id}" data-day="${day}" onchange="calculateTotals()">`;
-            html += `<div class="text-xs text-slate-500 daily-cost font-medium mt-1" id="cost_${booking.id}_${day}">0.00€</div>`;
-            html += `</td>`;
-        }
-        
-        html += '</tr>';
-    });
-    
-    // Totals row
-    html += '<tr class="bg-slate-100 font-medium border-t-2 border-slate-300">';
-    html += '<td class="px-4 py-3 font-bold text-center text-slate-700 sticky left-0 bg-slate-100 border-r border-slate-300">VISO DIENAI</td>';
-    
-    for (let day = 0; day < totalDays; day++) {
-        const date = new Date(planStartDate);
-        date.setDate(planStartDate.getDate() + day);
-        const isWeekend = date.getDay() === 0 || date.getDay() === 6;
-        
-        html += `<td class="px-2 py-3 text-center font-bold text-slate-700 border-r border-slate-300 ${isWeekend ? 'bg-slate-200' : ''}" style="min-width: 80px;" id="dayTotal_${day}">0.00€</td>`;
-    }
-    
-    html += '</tr>';
-    html += '</tbody>';
-    html += '</table>';
-    
-    calendarDiv.innerHTML = html;
-    
-    // Add scroll hint
-    const scrollHint = document.createElement('div');
-    scrollHint.className = 'text-center mt-2';
-    scrollHint.innerHTML = '<p class="text-sm text-slate-500 scroll-hint"><i class="fas fa-arrows-alt-h mr-1"></i>Slinkite horizontaliai peržiūrėti visas dienas</p>';
-    calendarDiv.parentNode.appendChild(scrollHint);
 }
 
 function isDateInCurrentWeek(date) {
@@ -611,101 +626,6 @@ function nextWeek() {
     }
 }
 
-// Screen-specific calculation function
-function calculateScreenTotals(bookingId) {
-    let row1Total = 0;
-    let row2Total = 0;
-    let row1Cost = 0;
-    let row2Cost = 0;
-    
-    // Calculate totals for each hour for this booking
-    for (let hour = 6; hour < 24; hour++) {
-        const row1Input = document.querySelector(`input[data-booking="${bookingId}"][data-hour="${hour}"][data-row="1"]`);
-        const row2Input = document.querySelector(`input[data-booking="${bookingId}"][data-hour="${hour}"][data-row="2"]`);
-        
-        if (row1Input && row2Input) {
-            const row1Value = parseInt(row1Input.value || 0);
-            const row2Value = parseInt(row2Input.value || 0);
-            
-            // Calculate cost - using base rate of €5 per slot
-            const row1HourCost = row1Value * 5.0;
-            const row2HourCost = row2Value * 5.0;
-            const hourTotal = row1HourCost + row2HourCost;
-            
-            // Update individual cell costs
-            const row1CostElement = document.getElementById(`suma_${bookingId}_${hour}_1`);
-            const row2CostElement = document.getElementById(`suma_${bookingId}_${hour}_2`);
-            const hourTotalElement = document.querySelector(`[data-booking="${bookingId}"][data-hour="${hour}"].hour-grand-total`);
-            
-            if (row1CostElement) row1CostElement.textContent = row1HourCost.toFixed(2) + '€';
-            if (row2CostElement) row2CostElement.textContent = row2HourCost.toFixed(2) + '€';
-            if (hourTotalElement) hourTotalElement.textContent = hourTotal.toFixed(2) + '€';
-            
-            // Add to running totals
-            row1Total += row1Value;
-            row2Total += row2Value;
-            row1Cost += row1HourCost;
-            row2Cost += row2HourCost;
-        }
-    }
-    
-    // Update grand totals for this screen
-    const row1TotalElement = document.querySelector(`[data-booking="${bookingId}"].row-total-1`);
-    const row2TotalElement = document.querySelector(`[data-booking="${bookingId}"].row-total-2`);
-    const suma1TotalElement = document.querySelector(`[data-booking="${bookingId}"].suma-total-1`);
-    const suma2TotalElement = document.querySelector(`[data-booking="${bookingId}"].suma-total-2`);
-    const screenGrandTotalElement = document.querySelector(`[data-booking="${bookingId}"].screen-grand-total`);
-    const cptElement = document.querySelector(`[data-booking="${bookingId}"].cpt-value`);
-    
-    if (row1TotalElement) row1TotalElement.textContent = row1Total;
-    if (row2TotalElement) row2TotalElement.textContent = row2Total;
-    if (suma1TotalElement) suma1TotalElement.textContent = row1Cost.toFixed(2) + '€';
-    if (suma2TotalElement) suma2TotalElement.textContent = row2Cost.toFixed(2) + '€';
-    
-    const totalCost = row1Cost + row2Cost;
-    const totalSlots = row1Total + row2Total;
-    
-    if (screenGrandTotalElement) screenGrandTotalElement.textContent = totalCost.toFixed(2) + '€';
-    
-    // Calculate CPT (Cost Per Thousand)
-    if (cptElement) {
-        const cpt = totalSlots > 0 ? (totalCost * 1000) / totalSlots : 0;
-        cptElement.textContent = cpt.toFixed(2);
-    }
-    
-    // Recalculate overall totals
-    calculateOverallTotals();
-}
-
-// Overall totals calculation
-function calculateOverallTotals() {
-    let totalSlots = 0;
-    let totalCost = 0;
-    
-    // Sum up all screen totals
-    document.querySelectorAll('.screen-grand-total').forEach(element => {
-        const cost = parseFloat(element.textContent.replace('€', '')) || 0;
-        totalCost += cost;
-    });
-    
-    document.querySelectorAll('.kartai-input').forEach(input => {
-        totalSlots += parseInt(input.value || 0);
-    });
-    
-    // Update summary displays if they exist
-    const totalSlotsElement = document.getElementById('totalSlots');
-    const totalCostElement = document.getElementById('totalCost');
-    const avgCPTElement = document.getElementById('avgCPT');
-    
-    if (totalSlotsElement) totalSlotsElement.textContent = totalSlots;
-    if (totalCostElement) totalCostElement.textContent = totalCost.toFixed(2) + '€';
-    if (avgCPTElement) {
-        const avgCPT = totalSlots > 0 ? (totalCost * 1000) / totalSlots : 0;
-        avgCPTElement.textContent = avgCPT.toFixed(2) + '€';
-    }
-}
-
-// Calendar calculation function (updated)
 function calculateTotals() {
     const timeDiff = planEndDate - planStartDate;
     const totalDays = Math.ceil(timeDiff / (1000 * 60 * 60 * 24)) + 1;
@@ -726,7 +646,8 @@ function calculateTotals() {
             if (slotsInput && costDisplay) {
                 const slots = parseInt(slotsInput.value || 0);
                 
-                // Calculate cost - using base rate of €5 per slot
+                // Calculate cost - for now using a base rate of €5 per slot
+                // TODO: This should use actual screen pricing data
                 const dailyCost = slots * 5.0;
                 screenTotalCost += dailyCost;
                 dailyTotals[day] += dailyCost;
@@ -735,6 +656,9 @@ function calculateTotals() {
                 costDisplay.textContent = dailyCost.toFixed(2) + '€';
             }
         }
+        
+        // Update screen total (if we add a screen total display later)
+        // screenRow.querySelector('.screen-total').textContent = screenTotalCost.toFixed(2) + '€';
     });
     
     // Update daily totals in the totals row
@@ -745,31 +669,25 @@ function calculateTotals() {
         }
     }
     
-    // Also update overall summary
-    calculateOverallTotals();
-}
-
-// Copy to all days function
-function copyToAllDays(bookingId) {
-    // Get the first day's values as the template
-    let templateRow1 = {};
-    let templateRow2 = {};
+    // Calculate and display overall totals
+    let totalSlots = 0;
+    let totalCost = dailyTotals.reduce((sum, cost) => sum + cost, 0);
     
-    for (let hour = 6; hour < 24; hour++) {
-        const row1Input = document.querySelector(`input[data-booking="${bookingId}"][data-hour="${hour}"][data-row="1"]`);
-        const row2Input = document.querySelector(`input[data-booking="${bookingId}"][data-hour="${hour}"][data-row="2"]`);
-        
-        if (row1Input && row2Input) {
-            templateRow1[hour] = row1Input.value;
-            templateRow2[hour] = row2Input.value;
-        }
+    document.querySelectorAll('.slots-input').forEach(input => {
+        totalSlots += parseInt(input.value || 0);
+    });
+    
+    // Update summary displays if they exist
+    const totalSlotsElement = document.getElementById('totalSlots');
+    const totalCostElement = document.getElementById('totalCost');
+    const avgCPTElement = document.getElementById('avgCPT');
+    
+    if (totalSlotsElement) totalSlotsElement.textContent = totalSlots;
+    if (totalCostElement) totalCostElement.textContent = totalCost.toFixed(2) + '€';
+    if (avgCPTElement) {
+        const avgCPT = totalSlots > 0 ? (totalCost * 1000) / totalSlots : 0;
+        avgCPTElement.textContent = avgCPT.toFixed(2) + '€';
     }
-    
-    // Apply the template to all other days (this function would need more logic to apply across calendar days)
-    // For now, just recalculate totals
-    calculateScreenTotals(bookingId);
-    
-    alert('Funkcionalumas "Kopijuoti į visas dienas" bus pridėtas vėliau. Dabar perskaičiuojami tik esamų duomenų sumavimai.');
 }
 
 function updateCalendarCPT(dailyTotals) {
@@ -941,15 +859,6 @@ function confirmCreateNewWeek() {
 document.addEventListener('DOMContentLoaded', function() {
     initializeCalendar();
     calculateTotals();
-    
-    // Initialize all screen calculations
-    document.querySelectorAll('.screen-planning-card').forEach(card => {
-        const bookingElement = card.querySelector('[data-booking]');
-        if (bookingElement) {
-            const bookingId = bookingElement.dataset.booking;
-            calculateScreenTotals(bookingId);
-        }
-    });
 });
 </script>
 

@@ -304,6 +304,54 @@ def api_campaigns_by_client(client_id):
     campaigns = Campaign.query.filter_by(client_id=client_id).all()
     return jsonify([{'id': c.id, 'name': c.name} for c in campaigns])
 
+# API endpoints for screen management in media plans
+@app.route('/api/screens/available/<int:plan_id>')
+def api_available_screens(plan_id):
+    plan = DOOHPlan.query.get_or_404(plan_id)
+    # Get screens that are not already in this plan
+    existing_screen_ids = [booking.screen_id for booking in plan.screen_bookings]
+    available_screens = Screen.query.filter(~Screen.id.in_(existing_screen_ids)).all()
+    
+    return jsonify([{
+        'id': screen.id,
+        'name': screen.name,
+        'provider_name': screen.provider.name
+    } for screen in available_screens])
+
+@app.route('/api/dooh-plan/<int:plan_id>/add-screen', methods=['POST'])
+def api_add_screen_to_plan(plan_id):
+    plan = DOOHPlan.query.get_or_404(plan_id)
+    data = request.get_json()
+    screen_id = data.get('screen_id')
+    
+    if not screen_id:
+        return jsonify({'success': False, 'message': 'Screen ID is required'})
+    
+    # Check if screen exists
+    screen = Screen.query.get(screen_id)
+    if not screen:
+        return jsonify({'success': False, 'message': 'Screen not found'})
+    
+    # Check if screen is already in this plan
+    existing_booking = ScreenBooking.query.filter_by(
+        dooh_plan_id=plan_id,
+        screen_id=screen_id
+    ).first()
+    
+    if existing_booking:
+        return jsonify({'success': False, 'message': 'Screen is already in this plan'})
+    
+    # Create new screen booking
+    new_booking = ScreenBooking(
+        dooh_plan_id=plan_id,
+        screen_id=screen_id
+    )
+    
+    db.session.add(new_booking)
+    db.session.commit()
+    
+    return jsonify({'success': True, 'message': 'Screen added successfully'})
+
 # DOOH Plan routes
 @app.route('/dooh-plans')
 def dooh_plans():
