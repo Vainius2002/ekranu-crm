@@ -29,6 +29,15 @@ class Client(db.Model):
     
     campaigns = db.relationship('Campaign', backref='client', lazy=True, cascade='all, delete-orphan')
 
+class Kampanija(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(200), nullable=False)
+    client_brand_name = db.Column(db.String(200))
+    campaign_name = db.Column(db.String(200))
+    external_id = db.Column(db.String(100))  # To track source (projects_campaign_X)
+    source_system = db.Column(db.String(50), default='projects-crm')  # Track which system it came from
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 class Campaign(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     client_id = db.Column(db.Integer, db.ForeignKey('client.id'), nullable=False)
@@ -287,6 +296,8 @@ def new_dooh_plan():
     if request.method == 'POST':
         # Handle client creation or selection
         client_id = None
+        
+        # Traditional client handling (always required now)
         if request.form.get('client_type') == 'new':
             # Create new client
             client = Client(
@@ -305,7 +316,40 @@ def new_dooh_plan():
         
         # Handle campaign creation or selection
         campaign_id = None
-        if request.form.get('campaign_type') == 'new':
+        campaign_type = request.form.get('campaign_type')
+        
+        if campaign_type == 'kampanija':
+            # When using kampanija from projects-crm, extract the selected kampanija data from form
+            kampanija_external_id = request.form['kampanija_id']  # This is the external_id from projects-crm
+            
+            # Get kampanija name from hidden form field
+            kampanija_full_name = request.form.get('kampanija_full_name', '')
+            kampanija_brand = request.form.get('kampanija_brand', '')
+            kampanija_campaign = request.form.get('kampanija_campaign', '')
+            
+            # Use the kampanija name as campaign name
+            campaign_name = kampanija_full_name if kampanija_full_name else f"Campaign {kampanija_external_id}"
+            
+            # Check if campaign already exists for this kampanija
+            existing_campaign = Campaign.query.filter_by(
+                client_id=client_id,
+                name=campaign_name
+            ).first()
+            
+            if existing_campaign:
+                campaign_id = existing_campaign.id
+            else:
+                # Create new campaign from kampanija data
+                campaign = Campaign(
+                    client_id=client_id,
+                    name=campaign_name,
+                    description=f"Campaign from Projects CRM: {kampanija_brand} - {kampanija_campaign}",
+                    budget=None  # Budget not available from projects CRM
+                )
+                db.session.add(campaign)
+                db.session.flush()  # Get the ID without committing
+                campaign_id = campaign.id
+        elif campaign_type == 'new':
             # Create new campaign
             campaign = Campaign(
                 client_id=client_id,
@@ -448,6 +492,79 @@ def get_api_clients():
         'phone': client.phone,
         'contact_person': client.contact_person
     } for client in clients])
+
+@app.route('/api/kampanijos', methods=['GET'])
+def get_api_kampanijos():
+    """Get all kampanijos for external systems"""
+    # Check API key
+    api_key = request.headers.get('X-API-Key')
+    if not api_key or api_key != 'ekranu-crm-api-key':
+        return jsonify({'error': 'Invalid API key'}), 401
+    
+    kampanijos = Kampanija.query.all()
+    return jsonify([{
+        'id': kampanija.id,
+        'name': kampanija.name,
+        'client_brand_name': kampanija.client_brand_name,
+        'campaign_name': kampanija.campaign_name,
+        'external_id': kampanija.external_id,
+        'source_system': kampanija.source_system
+    } for kampanija in kampanijos])
+
+@app.route('/api/import-kampanijos', methods=['POST'])
+def import_kampanijos():
+    """Import kampanijos from projects-crm"""
+    # Check API key
+    api_key = request.headers.get('X-API-Key')
+    if not api_key or api_key != 'ekranu-crm-api-key':
+        return jsonify({'error': 'Invalid API key'}), 401
+    
+    try:
+        data = request.get_json()
+        if not data or 'kampanijos' not in data:
+            return jsonify({'error': 'No kampanijos data provided'}), 400
+        
+        imported_count = 0
+        updated_count = 0
+        
+        for kampanija_data in data['kampanijos']:
+            # Check if kampanija already exists (by external_id)
+            existing_kampanija = None
+            if 'external_id' in kampanija_data:
+                existing_kampanija = Kampanija.query.filter_by(
+                    external_id=kampanija_data['external_id']
+                ).first()
+            
+            if existing_kampanija:
+                # Update existing kampanija
+                existing_kampanija.name = kampanija_data['name']
+                existing_kampanija.client_brand_name = kampanija_data.get('client_brand_name')
+                existing_kampanija.campaign_name = kampanija_data.get('campaign_name')
+                updated_count += 1
+            else:
+                # Create new kampanija
+                new_kampanija = Kampanija(
+                    name=kampanija_data['name'],
+                    client_brand_name=kampanija_data.get('client_brand_name'),
+                    campaign_name=kampanija_data.get('campaign_name'),
+                    external_id=kampanija_data.get('external_id'),
+                    source_system=kampanija_data.get('source_system', 'projects-crm')
+                )
+                db.session.add(new_kampanija)
+                imported_count += 1
+        
+        db.session.commit()
+        
+        return jsonify({
+            'success': True,
+            'imported_count': imported_count,
+            'updated_count': updated_count,
+            'message': f'Successfully imported {imported_count} new kampanijos and updated {updated_count} existing ones'
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'error': f'Failed to import kampanijos: {str(e)}'}), 500
 
 if __name__ == '__main__':
     with app.app_context():

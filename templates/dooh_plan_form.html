@@ -8,12 +8,13 @@
         <div class="card">
             <div class="card-body">
                 <form method="POST" id="doohPlanForm">
-                    <!-- Client Selection/Creation -->
+                    <!-- Client Selection -->
                     <div class="card mb-4">
                         <div class="card-header bg-light">
                             <h5 class="mb-0">Klientas</h5>
                         </div>
                         <div class="card-body">
+                            
                             <div class="mb-3">
                                 <div class="form-check form-check-inline">
                                     <input class="form-check-input" type="radio" name="client_type" id="existing_client" value="existing" checked>
@@ -44,7 +45,7 @@
                                             <i class="fas fa-sync me-2"></i>Atnaujinti iš Agency CRM
                                         </button>
                                     </div>
-                                    <small class="text-muted">Spauskite "Atnaujinti", kad gautumėte naujausius prekės ženklus iš Agency CRM</small>
+                                    <small class="text-muted">Spauskite "Atnaujinti iš Agency CRM", kad gautumėte naujausius prekės ženklus</small>
                                 </div>
                             </div>
                             
@@ -75,6 +76,8 @@
                                     </div>
                                 </div>
                             </div>
+                            
+                            </div>
                         </div>
                     </div>
                     
@@ -85,16 +88,22 @@
                         </div>
                         <div class="card-body">
                             <div class="mb-3">
-                                <div class="form-check form-check-inline">
+                                <div class="form-check mb-2">
                                     <input class="form-check-input" type="radio" name="campaign_type" id="existing_campaign" value="existing" checked>
                                     <label class="form-check-label" for="existing_campaign">
                                         Esama kampanija
                                     </label>
                                 </div>
-                                <div class="form-check form-check-inline">
+                                <div class="form-check mb-2">
                                     <input class="form-check-input" type="radio" name="campaign_type" id="new_campaign" value="new">
                                     <label class="form-check-label" for="new_campaign">
                                         Nauja kampanija
+                                    </label>
+                                </div>
+                                <div class="form-check">
+                                    <input class="form-check-input" type="radio" name="campaign_type" id="use_kampanija" value="kampanija">
+                                    <label class="form-check-label" for="use_kampanija">
+                                        <strong>Naudoti kampaniją iš Projects CRM</strong>
                                     </label>
                                 </div>
                             </div>
@@ -132,6 +141,27 @@
                                         <label for="new_campaign_budget" class="form-label">Biudžetas (€)</label>
                                         <input type="number" step="0.01" class="form-control" id="new_campaign_budget" name="new_campaign_budget">
                                     </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Kampanija Section -->
+                            <div id="kampanija_section" class="border rounded p-3 bg-light" style="display: none;">
+                                <h6 class="mb-3 text-success">Kampanijos pasirinkimas iš Projects CRM</h6>
+                                <div class="mb-3">
+                                    <label for="kampanija_id" class="form-label">Pasirinkite kampaniją *</label>
+                                    <div class="input-group">
+                                        <select class="form-select" id="kampanija_id" name="kampanija_id">
+                                            <option value="">-- Pasirinkite kampaniją --</option>
+                                        </select>
+                                        <button type="button" class="btn btn-outline-success" id="syncProjectsBtn" title="Sinchronizuoti su Projects CRM">
+                                            <i class="fas fa-project-diagram me-2"></i>Atnaujinti iš Projects CRM
+                                        </button>
+                                    </div>
+                                    <small class="text-muted">Kampanijos įkeliamos automatiškai iš Projects CRM</small>
+                                    <!-- Hidden fields to store kampanija data -->
+                                    <input type="hidden" id="kampanija_full_name" name="kampanija_full_name">
+                                    <input type="hidden" id="kampanija_brand" name="kampanija_brand">
+                                    <input type="hidden" id="kampanija_campaign" name="kampanija_campaign">
                                 </div>
                             </div>
                         </div>
@@ -183,6 +213,7 @@
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
+    
     // Toggle client sections
     const clientRadios = document.getElementsByName('client_type');
     const existingClientSection = document.getElementById('existing_client_section');
@@ -212,21 +243,34 @@ document.addEventListener('DOMContentLoaded', function() {
     const campaignRadios = document.getElementsByName('campaign_type');
     const existingCampaignSection = document.getElementById('existing_campaign_section');
     const newCampaignSection = document.getElementById('new_campaign_section');
+    const kampanijaSection = document.getElementById('kampanija_section');
     
     campaignRadios.forEach(radio => {
         radio.addEventListener('change', function() {
             if (this.value === 'new') {
                 existingCampaignSection.style.display = 'none';
                 newCampaignSection.style.display = 'block';
-                // Clear required from existing
+                kampanijaSection.style.display = 'none';
+                // Clear required from existing and kampanija
                 document.getElementById('existing_campaign_id').removeAttribute('required');
+                document.getElementById('kampanija_id').removeAttribute('required');
                 document.getElementById('new_campaign_name').setAttribute('required', 'required');
+            } else if (this.value === 'kampanija') {
+                existingCampaignSection.style.display = 'none';
+                newCampaignSection.style.display = 'none';
+                kampanijaSection.style.display = 'block';
+                // Clear required from existing and new
+                document.getElementById('existing_campaign_id').removeAttribute('required');
+                document.getElementById('new_campaign_name').removeAttribute('required');
+                document.getElementById('kampanija_id').setAttribute('required', 'required');
             } else {
                 existingCampaignSection.style.display = 'block';
                 newCampaignSection.style.display = 'none';
+                kampanijaSection.style.display = 'none';
                 // Set required for existing
                 document.getElementById('existing_campaign_id').setAttribute('required', 'required');
                 document.getElementById('new_campaign_name').removeAttribute('required');
+                document.getElementById('kampanija_id').removeAttribute('required');
             }
         });
     });
@@ -267,8 +311,8 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Form validation
     document.getElementById('doohPlanForm').addEventListener('submit', function(e) {
+        // Validate client selection
         const clientType = document.querySelector('input[name="client_type"]:checked').value;
-        const campaignType = document.querySelector('input[name="campaign_type"]:checked').value;
         
         if (clientType === 'existing' && !document.getElementById('existing_client_id').value) {
             e.preventDefault();
@@ -282,6 +326,9 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
         
+        // Validate campaign selection
+        const campaignType = document.querySelector('input[name="campaign_type"]:checked').value;
+        
         if (campaignType === 'existing' && !document.getElementById('existing_campaign_id').value) {
             e.preventDefault();
             alert('Prašome pasirinkti kampaniją');
@@ -293,13 +340,67 @@ document.addEventListener('DOMContentLoaded', function() {
             alert('Prašome įvesti kampanijos pavadinimą');
             return;
         }
+        
+        if (campaignType === 'kampanija' && !document.getElementById('kampanija_id').value) {
+            e.preventDefault();
+            alert('Prašome pasirinkti kampaniją iš Projects CRM');
+            return;
+        }
     });
     
     // Set initial required attributes
     document.getElementById('existing_client_id').setAttribute('required', 'required');
     document.getElementById('existing_campaign_id').setAttribute('required', 'required');
     
-    // Sync brands button
+    // Load kampanijos directly from projects-crm
+    function loadKampanijos() {
+        fetch('http://172.20.89.236:5002/api/campaigns/for-ekranu', {
+            headers: {
+                'X-API-Key': 'projects-api-key'  // Use projects-crm API key
+            }
+        })
+        .then(response => response.json())
+        .then(kampanijos => {
+            const kampanijaSelect = document.getElementById('kampanija_id');
+            kampanijaSelect.innerHTML = '<option value="">-- Pasirinkite kampaniją --</option>';
+            
+            kampanijos.forEach(kampanija => {
+                const option = document.createElement('option');
+                // Use external_id as value to identify it later
+                option.value = kampanija.external_id;
+                option.textContent = kampanija.name;
+                // Store additional data as attributes
+                option.setAttribute('data-client-brand', kampanija.client_brand_name);
+                option.setAttribute('data-campaign-name', kampanija.campaign_name);
+                option.setAttribute('data-full-name', kampanija.name);
+                kampanijaSelect.appendChild(option);
+            });
+        })
+        .catch(error => {
+            console.error('Error loading kampanijos from projects-crm:', error);
+            const kampanijaSelect = document.getElementById('kampanija_id');
+            kampanijaSelect.innerHTML = '<option value="">-- Klaida įkeliant kampanijas iš Projects CRM --</option>';
+        });
+    }
+    
+    // Load kampanijos on page load
+    loadKampanijos();
+    
+    // Update hidden fields when kampanija is selected
+    document.getElementById('kampanija_id').addEventListener('change', function() {
+        const selectedOption = this.options[this.selectedIndex];
+        if (selectedOption.value) {
+            document.getElementById('kampanija_full_name').value = selectedOption.getAttribute('data-full-name') || '';
+            document.getElementById('kampanija_brand').value = selectedOption.getAttribute('data-client-brand') || '';
+            document.getElementById('kampanija_campaign').value = selectedOption.getAttribute('data-campaign-name') || '';
+        } else {
+            document.getElementById('kampanija_full_name').value = '';
+            document.getElementById('kampanija_brand').value = '';
+            document.getElementById('kampanija_campaign').value = '';
+        }
+    });
+    
+    // Sync brands button (Agency CRM)
     document.getElementById('syncBrandsBtn').addEventListener('click', function() {
         const btn = this;
         const originalHtml = btn.innerHTML;
@@ -377,6 +478,23 @@ document.addEventListener('DOMContentLoaded', function() {
             alertDiv.remove();
         }, 5000);
     }
+    
+    // Refresh campaigns button (Projects CRM)
+    document.getElementById('syncProjectsBtn').addEventListener('click', function() {
+        const btn = this;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin me-2"></i>Atnaujinama...';
+        btn.disabled = true;
+        
+        // Reload kampanijos directly from projects-crm
+        loadKampanijos();
+        
+        setTimeout(() => {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+            showNotification('Kampanijos atnaujintos iš Projects CRM!', 'success');
+        }, 1000);
+    });
 });
 </script>
 {% endblock %}
