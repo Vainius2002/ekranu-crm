@@ -60,20 +60,35 @@
             </div>
         </div>
         
-        <!-- Calendar Grid -->
-        <div class="calendar-grid mx-auto" style="max-width: 800px;">
-            <div class="calendar-weekdays">
-                <div class="weekday">Pr</div>
-                <div class="weekday">An</div>
-                <div class="weekday">Tr</div>
-                <div class="weekday">Kt</div>
-                <div class="weekday">Pn</div>
-                <div class="weekday">Št</div>
-                <div class="weekday">Sk</div>
-            </div>
-            <div class="calendar-dates" id="calendarDates">
-                <!-- Calendar dates will be populated by JavaScript -->
-            </div>
+        <!-- TV-Planning Style Calendar -->
+        <div class="tv-planning-calendar mx-auto" style="max-width: 1000px;">
+            <table class="table table-bordered table-sm mb-0 planning-calendar-table">
+                <thead>
+                    <tr class="bg-primary text-white">
+                        <th class="text-center" style="width: 14.28%;">Pr</th>
+                        <th class="text-center" style="width: 14.28%;">An</th>
+                        <th class="text-center" style="width: 14.28%;">Tr</th>
+                        <th class="text-center" style="width: 14.28%;">Kt</th>
+                        <th class="text-center" style="width: 14.28%;">Pn</th>
+                        <th class="text-center" style="width: 14.28%;">Št</th>
+                        <th class="text-center" style="width: 14.28%;">Sk</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="calendar-dates-row" id="calendarDatesRow">
+                        <!-- Calendar dates will be populated by JavaScript -->
+                    </tr>
+                    <tr class="cpt-totals-row bg-success text-white">
+                        <td class="text-center font-weight-bold" id="mondayTotal">0.00€</td>
+                        <td class="text-center font-weight-bold" id="tuesdayTotal">0.00€</td>
+                        <td class="text-center font-weight-bold" id="wednesdayTotal">0.00€</td>
+                        <td class="text-center font-weight-bold" id="thursdayTotal">0.00€</td>
+                        <td class="text-center font-weight-bold" id="fridayTotal">0.00€</td>
+                        <td class="text-center font-weight-bold" id="saturdayTotal">0.00€</td>
+                        <td class="text-center font-weight-bold" id="sundayTotal">0.00€</td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
         </div>
     </div>
@@ -220,21 +235,25 @@
                     <!-- Grand total row -->
                     <tr class="bg-success fw-bold text-white">
                         <td class="text-center align-middle">
-                            <strong>VISO</strong>
                         </td>
                         <td class="text-center align-middle">
+                            <div class="mb-1"><small>VISO</small></div>
                             <strong class="row-total-1">0</strong>
                         </td>
                         <td class="text-center align-middle">
+                            <div class="mb-1"><small>€</small></div>
                             <strong class="suma-total-1">0.00€</strong>
                         </td>
                         <td class="text-center align-middle">
+                            <div class="mb-1"><small>VISO</small></div>
                             <strong class="row-total-2">0</strong>
                         </td>
                         <td class="text-center align-middle">
+                            <div class="mb-1"><small>€</small></div>
                             <strong class="suma-total-2">0.00€</strong>
                         </td>
                         <td class="text-center align-middle">
+                            <div class="mb-1"><small>BENDRAI</small></div>
                             <strong class="screen-grand-total">0.00€</strong>
                         </td>
                     </tr>
@@ -280,47 +299,33 @@ function initializeCalendar() {
 }
 
 function generateCalendar() {
-    const calendarDates = document.getElementById('calendarDates');
-    
-    const year = currentWeekStart.getFullYear();
-    const month = currentWeekStart.getMonth();
+    const calendarDatesRow = document.getElementById('calendarDatesRow');
     
     // Clear previous dates
-    calendarDates.innerHTML = '';
+    calendarDatesRow.innerHTML = '';
     
-    // Get first day of month and number of days
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay() + 1); // Start from Monday
+    const monthNames = ['Sausis', 'Vasaris', 'Kovas', 'Balandis', 'Gegužė', 'Birželis', 'Liepa', 'Rugpjūtis', 'Rugsėjis', 'Spalis', 'Lapkritis', 'Gruodis'];
     
-    // Generate 6 weeks of calendar
-    for (let week = 0; week < 6; week++) {
-        for (let day = 0; day < 7; day++) {
-            const date = new Date(startDate);
-            date.setDate(startDate.getDate() + week * 7 + day);
-            
-            const dayElement = document.createElement('div');
-            dayElement.className = 'calendar-date';
-            dayElement.textContent = date.getDate();
-            
-            // Add classes based on date status
-            if (date.getMonth() !== month) {
-                dayElement.classList.add('other-month');
-            }
-            if (date < planStartDate || date > planEndDate) {
-                dayElement.classList.add('disabled');
-            } else {
-                dayElement.addEventListener('click', () => selectWeekFromDate(date));
-            }
-            
-            // Highlight current week
-            if (isDateInCurrentWeek(date)) {
-                dayElement.classList.add('selected-week');
-            }
-            
-            calendarDates.appendChild(dayElement);
+    // Generate current week (7 days)
+    for (let day = 0; day < 7; day++) {
+        const date = new Date(currentWeekStart);
+        date.setDate(currentWeekStart.getDate() + day);
+        
+        const dayCell = document.createElement('td');
+        dayCell.className = 'calendar-day-cell text-center';
+        
+        // Create day structure similar to TV planning
+        dayCell.innerHTML = `
+            <div class="date-number">${date.getDate()}</div>
+            <div class="cpt-value" id="cpt_day_${day}">0.00€</div>
+        `;
+        
+        // Add classes based on date status
+        if (date < planStartDate || date > planEndDate) {
+            dayCell.classList.add('disabled');
         }
+        
+        calendarDatesRow.appendChild(dayCell);
     }
 }
 
@@ -378,6 +383,8 @@ function nextWeek() {
 }
 
 function calculateTotals() {
+    let dailyTotals = [0, 0, 0, 0, 0, 0, 0]; // 7 days of the week
+    
     document.querySelectorAll('.screen-planning-card').forEach(card => {
         const bookingId = card.querySelector('.kartai-input').dataset.booking;
         
@@ -409,7 +416,7 @@ function calculateTotals() {
         }
         
         // Calculate grand totals for each hour
-        for (let hour = 0; hour < 24; hour++) {
+        for (let hour = 6; hour < 24; hour++) {
             let hourGrandTotal = 0;
             card.querySelectorAll(`.kartai-input[data-hour="${hour}"]`).forEach(input => {
                 hourGrandTotal += parseInt(input.value || 0);
@@ -419,6 +426,10 @@ function calculateTotals() {
             if (hourTotalElement) {
                 hourTotalElement.textContent = hourGrandTotal;
             }
+            
+            // Add to daily totals (distribute across 7 days - simplified approach)
+            const dayIndex = hour % 7;
+            dailyTotals[dayIndex] += hourGrandTotal * 5.0; // 5€ per broadcast
         }
         
         // Calculate screen grand total
@@ -428,6 +439,9 @@ function calculateTotals() {
         
         card.querySelector('.screen-grand-total').textContent = screenGrandTotal.toFixed(2) + '€';
     });
+    
+    // Update calendar CPT displays
+    updateCalendarCPT(dailyTotals);
     
     // Calculate overall totals
     let totalSlots = 0;
@@ -447,7 +461,25 @@ function calculateTotals() {
     
     const avgCPT = totalSlots > 0 ? (totalCost * 1000) / totalSlots : 0;
     document.getElementById('avgCPT').textContent = avgCPT.toFixed(2) + '€';
-    document.getElementById('avgCPTHeader').textContent = '€' + avgCPT.toFixed(2);
+}
+
+function updateCalendarCPT(dailyTotals) {
+    // Update calendar day displays
+    for (let day = 0; day < 7; day++) {
+        const cptElement = document.getElementById(`cpt_day_${day}`);
+        if (cptElement) {
+            cptElement.textContent = dailyTotals[day].toFixed(2) + '€';
+        }
+    }
+    
+    // Update total row
+    const dayIds = ['mondayTotal', 'tuesdayTotal', 'wednesdayTotal', 'thursdayTotal', 'fridayTotal', 'saturdayTotal', 'sundayTotal'];
+    for (let day = 0; day < 7; day++) {
+        const totalElement = document.getElementById(dayIds[day]);
+        if (totalElement) {
+            totalElement.textContent = dailyTotals[day].toFixed(2) + '€';
+        }
+    }
 }
 
 function loadSelectedWeek() {
@@ -595,6 +627,7 @@ function confirmCreateNewWeek() {
     cancelNewWeek();
 }
 
+
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeCalendar();
@@ -603,56 +636,74 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <style>
-/* Calendar Styles */
-.calendar-grid {
+/* TV-Planning Style Calendar */
+.tv-planning-calendar {
     max-width: 100%;
 }
 
-.calendar-header {
-    text-align: center;
-    margin-bottom: 1rem;
+.planning-calendar-table {
+    border: 2px solid #007bff;
+    font-size: 0.9rem;
 }
 
-.calendar-month {
-    font-size: 1.2rem;
-    font-weight: bold;
-    color: #495057;
-}
-
-.calendar-weekdays {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    margin-bottom: 1px;
-}
-
-.weekday {
-    background-color: #6c757d;
+.planning-calendar-table th {
+    background-color: #007bff !important;
     color: white;
-    padding: 0.5rem;
-    text-align: center;
     font-weight: bold;
-    font-size: 0.85rem;
+    padding: 0.75rem 0.5rem;
+    border: 1px solid #0056b3;
+    font-size: 0.9rem;
 }
 
-.calendar-dates {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 1px;
-    border: 1px solid #dee2e6;
-}
-
-.calendar-date {
+.calendar-day-cell {
     background-color: #fff;
-    padding: 0.75rem;
-    text-align: center;
-    cursor: pointer;
-    border: 1px solid #e9ecef;
-    transition: background-color 0.2s;
-    min-height: 40px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    padding: 1rem 0.5rem;
+    border: 1px solid #dee2e6;
+    vertical-align: middle;
+    min-height: 80px;
+}
+
+.calendar-day-cell.disabled {
+    background-color: #f8f9fa;
+    color: #6c757d;
+}
+
+.date-number {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #007bff;
+    margin-bottom: 0.25rem;
+}
+
+.date-month {
+    font-size: 0.7rem;
+    color: #6c757d;
+    text-transform: uppercase;
+    margin-bottom: 0.5rem;
+    font-weight: 600;
+}
+
+.cpt-value {
+    font-size: 0.85rem;
+    font-weight: bold;
+    color: #28a745;
+    background-color: #f8f9fa;
+    padding: 0.25rem 0.5rem;
+    border: 1px solid #dee2e6;
+    border-radius: 0.25rem;
+    display: inline-block;
+    min-width: 60px;
+}
+
+.cpt-totals-row {
+    background-color: #28a745 !important;
+}
+
+.cpt-totals-row td {
+    padding: 0.75rem 0.5rem;
+    font-size: 1rem;
+    font-weight: bold;
+    border: 1px solid #1e7e34;
 }
 
 .calendar-date:hover:not(.disabled) {
