@@ -238,6 +238,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 option.setAttribute('data-client-brand', kampanija.client_brand_name);
                 option.setAttribute('data-campaign-name', kampanija.campaign_name);
                 option.setAttribute('data-full-name', kampanija.name);
+                // Store kampanija date range
+                option.setAttribute('data-start-date', kampanija.start_date);
+                option.setAttribute('data-end-date', kampanija.end_date);
                 kampanijaSelect.appendChild(option);
             });
         })
@@ -251,17 +254,84 @@ document.addEventListener('DOMContentLoaded', function() {
     // Load kampanijos on page load
     loadKampanijos();
     
-    // Update hidden fields when kampanija is selected
+    // Update hidden fields and date restrictions when kampanija is selected
     document.getElementById('kampanija_id').addEventListener('change', function() {
         const selectedOption = this.options[this.selectedIndex];
+        const startDateInput = document.getElementById('start_date');
+        const endDateInput = document.getElementById('end_date');
+        
         if (selectedOption.value) {
+            // Update hidden fields
             document.getElementById('kampanija_full_name').value = selectedOption.getAttribute('data-full-name') || '';
             document.getElementById('kampanija_brand').value = selectedOption.getAttribute('data-client-brand') || '';
             document.getElementById('kampanija_campaign').value = selectedOption.getAttribute('data-campaign-name') || '';
+            
+            // Get kampanija date range
+            const kampanijaStartDate = selectedOption.getAttribute('data-start-date');
+            const kampanijaEndDate = selectedOption.getAttribute('data-end-date');
+            
+            // Set date input restrictions
+            if (kampanijaStartDate && kampanijaEndDate) {
+                // Set min and max attributes for date inputs
+                startDateInput.setAttribute('min', kampanijaStartDate);
+                startDateInput.setAttribute('max', kampanijaEndDate);
+                endDateInput.setAttribute('min', kampanijaStartDate);
+                endDateInput.setAttribute('max', kampanijaEndDate);
+                
+                // Clear current values if they're outside the new range
+                if (startDateInput.value) {
+                    const currentStartDate = new Date(startDateInput.value);
+                    const minDate = new Date(kampanijaStartDate);
+                    const maxDate = new Date(kampanijaEndDate);
+                    
+                    if (currentStartDate < minDate || currentStartDate > maxDate) {
+                        startDateInput.value = kampanijaStartDate;
+                    }
+                }
+                
+                if (endDateInput.value) {
+                    const currentEndDate = new Date(endDateInput.value);
+                    const minDate = new Date(kampanijaStartDate);
+                    const maxDate = new Date(kampanijaEndDate);
+                    
+                    if (currentEndDate < minDate || currentEndDate > maxDate) {
+                        endDateInput.value = kampanijaEndDate;
+                    }
+                }
+                
+                // Update the date input labels to show the allowed range
+                const startDateLabel = document.querySelector('label[for="start_date"]');
+                const endDateLabel = document.querySelector('label[for="end_date"]');
+                
+                if (startDateLabel) {
+                    startDateLabel.innerHTML = `Pradžios data * <small class="text-muted">(${kampanijaStartDate} - ${kampanijaEndDate})</small>`;
+                }
+                if (endDateLabel) {
+                    endDateLabel.innerHTML = `Pabaigos data * <small class="text-muted">(${kampanijaStartDate} - ${kampanijaEndDate})</small>`;
+                }
+            }
         } else {
+            // Clear hidden fields
             document.getElementById('kampanija_full_name').value = '';
             document.getElementById('kampanija_brand').value = '';
             document.getElementById('kampanija_campaign').value = '';
+            
+            // Remove date restrictions
+            startDateInput.removeAttribute('min');
+            startDateInput.removeAttribute('max');
+            endDateInput.removeAttribute('min');
+            endDateInput.removeAttribute('max');
+            
+            // Reset date labels
+            const startDateLabel = document.querySelector('label[for="start_date"]');
+            const endDateLabel = document.querySelector('label[for="end_date"]');
+            
+            if (startDateLabel) {
+                startDateLabel.innerHTML = 'Pradžios data *';
+            }
+            if (endDateLabel) {
+                endDateLabel.innerHTML = 'Pabaigos data *';
+            }
         }
     });
     
