@@ -259,6 +259,7 @@
 
 <!-- Screen Planning Forms (Below Calendar) -->
 {% for booking in plan.screen_bookings %}
+{% for week_num in range(1, num_weeks + 1) %}
 <div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6 screen-planning-card">
     <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
         <div class="flex justify-between items-center">
@@ -267,33 +268,33 @@
                     <i class="fas fa-tv text-yellow-600 text-sm"></i>
                 </div>
                 <div>
-                    <h3 class="text-lg leading-6 font-medium text-gray-900">{{ booking.screen.name }}</h3>
-                    <p class="text-sm text-gray-500">{{ booking.screen.provider.name }} • {{ booking.screen.city }}</p>
+                    <h3 class="text-lg leading-6 font-medium text-gray-900">{{ booking.screen.name }} - Savaitė {{ week_num }}</h3>
+                    <p class="text-sm text-gray-500">{{ booking.screen.provider.name }} • {{ booking.screen.city }} • {{ total_days }} dienų planas</p>
                 </div>
             </div>
             <div class="flex items-center space-x-4">
                 <div class="flex items-center space-x-2">
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                        CPT: <span class="cpt-value ml-1" data-booking="{{ booking.id }}">0.00</span>€
+                        CPT: <span class="cpt-value ml-1" data-booking="{{ booking.id }}_w{{ week_num }}">0.00</span>€
                     </span>
                     <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                        Viso kaina: <span class="total-price ml-1" data-booking="{{ booking.id }}">0.00</span>€
+                        Viso kaina: <span class="total-price ml-1" data-booking="{{ booking.id }}_w{{ week_num }}">0.00</span>€
                     </span>
                 </div>
-                <button class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" onclick="calculatePrices({{ booking.id }})">
+                <button class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" onclick="calculatePrices('{{ booking.id }}_w{{ week_num }}')">
                     <i class="fas fa-calculator -ml-1 mr-2"></i>
                     Apskaičiuoti kainas
                 </button>
                 <div class="flex items-center space-x-2">
-                    <button class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="fillAllDays({{ booking.id }}, 30)">
+                    <button class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="fillAllDays('{{ booking.id }}_w{{ week_num }}', 30)">
                         <i class="fas fa-fill -ml-1 mr-2"></i>
                         Užpildyti 30
                     </button>
-                    <button class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="fillAllDays({{ booking.id }}, 60)">
+                    <button class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="fillAllDays('{{ booking.id }}_w{{ week_num }}', 60)">
                         <i class="fas fa-fill -ml-1 mr-2"></i>
                         Užpildyti 60
                     </button>
-                    <button class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" onclick="clearAllDays({{ booking.id }})">
+                    <button class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" onclick="clearAllDays('{{ booking.id }}_w{{ week_num }}')">
                         <i class="fas fa-eraser -ml-1 mr-2"></i>
                         Išvalyti
                     </button>
@@ -308,13 +309,14 @@
                     <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Laikas</th>
                     <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 80px;">Tūkst. kontaktų</th>
                     <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 80px;">Kaina</th>
-                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Pirmadienis</th>
-                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Antradienis</th>
-                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Trečiadienis</th>
-                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Ketvirtadienis</th>
-                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Penktadienis</th>
-                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Šeštadienis</th>
-                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Sekmadienis</th>
+                    {% set week_data = week_days[week_num - 1] %}
+                    {% if week_data.mon %}<th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Pirmadienis</th>{% endif %}
+                    {% if week_data.tue %}<th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Antradienis</th>{% endif %}
+                    {% if week_data.wed %}<th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Trečiadienis</th>{% endif %}
+                    {% if week_data.thu %}<th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Ketvirtadienis</th>{% endif %}
+                    {% if week_data.fri %}<th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Penktadienis</th>{% endif %}
+                    {% if week_data.sat %}<th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Šeštadienis</th>{% endif %}
+                    {% if week_data.sun %}<th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Sekmadienis</th>{% endif %}
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
@@ -349,9 +351,10 @@
                         {% endif %}
                     </td>
                     <!-- Pirmadienis -->
+                    {% if week_data.mon %}
                     <td class="text-center p-1">
                         <select class="w-20 px-1 py-1 text-xs border border-gray-300 rounded text-center weekday-input" 
-                               data-booking="{{ booking.id }}"
+                               data-booking="{{ booking.id }}_w{{ week_num }}"
                                data-hour="{{ hour }}"
                                data-day="mon"
                                data-contacts="{{ pricing.contacts_mon if pricing else 0 }}"
@@ -360,12 +363,14 @@
                             <option value="30">30</option>
                             <option value="60">60</option>
                         </select>
-                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_{{ hour }}_mon">-</div>
+                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_mon">-</div>
                     </td>
+                    {% endif %}
                     <!-- Antradienis -->
+                    {% if week_data.tue %}
                     <td class="text-center p-1">
                         <select class="w-20 px-1 py-1 text-xs border border-gray-300 rounded text-center weekday-input" 
-                               data-booking="{{ booking.id }}"
+                               data-booking="{{ booking.id }}_w{{ week_num }}"
                                data-hour="{{ hour }}"
                                data-day="tue"
                                data-contacts="{{ pricing.contacts_tue if pricing else 0 }}"
@@ -374,12 +379,14 @@
                             <option value="30">30</option>
                             <option value="60">60</option>
                         </select>
-                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_{{ hour }}_tue">-</div>
+                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_tue">-</div>
                     </td>
+                    {% endif %}
                     <!-- Trečiadienis -->
+                    {% if week_data.wed %}
                     <td class="text-center p-1">
                         <select class="w-20 px-1 py-1 text-xs border border-gray-300 rounded text-center weekday-input" 
-                               data-booking="{{ booking.id }}"
+                               data-booking="{{ booking.id }}_w{{ week_num }}"
                                data-hour="{{ hour }}"
                                data-day="wed"
                                data-contacts="{{ pricing.contacts_wed if pricing else 0 }}"
@@ -388,12 +395,14 @@
                             <option value="30">30</option>
                             <option value="60">60</option>
                         </select>
-                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_{{ hour }}_wed">-</div>
+                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_wed">-</div>
                     </td>
+                    {% endif %}
                     <!-- Ketvirtadienis -->
+                    {% if week_data.thu %}
                     <td class="text-center p-1">
                         <select class="w-20 px-1 py-1 text-xs border border-gray-300 rounded text-center weekday-input" 
-                               data-booking="{{ booking.id }}"
+                               data-booking="{{ booking.id }}_w{{ week_num }}"
                                data-hour="{{ hour }}"
                                data-day="thu"
                                data-contacts="{{ pricing.contacts_thu if pricing else 0 }}"
@@ -402,12 +411,14 @@
                             <option value="30">30</option>
                             <option value="60">60</option>
                         </select>
-                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_{{ hour }}_thu">-</div>
+                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_thu">-</div>
                     </td>
+                    {% endif %}
                     <!-- Penktadienis -->
+                    {% if week_data.fri %}
                     <td class="text-center p-1">
                         <select class="w-20 px-1 py-1 text-xs border border-gray-300 rounded text-center weekday-input" 
-                               data-booking="{{ booking.id }}"
+                               data-booking="{{ booking.id }}_w{{ week_num }}"
                                data-hour="{{ hour }}"
                                data-day="fri"
                                data-contacts="{{ pricing.contacts_fri if pricing else 0 }}"
@@ -416,12 +427,14 @@
                             <option value="30">30</option>
                             <option value="60">60</option>
                         </select>
-                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_{{ hour }}_fri">-</div>
+                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_fri">-</div>
                     </td>
+                    {% endif %}
                     <!-- Šeštadienis -->
+                    {% if week_data.sat %}
                     <td class="text-center p-1">
                         <select class="w-20 px-1 py-1 text-xs border border-gray-300 rounded text-center weekday-input" 
-                               data-booking="{{ booking.id }}"
+                               data-booking="{{ booking.id }}_w{{ week_num }}"
                                data-hour="{{ hour }}"
                                data-day="sat"
                                data-contacts="{{ pricing.contacts_sat if pricing else 0 }}"
@@ -430,12 +443,14 @@
                             <option value="30">30</option>
                             <option value="60">60</option>
                         </select>
-                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_{{ hour }}_sat">-</div>
+                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_sat">-</div>
                     </td>
+                    {% endif %}
                     <!-- Sekmadienis -->
+                    {% if week_data.sun %}
                     <td class="text-center p-1">
                         <select class="w-20 px-1 py-1 text-xs border border-gray-300 rounded text-center weekday-input" 
-                               data-booking="{{ booking.id }}"
+                               data-booking="{{ booking.id }}_w{{ week_num }}"
                                data-hour="{{ hour }}"
                                data-day="sun"
                                data-contacts="{{ pricing.contacts_sun if pricing else 0 }}"
@@ -444,8 +459,9 @@
                             <option value="30">30</option>
                             <option value="60">60</option>
                         </select>
-                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_{{ hour }}_sun">-</div>
+                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_sun">-</div>
                     </td>
+                    {% endif %}
                 </tr>
                 {% endfor %}
                 
@@ -460,39 +476,54 @@
                     <td class="text-center align-middle px-2 py-3">
                         <strong class="text-sm">-</strong>
                     </td>
+                    {% if week_data.mon %}
                     <td class="text-center align-middle px-2 py-3">
                         <div class="text-xs opacity-75 mb-1">KAINA</div>
-                        <strong class="day-price-mon text-sm" data-booking="{{ booking.id }}">0.00€</strong>
+                        <strong class="day-price-mon text-sm" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
                     </td>
+                    {% endif %}
+                    {% if week_data.tue %}
                     <td class="text-center align-middle px-2 py-3">
                         <div class="text-xs opacity-75 mb-1">KAINA</div>
-                        <strong class="day-price-tue text-sm" data-booking="{{ booking.id }}">0.00€</strong>
+                        <strong class="day-price-tue text-sm" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
                     </td>
+                    {% endif %}
+                    {% if week_data.wed %}
                     <td class="text-center align-middle px-2 py-3">
                         <div class="text-xs opacity-75 mb-1">KAINA</div>
-                        <strong class="day-price-wed text-sm" data-booking="{{ booking.id }}">0.00€</strong>
+                        <strong class="day-price-wed text-sm" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
                     </td>
+                    {% endif %}
+                    {% if week_data.thu %}
                     <td class="text-center align-middle px-2 py-3">
                         <div class="text-xs opacity-75 mb-1">KAINA</div>
-                        <strong class="day-price-thu text-sm" data-booking="{{ booking.id }}">0.00€</strong>
+                        <strong class="day-price-thu text-sm" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
                     </td>
+                    {% endif %}
+                    {% if week_data.fri %}
                     <td class="text-center align-middle px-2 py-3">
                         <div class="text-xs opacity-75 mb-1">KAINA</div>
-                        <strong class="day-price-fri text-sm" data-booking="{{ booking.id }}">0.00€</strong>
+                        <strong class="day-price-fri text-sm" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
                     </td>
+                    {% endif %}
+                    {% if week_data.sat %}
                     <td class="text-center align-middle px-2 py-3">
                         <div class="text-xs opacity-75 mb-1">KAINA</div>
-                        <strong class="day-price-sat text-sm" data-booking="{{ booking.id }}">0.00€</strong>
+                        <strong class="day-price-sat text-sm" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
                     </td>
+                    {% endif %}
+                    {% if week_data.sun %}
                     <td class="text-center align-middle px-2 py-3">
                         <div class="text-xs opacity-75 mb-1">KAINA</div>
-                        <strong class="day-price-sun text-sm" data-booking="{{ booking.id }}">0.00€</strong>
+                        <strong class="day-price-sun text-sm" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
                     </td>
+                    {% endif %}
                 </tr>
             </tbody>
         </table>
     </div>
 </div>
+{% endfor %}
 {% endfor %}
 
 {% endif %}
@@ -503,6 +534,13 @@ let currentWeekStart = new Date('{{ plan.start_date.strftime('%Y-%m-%d') }}');
 const planStartDate = new Date('{{ plan.start_date.strftime('%Y-%m-%d') }}');
 const planEndDate = new Date('{{ plan.end_date.strftime('%Y-%m-%d') }}');
 const planId = {{ plan.id }};
+
+// Mapping of booking IDs to screen IDs
+const bookingToScreenMap = {
+    {% for booking in bookings %}
+    {{ booking.id }}: {{ booking.screen_id }},
+    {% endfor %}
+};
 
 // Modal functions
 function showAddScreenModal() {
@@ -729,99 +767,6 @@ function nextWeek() {
     }
 }
 
-// Calculate prices with the formula: tkst.kontaktu * (30 or 60) / 30 * 2 = SUM, tkst.kontaktu * 1 * SUM = kaina
-function calculatePrices(bookingId) {
-    const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
-    let dayTotals = {};
-    let totalPrice = 0;
-    let totalSlots = 0;
-    
-    // Initialize day totals
-    days.forEach(day => {
-        dayTotals[day] = 0;
-    });
-    
-    // Initialize day price totals
-    let dayPriceTotals = {};
-    days.forEach(day => {
-        dayPriceTotals[day] = 0;
-    });
-    
-    // Calculate prices for each hour and day for this booking
-    for (let hour = 6; hour < 24; hour++) {
-        // Get the price from TRP for this hour
-        const priceElement = document.querySelector(`.time-row-${hour} span[data-price]`);
-        const trpPrice = priceElement ? parseFloat(priceElement.dataset.price) : 0;
-        
-        days.forEach(day => {
-            const select = document.querySelector(`select[data-booking="${bookingId}"][data-hour="${hour}"][data-day="${day}"]`);
-            
-            if (select) {
-                const selectedValue = parseInt(select.value || 0);
-                const contacts = parseFloat(select.dataset.contacts || 0); // contacts in thousands
-                
-                if (selectedValue > 0 && contacts > 0) {
-                    // Step 1: SUM = tukst kontaktu * (60 or 30) / 30 * 2
-                    const sum = contacts * selectedValue / 30 * 2;
-                    
-                    // Step 2: TUKST. kontaktu * 1 * SUM = kaina
-                    const kaina = contacts * 1 * sum;
-                    
-                    // Display the calculated price
-                    const priceDisplay = document.getElementById(`price_${bookingId}_${hour}_${day}`);
-                    if (priceDisplay) {
-                        priceDisplay.textContent = kaina.toFixed(2) + '€';
-                    }
-                    
-                    dayTotals[day] += selectedValue;
-                    dayPriceTotals[day] += kaina;
-                    totalSlots += selectedValue;
-                    totalPrice += kaina;
-                } else {
-                    // Clear price display if no value selected
-                    const priceDisplay = document.getElementById(`price_${bookingId}_${hour}_${day}`);
-                    if (priceDisplay) {
-                        priceDisplay.textContent = '-';
-                    }
-                }
-            }
-        });
-    }
-    
-    // Update day totals and day prices
-    days.forEach(day => {
-        const dayTotalElement = document.querySelector(`.day-total-${day}[data-booking="${bookingId}"]`);
-        if (dayTotalElement) {
-            dayTotalElement.textContent = dayTotals[day];
-        }
-        
-        const dayPriceElement = document.querySelector(`.day-price-${day}[data-booking="${bookingId}"]`);
-        if (dayPriceElement) {
-            dayPriceElement.textContent = dayPriceTotals[day].toFixed(2) + '€';
-        }
-    });
-    
-    // Update total price displays
-    const totalPriceElement = document.querySelector(`.total-price[data-booking="${bookingId}"]`);
-    if (totalPriceElement) {
-        totalPriceElement.textContent = totalPrice.toFixed(2);
-    }
-    
-    const screenTotalPriceElement = document.querySelector(`.screen-total-price[data-booking="${bookingId}"]`);
-    if (screenTotalPriceElement) {
-        screenTotalPriceElement.textContent = totalPrice.toFixed(2) + '€';
-    }
-    
-    // Update CPT calculation
-    const cptElement = document.querySelector(`[data-booking="${bookingId}"].cpt-value`);
-    if (cptElement) {
-        const cpt = totalSlots > 0 ? (totalPrice / totalSlots) : 0;
-        cptElement.textContent = cpt.toFixed(2);
-    }
-    
-    // Recalculate overall totals
-    calculateOverallTotals();
-}
 
 // Screen-specific calculation function (kept for compatibility)
 function calculateScreenTotals(bookingId) {
@@ -1124,11 +1069,343 @@ function confirmCreateNewWeek() {
     cancelNewWeek();
 }
 
+// Save pricing data to database
+function savePricingData(bookingId) {
+    const parts = bookingId.split('_w');
+    if (parts.length !== 2) return;
+    
+    const bookingIdNum = parseInt(parts[0]);
+    const screenId = bookingToScreenMap[bookingIdNum]; // Use the mapping to get correct screen ID
+    const weekNumber = parseInt(parts[1]);
+    
+    if (!screenId) {
+        console.error(`No screen ID found for booking ID ${bookingIdNum}`);
+        return;
+    }
+    
+    // Collect all pricing data for this booking
+    const pricingData = [];
+    const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    
+    for (let hour = 6; hour < 24; hour++) {
+        days.forEach(day => {
+            const select = document.querySelector(`select[data-booking="${bookingId}"][data-hour="${hour}"][data-day="${day}"]`);
+            
+            if (select) {
+                const selectedValue = parseInt(select.value || 0);
+                const contacts = parseFloat(select.dataset.contacts || 0);
+                
+                if (selectedValue > 0 && contacts > 0) {
+                    // Calculate the price using the same formula
+                    const sum = contacts * selectedValue / 30 * 2;
+                    const calculatedPrice = contacts * 1 * sum;
+                    
+                    // Calculate date for this day in this week
+                    const date = getDateForWeekDay(weekNumber, day);
+                    
+                    // Only add if date is valid (within plan range)
+                    if (date) {
+                        pricingData.push({
+                            hour: hour,
+                            day_name: day,
+                            selected_value: selectedValue,
+                            calculated_price: calculatedPrice,
+                            contacts: contacts,
+                            date: date
+                        });
+                    }
+                }
+            }
+        });
+    }
+    
+    console.log(`About to save ${pricingData.length} pricing records for plan ${planId}, booking ${bookingIdNum}, screen ${screenId}, week ${weekNumber}`);
+    console.log('Pricing data:', pricingData);
+    
+    if (pricingData.length > 0) {
+        // Send to API
+        const payload = {
+            dooh_plan_id: planId,
+            screen_id: screenId,
+            week_number: weekNumber,
+            pricing_data: pricingData
+        };
+        
+        console.log('Sending payload:', payload);
+        
+        fetch('/api/media-plan-pricing/save', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                console.log(`Saved ${data.saved_count} pricing records for ${bookingId}`);
+                // Refresh calendar totals immediately
+                refreshCalendarTotals();
+            } else {
+                console.error('Failed to save pricing data:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error saving pricing data:', error);
+        });
+    }
+}
+
+// Helper function to calculate date for a given week and day
+function getDateForWeekDay(weekNumber, dayName) {
+    console.log(`getDateForWeekDay called: weekNumber=${weekNumber}, dayName=${dayName}`);
+    
+    // Use the same logic as the backend route to calculate week dates
+    // Get the Monday of week 1 (start Monday)
+    const startMonday = new Date(planStartDate);
+    const daysToMonday = startMonday.getDay() === 0 ? 6 : startMonday.getDay() - 1; // Convert to Monday-based week
+    startMonday.setDate(startMonday.getDate() - daysToMonday);
+    
+    console.log(`Start Monday: ${startMonday.toISOString().split('T')[0]}`);
+    
+    // Calculate the target week's Monday
+    const weekMonday = new Date(startMonday);
+    weekMonday.setDate(startMonday.getDate() + (weekNumber - 1) * 7);
+    
+    console.log(`Week ${weekNumber} Monday: ${weekMonday.toISOString().split('T')[0]}`);
+    
+    // Add days for the specific weekday
+    const dayOffsets = { 'mon': 0, 'tue': 1, 'wed': 2, 'thu': 3, 'fri': 4, 'sat': 5, 'sun': 6 };
+    const targetDate = new Date(weekMonday);
+    targetDate.setDate(weekMonday.getDate() + dayOffsets[dayName]);
+    
+    console.log(`Calculated target date: ${targetDate.toISOString().split('T')[0]}`);
+    
+    // Check if the calculated date is within plan range
+    if (targetDate >= planStartDate && targetDate <= planEndDate) {
+        const result = targetDate.toISOString().split('T')[0];
+        console.log(`✓ Date is within plan range: ${result}`);
+        return result;
+    } else {
+        console.log(`✗ Date ${targetDate.toISOString().split('T')[0]} is outside plan range (${planStartDate.toISOString().split('T')[0]} to ${planEndDate.toISOString().split('T')[0]})`);
+        return null; // Return null for dates outside plan range
+    }
+}
+
+// Load saved pricing data and update calendar
+function loadPricingData() {
+    fetch(`/api/media-plan-pricing/${planId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Update calendar with daily totals
+                updateCalendarTotals(data.daily_totals);
+                
+                // Populate form fields with saved data
+                populateFormFields(data.saved_pricing);
+            } else {
+                console.error('Failed to load pricing data:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error loading pricing data:', error);
+        });
+}
+
+// Refresh only calendar totals (without repopulating forms)
+function refreshCalendarTotals() {
+    fetch(`/api/media-plan-pricing/${planId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                // Clear existing calendar totals first
+                clearCalendarTotals();
+                
+                // Update calendar with fresh daily totals
+                updateCalendarTotals(data.daily_totals);
+            } else {
+                console.error('Failed to refresh calendar totals:', data.message);
+            }
+        })
+        .catch(error => {
+            console.error('Error refreshing calendar totals:', error);
+        });
+}
+
+// Clear calendar totals before updating
+function clearCalendarTotals() {
+    // Reset all cost displays to 0.00€
+    document.querySelectorAll('[id^="cost_"]').forEach(costElement => {
+        costElement.textContent = '0.00€';
+        costElement.style.fontWeight = 'normal';
+        costElement.style.color = '#6b7280'; // Gray color
+    });
+    
+    // Reset all day totals
+    document.querySelectorAll('[id^="dayTotal_"]').forEach(dayTotalElement => {
+        dayTotalElement.textContent = '0.00€';
+    });
+}
+
+// Update calendar daily totals
+function updateCalendarTotals(dailyTotals) {
+    // Update the calendar cells with price totals
+    Object.keys(dailyTotals).forEach(dateStr => {
+        const price = dailyTotals[dateStr];
+        
+        // Find the corresponding calendar cell
+        const dayIndex = Math.floor((new Date(dateStr) - planStartDate) / (1000 * 60 * 60 * 24));
+        
+        // Update day total (replace, not add, since we cleared first)
+        const dayTotalElement = document.getElementById(`dayTotal_${dayIndex}`);
+        if (dayTotalElement) {
+            dayTotalElement.textContent = price.toFixed(2) + '€';
+            dayTotalElement.style.fontWeight = 'bold';
+            dayTotalElement.style.color = '#059669'; // Green color for totals with saved data
+        }
+        
+        // Update individual screen cost displays proportionally 
+        // (This is more complex - for now just show the total in each cell)
+        document.querySelectorAll(`[id^="cost_"][id$="_${dayIndex}"]`).forEach(costElement => {
+            costElement.textContent = price.toFixed(2) + '€';
+            costElement.style.fontWeight = 'bold';
+            costElement.style.color = '#059669'; // Green color
+        });
+    });
+}
+
+// Populate form fields with saved data
+function populateFormFields(savedPricing) {
+    Object.keys(savedPricing).forEach(bookingKey => {
+        const pricingData = savedPricing[bookingKey];
+        
+        Object.keys(pricingData).forEach(hourDayKey => {
+            const [hour, day] = hourDayKey.split('_');
+            const data = pricingData[hourDayKey];
+            
+            // Find the select element and set its value
+            const select = document.querySelector(`select[data-booking="${bookingKey}"][data-hour="${hour}"][data-day="${day}"]`);
+            if (select) {
+                select.value = data.selected_value;
+                
+                // Update the price display
+                const priceDisplay = document.getElementById(`price_${bookingKey}_${hour}_${day}`);
+                if (priceDisplay) {
+                    priceDisplay.textContent = data.calculated_price.toFixed(2) + '€';
+                }
+            }
+        });
+        
+        // Recalculate totals for this booking (skip auto-save to prevent loop)
+        // calculatePrices(bookingKey); // Skip this to prevent save loop on page load
+    });
+}
+
+// Calculate prices with the formula: tkst.kontaktu * (30 or 60) / 30 * 2 = SUM, tkst.kontaktu * 1 * SUM = kaina
+function calculatePrices(bookingId) {
+    const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
+    let dayTotals = {};
+    let totalPrice = 0;
+    let totalSlots = 0;
+    
+    // Initialize day totals
+    days.forEach(day => {
+        dayTotals[day] = 0;
+    });
+    
+    // Initialize day price totals
+    let dayPriceTotals = {};
+    days.forEach(day => {
+        dayPriceTotals[day] = 0;
+    });
+    
+    // Calculate prices for each hour and day for this booking
+    for (let hour = 6; hour < 24; hour++) {
+        // Get the price from TRP for this hour
+        const priceElement = document.querySelector(`.time-row-${hour} span[data-price]`);
+        const trpPrice = priceElement ? parseFloat(priceElement.dataset.price) : 0;
+        
+        days.forEach(day => {
+            const select = document.querySelector(`select[data-booking="${bookingId}"][data-hour="${hour}"][data-day="${day}"]`);
+            
+            if (select) {
+                const selectedValue = parseInt(select.value || 0);
+                const contacts = parseFloat(select.dataset.contacts || 0); // contacts in thousands
+                
+                if (selectedValue > 0 && contacts > 0) {
+                    // Step 1: SUM = tukst kontaktu * (60 or 30) / 30 * 2
+                    const sum = contacts * selectedValue / 30 * 2;
+                    
+                    // Step 2: TUKST. kontaktu * 1 * SUM = kaina
+                    const kaina = contacts * 1 * sum;
+                    
+                    // Display the calculated price
+                    const priceDisplay = document.getElementById(`price_${bookingId}_${hour}_${day}`);
+                    if (priceDisplay) {
+                        priceDisplay.textContent = kaina.toFixed(2) + '€';
+                    }
+                    
+                    dayTotals[day] += selectedValue;
+                    dayPriceTotals[day] += kaina;
+                    totalSlots += selectedValue;
+                    totalPrice += kaina;
+                } else {
+                    // Clear price display if no value selected
+                    const priceDisplay = document.getElementById(`price_${bookingId}_${hour}_${day}`);
+                    if (priceDisplay) {
+                        priceDisplay.textContent = '-';
+                    }
+                }
+            }
+        });
+    }
+    
+    // Update day totals and day prices
+    days.forEach(day => {
+        const dayTotalElement = document.querySelector(`.day-total-${day}[data-booking="${bookingId}"]`);
+        if (dayTotalElement) {
+            dayTotalElement.textContent = dayTotals[day];
+        }
+        
+        const dayPriceElement = document.querySelector(`.day-price-${day}[data-booking="${bookingId}"]`);
+        if (dayPriceElement) {
+            dayPriceElement.textContent = dayPriceTotals[day].toFixed(2) + '€';
+        }
+    });
+    
+    // Update total price displays
+    const totalPriceElement = document.querySelector(`.total-price[data-booking="${bookingId}"]`);
+    if (totalPriceElement) {
+        totalPriceElement.textContent = totalPrice.toFixed(2);
+    }
+    
+    const screenTotalPriceElement = document.querySelector(`.screen-total-price[data-booking="${bookingId}"]`);
+    if (screenTotalPriceElement) {
+        screenTotalPriceElement.textContent = totalPrice.toFixed(2) + '€';
+    }
+    
+    // Update CPT calculation
+    const cptElement = document.querySelector(`[data-booking="${bookingId}"].cpt-value`);
+    if (cptElement) {
+        const cpt = totalSlots > 0 ? (totalPrice / totalSlots) : 0;
+        cptElement.textContent = cpt.toFixed(2);
+    }
+    
+    // Recalculate overall totals
+    calculateOverallTotals();
+    
+    // Auto-save the pricing data
+    savePricingData(bookingId);
+}
+
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeCalendar();
     calculateTotals();
+    
+    // Load saved pricing data and populate forms
+    loadPricingData();
     
     // Initialize all screen calculations
     document.querySelectorAll('.screen-planning-card').forEach(card => {

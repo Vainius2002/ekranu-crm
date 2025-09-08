@@ -74,6 +74,20 @@ class ScreenSlot(db.Model):
     hour = db.Column(db.Integer, nullable=False)  # 0-23
     slots_purchased = db.Column(db.Integer, default=0)  # Number of ad slots purchased for this hour
 
+class MediaPlanPricing(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    dooh_plan_id = db.Column(db.Integer, db.ForeignKey('dooh_plan.id'), nullable=False)
+    screen_id = db.Column(db.Integer, db.ForeignKey('screen.id'), nullable=False)
+    week_number = db.Column(db.Integer, nullable=False)  # 1, 2, 3, etc.
+    hour = db.Column(db.Integer, nullable=False)  # 6-23
+    date = db.Column(db.Date, nullable=False)  # Specific date this price applies to
+    day_name = db.Column(db.String(3), nullable=False)  # mon, tue, wed, etc.
+    selected_value = db.Column(db.Integer, default=0)  # 0, 30, or 60
+    calculated_price = db.Column(db.Float, default=0.0)  # The calculated price
+    contacts = db.Column(db.Float, default=0.0)  # Contact count used in calculation
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    updated_at = db.Column(db.DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+
 class ScreenProvider(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
@@ -351,6 +365,107 @@ def api_add_screen_to_plan(plan_id):
     
     return jsonify({'success': True, 'message': 'Screen added successfully'})
 
+@app.route('/api/media-plan-pricing/save', methods=['POST'])
+def save_media_plan_pricing():
+    """Save calculated prices from media plan"""
+    print("=== MEDIA PLAN PRICING SAVE API CALLED ===")
+    print(f"Request method: {request.method}")
+    print(f"Request URL: {request.url}")
+    try:
+        data = request.get_json()
+        dooh_plan_id = data.get('dooh_plan_id')
+        screen_id = data.get('screen_id')
+        week_number = data.get('week_number')
+        pricing_data = data.get('pricing_data', [])  # List of pricing records
+        
+        print(f"Saving pricing - Plan: {dooh_plan_id}, Screen: {screen_id}, Week: {week_number}, Records: {len(pricing_data)}")
+        
+        if not all([dooh_plan_id, screen_id, week_number]):
+            return jsonify({'success': False, 'message': 'Missing required parameters'}), 400
+        
+        # Verify plan and screen exist
+        plan = DOOHPlan.query.get(dooh_plan_id)
+        screen = Screen.query.get(screen_id)
+        if not plan or not screen:
+            return jsonify({'success': False, 'message': 'Plan or screen not found'}), 404
+        
+        # Delete existing pricing data for this plan/screen/week combination
+        MediaPlanPricing.query.filter_by(
+            dooh_plan_id=dooh_plan_id,
+            screen_id=screen_id,
+            week_number=week_number
+        ).delete()
+        
+        # Insert new pricing data
+        saved_count = 0
+        for pricing_item in pricing_data:
+            if pricing_item.get('selected_value', 0) > 0:  # Only save non-zero values
+                pricing = MediaPlanPricing(
+                    dooh_plan_id=dooh_plan_id,
+                    screen_id=screen_id,
+                    week_number=week_number,
+                    hour=pricing_item['hour'],
+                    date=datetime.strptime(pricing_item['date'], '%Y-%m-%d').date(),
+                    day_name=pricing_item['day_name'],
+                    selected_value=pricing_item['selected_value'],
+                    calculated_price=pricing_item['calculated_price'],
+                    contacts=pricing_item['contacts']
+                )
+                db.session.add(pricing)
+                saved_count += 1
+        
+        db.session.commit()
+        return jsonify({
+            'success': True, 
+            'message': f'Saved {saved_count} pricing records',
+            'saved_count': saved_count
+        })
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': str(e)}), 500
+
+@app.route('/api/media-plan-pricing/<int:plan_id>')
+def get_media_plan_pricing(plan_id):
+    """Get saved pricing data and calculate daily totals for calendar display"""
+    try:
+        plan = DOOHPlan.query.get_or_404(plan_id)
+        
+        # Get all saved pricing data for this plan
+        pricing_data = MediaPlanPricing.query.filter_by(dooh_plan_id=plan_id).all()
+        
+        # Calculate daily totals
+        daily_totals = {}
+        for pricing in pricing_data:
+            date_str = pricing.date.strftime('%Y-%m-%d')
+            if date_str not in daily_totals:
+                daily_totals[date_str] = 0
+            daily_totals[date_str] += pricing.calculated_price
+        
+        # Get saved pricing by screen/week for form population
+        saved_pricing = {}
+        for pricing in pricing_data:
+            key = f"{pricing.screen_id}_w{pricing.week_number}"
+            if key not in saved_pricing:
+                saved_pricing[key] = {}
+            
+            hour_key = f"{pricing.hour}_{pricing.day_name}"
+            saved_pricing[key][hour_key] = {
+                'selected_value': pricing.selected_value,
+                'calculated_price': pricing.calculated_price,
+                'contacts': pricing.contacts,
+                'date': pricing.date.strftime('%Y-%m-%d')
+            }
+        
+        return jsonify({
+            'success': True,
+            'daily_totals': daily_totals,
+            'saved_pricing': saved_pricing
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)}), 500
+
 # DOOH Plan routes
 @app.route('/dooh-plans')
 def dooh_plans():
@@ -546,8 +661,49 @@ def update_broadcast_schedule(plan_id):
 @app.route('/dooh-plan/<int:id>/media-plan')
 def dooh_plan_media(id):
     from datetime import timedelta
+    import math
+    
     plan = DOOHPlan.query.get_or_404(id)
-    return render_template('dooh_media_plan.html', plan=plan, timedelta=timedelta)
+    
+    # Get all bookings for this plan
+    from sqlalchemy.orm import joinedload
+    bookings = ScreenBooking.query.filter_by(dooh_plan_id=id).options(joinedload(ScreenBooking.screen)).all()
+    
+    # Calculate number of weeks based on actual calendar weeks spanned
+    def get_week_number(date):
+        # Get the Monday of the week containing this date
+        days_since_monday = date.weekday()  # Monday = 0, Sunday = 6
+        monday = date - timedelta(days=days_since_monday)
+        return monday
+    
+    start_monday = get_week_number(plan.start_date)
+    end_monday = get_week_number(plan.end_date)
+    
+    # Calculate number of weeks by counting Mondays between start and end
+    weeks_diff = (end_monday - start_monday).days // 7
+    num_weeks = weeks_diff + 1  # +1 because we include both start and end weeks
+    
+    # Calculate total days for template
+    total_days = (plan.end_date - plan.start_date).days + 1
+    
+    # Calculate which days are active for each week
+    week_days = []
+    for week_num in range(1, num_weeks + 1):
+        week_monday = start_monday + timedelta(days=(week_num - 1) * 7)
+        week_sunday = week_monday + timedelta(days=6)
+        
+        # Check which days of this week fall within the plan date range
+        active_days = {}
+        day_names = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun']
+        
+        for i, day_name in enumerate(day_names):
+            current_day = week_monday + timedelta(days=i)
+            active_days[day_name] = (plan.start_date <= current_day <= plan.end_date)
+        
+        week_days.append(active_days)
+    
+    return render_template('dooh_media_plan.html', plan=plan, timedelta=timedelta, 
+                         total_days=total_days, num_weeks=num_weeks, week_days=week_days, bookings=bookings)
 
 # API Routes
 @app.route('/api/import-brands', methods=['POST'])
