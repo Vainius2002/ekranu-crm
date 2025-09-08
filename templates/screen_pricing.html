@@ -11,7 +11,7 @@
             <div>
                 <h1 class="text-3xl font-bold text-gray-900">Įkainis: {{ screen.name }}</h1>
                 <p class="mt-1 text-sm text-gray-500">
-                    Ekrano įkainių valdymas • Kaina už 1000 kontaktų
+                    Ekrano įkainių valdymas • Kaina ir kontaktų skaičius
                 </p>
             </div>
         </div>
@@ -28,7 +28,18 @@
 <div class="bg-white shadow overflow-hidden sm:rounded-lg">
     <div class="px-4 py-5 sm:px-6">
         <h3 class="text-lg leading-6 font-medium text-gray-900">Valandinė įkainių lentelė</h3>
-        <p class="mt-1 max-w-2xl text-sm text-gray-500">Nustatykite kainą už tūkstantį kontaktų ir kontaktų kiekį kiekvienai valandai.</p>
+        <p class="mt-1 max-w-2xl text-sm text-gray-500">Nustatykite kainą ir kontaktų kiekį kiekvienai valandai.</p>
+        <div class="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+            <div class="flex items-start">
+                <i class="fas fa-info-circle text-blue-500 mt-1 mr-2"></i>
+                <div>
+                    <p class="text-sm font-medium text-blue-900">Svarbu: Prieš įvedant kontaktų skaičių</p>
+                    <p class="text-sm text-blue-700 mt-1">Kontaktų skaičių padalinkite iš 1000 (tūkstančių)</p>
+                    <p class="text-sm text-blue-600 mt-1 font-mono">Formulė: Kontaktai ÷ 1000 = Įvedamas skaičius</p>
+                    <p class="text-sm text-blue-600">Pavyzdys: 150,000 kontaktų → įveskite 150</p>
+                </div>
+            </div>
+        </div>
     </div>
     <div class="border-t border-gray-200">
         <form method="POST">
@@ -37,7 +48,7 @@
                     <thead class="bg-indigo-600">
                         <tr>
                             <th scope="col" class="px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider">Laikas</th>
-                            <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider">Kontaktų kiekis</th>
+                            <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider">Kaina (€)</th>
                             <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider">Pirmadienis</th>
                             <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider">Antradienis</th>
                             <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider">Trečiadienis</th>
@@ -53,84 +64,92 @@
                             <td class="px-4 py-3 whitespace-nowrap text-sm font-medium text-gray-900 bg-gray-50">
                                 {{ "%02d"|format(hour) }}.00-{{ "%02d"|format(hour + 1) }}.00
                             </td>
-                            <!-- Kontaktų kiekis column -->
+                            <!-- Kaina column -->
                             <td class="px-2 py-3 whitespace-nowrap text-center">
                                 <input type="number" 
                                        class="w-20 px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" 
                                        min="0" 
-                                       name="contacts_{{ hour }}"
-                                       value="{{ pricing_data.get(hour, {}).get('contacts', '') }}"
-                                       placeholder="0">
+                                       step="0.01"
+                                       name="price_{{ hour }}"
+                                       value="{{ pricing_data.get(hour, {}).get('price', '') }}"
+                                       placeholder="0.00€">
                             </td>
                             <!-- Monday -->
                             <td class="px-2 py-3 whitespace-nowrap text-center">
                                 <input type="number" 
                                        class="w-16 px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" 
                                        min="0" 
-                                       step="0.01"
-                                       name="price_{{ hour }}_mon"
-                                       value="{{ pricing_data.get(hour, {}).get('price_mon', '') }}"
-                                       placeholder="0.00">
+                                       step="0.001"
+                                       name="contacts_{{ hour }}_mon"
+                                       value="{{ pricing_data.get(hour, {}).get('contacts_mon', '') }}"
+                                       placeholder="0"
+                                       title="Kontaktai tūkstančiais">
                             </td>
                             <!-- Tuesday -->
                             <td class="px-2 py-3 whitespace-nowrap text-center">
                                 <input type="number" 
                                        class="w-16 px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" 
                                        min="0" 
-                                       step="0.01"
-                                       name="price_{{ hour }}_tue"
-                                       value="{{ pricing_data.get(hour, {}).get('price_tue', '') }}"
-                                       placeholder="0.00">
+                                       step="0.001"
+                                       name="contacts_{{ hour }}_tue"
+                                       value="{{ pricing_data.get(hour, {}).get('contacts_tue', '') }}"
+                                       placeholder="0"
+                                       title="Kontaktai tūkstančiais">
                             </td>
                             <!-- Wednesday -->
                             <td class="px-2 py-3 whitespace-nowrap text-center">
                                 <input type="number" 
                                        class="w-16 px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" 
                                        min="0" 
-                                       step="0.01"
-                                       name="price_{{ hour }}_wed"
-                                       value="{{ pricing_data.get(hour, {}).get('price_wed', '') }}"
-                                       placeholder="0.00">
+                                       step="0.001"
+                                       name="contacts_{{ hour }}_wed"
+                                       value="{{ pricing_data.get(hour, {}).get('contacts_wed', '') }}"
+                                       placeholder="0"
+                                       title="Kontaktai tūkstančiais">
                             </td>
                             <!-- Thursday -->
                             <td class="px-2 py-3 whitespace-nowrap text-center">
                                 <input type="number" 
                                        class="w-16 px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" 
                                        min="0" 
-                                       step="0.01"
-                                       name="price_{{ hour }}_thu"
-                                       value="{{ pricing_data.get(hour, {}).get('price_thu', '') }}"
-                                       placeholder="0.00">
+                                       step="0.001"
+                                       name="contacts_{{ hour }}_thu"
+                                       value="{{ pricing_data.get(hour, {}).get('contacts_thu', '') }}"
+                                       placeholder="0"
+                                       title="Kontaktai tūkstančiais">
                             </td>
                             <!-- Friday -->
                             <td class="px-2 py-3 whitespace-nowrap text-center">
                                 <input type="number" 
                                        class="w-16 px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" 
                                        min="0" 
-                                       step="0.01"
-                                       name="price_{{ hour }}_fri"
-                                       value="{{ pricing_data.get(hour, {}).get('price_fri', '') }}"
-                                       placeholder="0.00">
+                                       step="0.001"
+                                       name="contacts_{{ hour }}_fri"
+                                       value="{{ pricing_data.get(hour, {}).get('contacts_fri', '') }}"
+                                       placeholder="0"
+                                       title="Kontaktai tūkstančiais">
                             </td>
                             <!-- Saturday -->
                             <td class="px-2 py-3 whitespace-nowrap text-center">
                                 <input type="number" 
                                        class="w-16 px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" 
                                        min="0" 
-                                       step="0.01"
-                                       name="price_{{ hour }}_sat"
-                                       value="{{ pricing_data.get(hour, {}).get('price_sat', '') }}"
-                                       placeholder="0.00">
+                                       step="0.001"
+                                       name="contacts_{{ hour }}_sat"
+                                       value="{{ pricing_data.get(hour, {}).get('contacts_sat', '') }}"
+                                       placeholder="0"
+                                       title="Kontaktai tūkstančiais">
                             </td>
                             <!-- Sunday -->
                             <td class="px-2 py-3 whitespace-nowrap text-center">
                                 <input type="number" 
                                        class="w-16 px-2 py-1 text-sm text-center border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500" 
                                        min="0" 
-                                       step="0.01"
-                                       name="price_{{ hour }}_sun"
-                                       value="{{ pricing_data.get(hour, {}).get('price_sun', '') }}"
-                                       placeholder="0.00">
+                                       step="0.001"
+                                       name="contacts_{{ hour }}_sun"
+                                       value="{{ pricing_data.get(hour, {}).get('contacts_sun', '') }}"
+                                       placeholder="0"
+                                       title="Kontaktai tūkstančiais">
                             </td>
                         </tr>
                         {% endfor %}
@@ -158,21 +177,21 @@
 
 <script>
 function fillAllHours() {
-    const basePrice = prompt("Įveskite kainą už 1000 kontaktų (€):");
-    const baseContacts = prompt("Įveskite kontaktų kiekį:");
+    const basePrice = prompt("Įveskite kainą (€):");
+    const baseContacts = prompt("Kontaktų kiekis, padalinus iš 1000 (pvz.: jei kontaktų 10000 tai / 1000 = 10):");
     
     if (basePrice && baseContacts) {
         const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
         
         for (let hour = 6; hour < 24; hour++) {
-            // Fill contacts
-            const contactInput = document.querySelector(`input[name="contacts_${hour}"]`);
-            if (contactInput) contactInput.value = baseContacts;
+            // Fill price
+            const priceInput = document.querySelector(`input[name="price_${hour}"]`);
+            if (priceInput) priceInput.value = basePrice;
             
-            // Fill prices for all days
+            // Fill contacts for all days
             days.forEach(day => {
-                const priceInput = document.querySelector(`input[name="price_${hour}_${day}"]`);
-                if (priceInput) priceInput.value = basePrice;
+                const contactInput = document.querySelector(`input[name="contacts_${hour}_${day}"]`);
+                if (contactInput) contactInput.value = baseContacts;
             });
         }
     }
@@ -183,14 +202,14 @@ function clearAll() {
         const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
         
         for (let hour = 6; hour < 24; hour++) {
-            // Clear contacts
-            const contactInput = document.querySelector(`input[name="contacts_${hour}"]`);
-            if (contactInput) contactInput.value = "";
+            // Clear price
+            const priceInput = document.querySelector(`input[name="price_${hour}"]`);
+            if (priceInput) priceInput.value = "";
             
-            // Clear prices for all days
+            // Clear contacts for all days
             days.forEach(day => {
-                const priceInput = document.querySelector(`input[name="price_${hour}_${day}"]`);
-                if (priceInput) priceInput.value = "";
+                const contactInput = document.querySelector(`input[name="contacts_${hour}_${day}"]`);
+                if (contactInput) contactInput.value = "";
             });
         }
     }

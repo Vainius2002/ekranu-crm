@@ -254,17 +254,9 @@
                                             {{ "{:02d}:00".format(pricing.hour) }}
                                         </td>
                                         <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
-                                            {% set prices = [pricing.price_mon, pricing.price_tue, pricing.price_wed, pricing.price_thu, pricing.price_fri, pricing.price_sat, pricing.price_sun] %}
-                                            {% set valid_prices = prices | reject("none") | list %}
-                                            {% if valid_prices %}
-                                                {% set min_price = valid_prices | min %}
-                                                {% set max_price = valid_prices | max %}
+                                            {% if pricing.price %}
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                                    {% if min_price == max_price %}
-                                                        {{ "%.2f"|format(min_price) }}€
-                                                    {% else %}
-                                                        {{ "%.2f"|format(min_price) }}€ - {{ "%.2f"|format(max_price) }}€
-                                                    {% endif %}
+                                                    {{ "%.2f"|format(pricing.price) }}€
                                                 </span>
                                             {% else %}
                                                 <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
@@ -272,7 +264,21 @@
                                                 </span>
                                             {% endif %}
                                         </td>
-                                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">{{ pricing.contact_count }}</td>
+                                        <td class="px-3 py-2 whitespace-nowrap text-xs text-gray-900">
+                                            {% set contacts = [pricing.contacts_mon, pricing.contacts_tue, pricing.contacts_wed, pricing.contacts_thu, pricing.contacts_fri, pricing.contacts_sat, pricing.contacts_sun] %}
+                                            {% set valid_contacts = contacts | reject("none") | list %}
+                                            {% if valid_contacts %}
+                                                {% set min_contacts = valid_contacts | min %}
+                                                {% set max_contacts = valid_contacts | max %}
+                                                {% if min_contacts == max_contacts %}
+                                                    {{ "%.1f"|format(min_contacts) }}k
+                                                {% else %}
+                                                    {{ "%.1f"|format(min_contacts) }}k - {{ "%.1f"|format(max_contacts) }}k
+                                                {% endif %}
+                                            {% else %}
+                                                -
+                                            {% endif %}
+                                        </td>
                                     </tr>
                                     {% endfor %}
                                 </tbody>

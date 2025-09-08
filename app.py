@@ -120,16 +120,16 @@ class ScreenPricing(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     screen_id = db.Column(db.Integer, db.ForeignKey('screen.id'), nullable=False)
     hour = db.Column(db.Integer, nullable=False)  # 0-23
-    contact_count = db.Column(db.Integer, nullable=False)
+    price = db.Column(db.Float)  # Single price field
     
-    # Day-specific pricing
-    price_mon = db.Column(db.Float)
-    price_tue = db.Column(db.Float)
-    price_wed = db.Column(db.Float)
-    price_thu = db.Column(db.Float)
-    price_fri = db.Column(db.Float)
-    price_sat = db.Column(db.Float)
-    price_sun = db.Column(db.Float)
+    # Day-specific contact counts (in thousands)
+    contacts_mon = db.Column(db.Float)
+    contacts_tue = db.Column(db.Float)
+    contacts_wed = db.Column(db.Float)
+    contacts_thu = db.Column(db.Float)
+    contacts_fri = db.Column(db.Float)
+    contacts_sat = db.Column(db.Float)
+    contacts_sun = db.Column(db.Float)
     
     __table_args__ = (db.UniqueConstraint('screen_id', 'hour'),)
 
@@ -242,36 +242,35 @@ def screen_pricing(id):
         
         # Add new pricing for each hour (6-23 as per template)
         for hour in range(6, 24):
-            contact_field = f'contacts_{hour}'
+            price_field = f'price_{hour}'
             
-            # Check if contacts field exists and has a value
-            if contact_field in request.form and request.form[contact_field]:
-                contacts = int(request.form[contact_field])
-                
-                # Get day-specific prices
-                price_mon = request.form.get(f'price_{hour}_mon')
-                price_tue = request.form.get(f'price_{hour}_tue')
-                price_wed = request.form.get(f'price_{hour}_wed')
-                price_thu = request.form.get(f'price_{hour}_thu')
-                price_fri = request.form.get(f'price_{hour}_fri')
-                price_sat = request.form.get(f'price_{hour}_sat')
-                price_sun = request.form.get(f'price_{hour}_sun')
-                
-                # Create pricing entry if at least one day has a price or contacts is provided
-                if any([price_mon, price_tue, price_wed, price_thu, price_fri, price_sat, price_sun]) or contacts:
-                    pricing = ScreenPricing(
-                        screen_id=id,
-                        hour=hour,
-                        contact_count=contacts,
-                        price_mon=float(price_mon) if price_mon else None,
-                        price_tue=float(price_tue) if price_tue else None,
-                        price_wed=float(price_wed) if price_wed else None,
-                        price_thu=float(price_thu) if price_thu else None,
-                        price_fri=float(price_fri) if price_fri else None,
-                        price_sat=float(price_sat) if price_sat else None,
-                        price_sun=float(price_sun) if price_sun else None
-                    )
-                    db.session.add(pricing)
+            # Get price for this hour
+            price = request.form.get(price_field)
+            
+            # Get day-specific contact counts (in thousands)
+            contacts_mon = request.form.get(f'contacts_{hour}_mon')
+            contacts_tue = request.form.get(f'contacts_{hour}_tue')
+            contacts_wed = request.form.get(f'contacts_{hour}_wed')
+            contacts_thu = request.form.get(f'contacts_{hour}_thu')
+            contacts_fri = request.form.get(f'contacts_{hour}_fri')
+            contacts_sat = request.form.get(f'contacts_{hour}_sat')
+            contacts_sun = request.form.get(f'contacts_{hour}_sun')
+            
+            # Create pricing entry if at least one day has contacts or price is provided
+            if price or any([contacts_mon, contacts_tue, contacts_wed, contacts_thu, contacts_fri, contacts_sat, contacts_sun]):
+                pricing = ScreenPricing(
+                    screen_id=id,
+                    hour=hour,
+                    price=float(price) if price else None,
+                    contacts_mon=float(contacts_mon) if contacts_mon else None,
+                    contacts_tue=float(contacts_tue) if contacts_tue else None,
+                    contacts_wed=float(contacts_wed) if contacts_wed else None,
+                    contacts_thu=float(contacts_thu) if contacts_thu else None,
+                    contacts_fri=float(contacts_fri) if contacts_fri else None,
+                    contacts_sat=float(contacts_sat) if contacts_sat else None,
+                    contacts_sun=float(contacts_sun) if contacts_sun else None
+                )
+                db.session.add(pricing)
         
         db.session.commit()
         flash('Įkainis sėkmingai atnaujintas!')
@@ -281,14 +280,14 @@ def screen_pricing(id):
     pricing_data = {}
     for pricing in screen.pricing_hours:
         pricing_data[pricing.hour] = {
-            'contacts': pricing.contact_count,
-            'price_mon': pricing.price_mon,
-            'price_tue': pricing.price_tue,
-            'price_wed': pricing.price_wed,
-            'price_thu': pricing.price_thu,
-            'price_fri': pricing.price_fri,
-            'price_sat': pricing.price_sat,
-            'price_sun': pricing.price_sun
+            'price': pricing.price,
+            'contacts_mon': pricing.contacts_mon,
+            'contacts_tue': pricing.contacts_tue,
+            'contacts_wed': pricing.contacts_wed,
+            'contacts_thu': pricing.contacts_thu,
+            'contacts_fri': pricing.contacts_fri,
+            'contacts_sat': pricing.contacts_sat,
+            'contacts_sun': pricing.contacts_sun
         }
     
     return render_template('screen_pricing.html', screen=screen, pricing_data=pricing_data)
