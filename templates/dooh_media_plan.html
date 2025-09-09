@@ -259,299 +259,312 @@
 
 <!-- Screen Planning Forms (Below Calendar) -->
 {% for booking in plan.screen_bookings %}
-{% for week_num in range(1, num_weeks + 1) %}
-<div class="bg-white shadow overflow-hidden sm:rounded-lg mb-6 screen-planning-card">
-    <div class="px-6 py-4 bg-gray-50 border-b border-gray-200">
-        <div class="flex justify-between items-center">
-            <div class="flex items-center">
-                <div class="h-8 w-8 rounded-full bg-yellow-100 flex items-center justify-center mr-3">
-                    <i class="fas fa-tv text-yellow-600 text-sm"></i>
-                </div>
-                <div>
-                    <h3 class="text-lg leading-6 font-medium text-gray-900">{{ booking.screen.name }} - Savaitė {{ week_num }}</h3>
-                    <p class="text-sm text-gray-500">{{ booking.screen.provider.name }} • {{ booking.screen.city }} • {{ total_days }} dienų planas</p>
-                </div>
+<!-- Container for all weeks of this screen -->
+<div class="mb-8">
+    <!-- Screen Header -->
+    <div class="bg-gray-800 text-white px-4 py-3 rounded-t-lg">
+        <div class="flex items-center">
+            <div class="h-8 w-8 rounded-full bg-yellow-400 flex items-center justify-center mr-3">
+                <i class="fas fa-tv text-gray-800 text-sm"></i>
             </div>
-            <div class="flex items-center space-x-4">
-                <div class="flex items-center space-x-2">
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-blue-100 text-blue-800">
-                        CPT: <span class="cpt-value ml-1" data-booking="{{ booking.id }}_w{{ week_num }}">0.00</span>€
-                    </span>
-                    <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800">
-                        Viso kaina: <span class="total-price ml-1" data-booking="{{ booking.id }}_w{{ week_num }}">0.00</span>€
-                    </span>
-                </div>
-                <button class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500" onclick="calculatePrices('{{ booking.id }}_w{{ week_num }}')">
-                    <i class="fas fa-calculator -ml-1 mr-2"></i>
-                    Apskaičiuoti kainas
-                </button>
-                <div class="flex items-center space-x-2">
-                    <button class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="fillAllDays('{{ booking.id }}_w{{ week_num }}', 30)">
-                        <i class="fas fa-fill -ml-1 mr-2"></i>
-                        Užpildyti 30
-                    </button>
-                    <button class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" onclick="fillAllDays('{{ booking.id }}_w{{ week_num }}', 60)">
-                        <i class="fas fa-fill -ml-1 mr-2"></i>
-                        Užpildyti 60
-                    </button>
-                    <button class="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500" onclick="clearAllDays('{{ booking.id }}_w{{ week_num }}')">
-                        <i class="fas fa-eraser -ml-1 mr-2"></i>
-                        Išvalyti
-                    </button>
-                </div>
+            <div>
+                <h3 class="text-lg font-semibold">{{ booking.screen.name }}</h3>
+                <p class="text-sm text-gray-300">{{ booking.screen.provider.name }} • {{ booking.screen.city }}</p>
             </div>
         </div>
     </div>
-    <div class="overflow-x-auto">
-        <table class="min-w-full divide-y divide-gray-200 media-planning-table">
-            <thead class="bg-indigo-600">
-                <tr>
-                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Laikas</th>
-                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 80px;">Tūkst. kontaktų</th>
-                    <th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 80px;">Kaina</th>
-                    {% set week_data = week_days[week_num - 1] %}
-                    {% if week_data.mon %}<th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Pirmadienis</th>{% endif %}
-                    {% if week_data.tue %}<th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Antradienis</th>{% endif %}
-                    {% if week_data.wed %}<th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Trečiadienis</th>{% endif %}
-                    {% if week_data.thu %}<th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Ketvirtadienis</th>{% endif %}
-                    {% if week_data.fri %}<th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Penktadienis</th>{% endif %}
-                    {% if week_data.sat %}<th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Šeštadienis</th>{% endif %}
-                    {% if week_data.sun %}<th scope="col" class="px-4 py-3 text-center text-xs font-medium text-white uppercase tracking-wider" style="min-width: 100px;">Sekmadienis</th>{% endif %}
+    
+    <!-- Horizontal scrollable container for weeks -->
+    <div class="overflow-x-auto bg-gray-100 p-4 rounded-b-lg">
+        <div class="flex space-x-4" style="min-width: max-content;">
+            {% for week_num in range(1, num_weeks + 1) %}
+            <div class="bg-white shadow-sm rounded-lg screen-planning-card flex-shrink-0">
+                <!-- Week Header -->
+                <div class="px-3 py-2 bg-gray-50 border-b border-gray-200">
+                    <div class="flex flex-col space-y-2">
+                        <!-- Week Title and Stats -->
+                        <div class="flex justify-between items-center">
+                            <h4 class="text-sm font-semibold text-gray-900">Savaitė {{ week_num }}</h4>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-xs bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                    CPT: <span class="cpt-value font-semibold" data-booking="{{ booking.id }}_w{{ week_num }}">0.00</span>€
+                                </span>
+                                <span class="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">
+                                    Viso: <span class="total-price font-semibold" data-booking="{{ booking.id }}_w{{ week_num }}">0.00</span>€
+                                </span>
+                            </div>
+                        </div>
+                        <!-- Action Buttons -->
+                        <div class="flex justify-between items-center">
+                            <div class="flex space-x-1">
+                                <button class="text-xs px-2 py-1 bg-gray-600 text-white rounded hover:bg-gray-700" onclick="fillAllDays('{{ booking.id }}_w{{ week_num }}', 30)">
+                                    30
+                                </button>
+                                <button class="text-xs px-2 py-1 bg-gray-600 text-white rounded hover:bg-gray-700" onclick="fillAllDays('{{ booking.id }}_w{{ week_num }}', 60)">
+                                    60
+                                </button>
+                                <button class="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600" onclick="clearAllDays('{{ booking.id }}_w{{ week_num }}')">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <button class="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600" onclick="calculatePrices('{{ booking.id }}_w{{ week_num }}')">
+                                <i class="fas fa-calculator mr-1"></i>Skaičiuoti
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <!-- Compact Table - No internal scroll -->
+                <div>
+                    <table class="w-full">
+                        <thead class="bg-indigo-600">
+                            <tr>
+                                <th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 60px;">Laikas</th>
+                                <th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 50px;">Kont.</th>
+                                <th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 50px;">€</th>
+                                {% set week_data = week_days[week_num - 1] %}
+                                {% if week_data.mon %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Pr</th>{% endif %}
+                                {% if week_data.tue %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">An</th>{% endif %}
+                                {% if week_data.wed %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Tr</th>{% endif %}
+                                {% if week_data.thu %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Kt</th>{% endif %}
+                                {% if week_data.fri %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Pn</th>{% endif %}
+                                {% if week_data.sat %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Št</th>{% endif %}
+                                {% if week_data.sun %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Sk</th>{% endif %}
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
-                {% for hour in range(6, 24) %}
-                {% set pricing = booking.screen.pricing_hours | selectattr('hour', 'equalto', hour) | first %}
-                <tr class="time-row-{{ hour }}">
-                    <td class="text-center align-middle bg-gray-50 px-2 py-3">
-                        <strong class="text-sm">{{ "%02d"|format(hour) }}.00-{{ "%02d"|format(hour + 1) }}.00</strong>
-                    </td>
-                    <!-- Tūkst. kontaktų column (loaded from TRP pricing) -->
-                    <td class="text-center p-1 bg-blue-50">
-                        <div class="contacts-display-wrapper">
-                            {% if pricing %}
-                                {% set day_contacts = [pricing.contacts_mon, pricing.contacts_tue, pricing.contacts_wed, pricing.contacts_thu, pricing.contacts_fri, pricing.contacts_sat, pricing.contacts_sun] %}
-                                {% set valid_contacts = day_contacts | reject("none") | list %}
-                                {% if valid_contacts %}
-                                    <span class="text-xs font-medium text-blue-700">{{ "%.1f"|format(valid_contacts | sum / (valid_contacts | length)) }}</span>
-                                {% else %}
-                                    <span class="text-xs text-gray-400">-</span>
+                            {% for hour in range(6, 24) %}
+                            {% set pricing = booking.screen.pricing_hours | selectattr('hour', 'equalto', hour) | first %}
+                            <tr class="time-row-{{ hour }}" style="height: 36px;">
+                                <td class="text-center bg-gray-50 px-1 py-1 text-xs">
+                                    <span class="font-medium">{{ "%02d"|format(hour) }}:00</span>
+                                </td>
+                                <!-- Contacts column -->
+                                <td class="text-center px-1 py-1 bg-blue-50 text-xs">
+                                    {% if pricing %}
+                                        {% set day_contacts = [pricing.contacts_mon, pricing.contacts_tue, pricing.contacts_wed, pricing.contacts_thu, pricing.contacts_fri, pricing.contacts_sat, pricing.contacts_sun] %}
+                                        {% set valid_contacts = day_contacts | reject("none") | list %}
+                                        {% if valid_contacts %}
+                                            <span class="text-xs text-blue-700">{{ "%.1f"|format(valid_contacts | sum / (valid_contacts | length)) }}</span>
+                                        {% else %}
+                                            <span class="text-gray-400">-</span>
+                                        {% endif %}
+                                    {% else %}
+                                        <span class="text-xs text-gray-400">-</span>
+                                    {% endif %}
+                                </td>
+                                <!-- Price column -->
+                                <td class="text-center px-1 py-1 bg-green-50 text-xs">
+                                    {% if pricing and pricing.price %}
+                                        <span class="text-xs text-green-700" data-price="{{ pricing.price }}">{{ "%.0f"|format(pricing.price) }}</span>
+                                    {% else %}
+                                        <span class="text-xs text-gray-400">-</span>
+                                    {% endif %}
+                                </td>
+                                <!-- Pirmadienis -->
+                                {% if week_data.mon %}
+                                <td class="text-center px-1 py-1">
+                                    <div class="flex items-center justify-center">
+                                        <button type="button" class="px-1.5 py-0.5 text-xs bg-red-500 hover:bg-red-600 text-white rounded-l"
+                                                onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'mon', -30)">-</button>
+                                        <input type="number" class="w-10 px-1 py-0.5 text-xs border-t border-b border-gray-300 text-center weekday-input" 
+                                               data-booking="{{ booking.id }}_w{{ week_num }}"
+                                               data-hour="{{ hour }}"
+                                               data-day="mon"
+                                               data-contacts="{{ pricing.contacts_mon if pricing else 0 }}"
+                                               value="0" min="0" max="60" step="30"
+                                               onchange="calculatePrices('{{ booking.id }}_w{{ week_num }}')"
+                                               style="width: 40px;">
+                                        <button type="button" class="px-1.5 py-0.5 text-xs bg-green-500 hover:bg-green-600 text-white rounded-r"
+                                                onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'mon', 30)">+</button>
+                                    </div>
+                                    <div class="text-xs text-green-600 mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_mon">-</div>
+                                </td>
                                 {% endif %}
-                            {% else %}
-                                <span class="text-xs text-gray-400">-</span>
-                            {% endif %}
-                        </div>
-                    </td>
-                    <!-- Kaina column (loaded from TRP pricing) -->
-                    <td class="text-center p-1 bg-green-50">
-                        {% if pricing and pricing.price %}
-                            <span class="text-xs font-medium text-green-700" data-price="{{ pricing.price }}">{{ "%.2f"|format(pricing.price) }}€</span>
-                        {% else %}
-                            <span class="text-xs text-gray-400">-</span>
-                        {% endif %}
-                    </td>
-                    <!-- Pirmadienis -->
-                    {% if week_data.mon %}
-                    <td class="text-center p-1">
-                        <div class="flex items-center justify-center">
-                            <button type="button" class="decrement-btn bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-l border border-red-500"
-                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'mon', -30)">-</button>
-                            <input type="number" class="w-12 px-1 py-1 text-xs border-t border-b border-gray-300 text-center weekday-input" 
-                                   data-booking="{{ booking.id }}_w{{ week_num }}"
-                                   data-hour="{{ hour }}"
-                                   data-day="mon"
-                                   data-contacts="{{ pricing.contacts_mon if pricing else 0 }}"
-                                   value="0" min="0" max="60" step="30"
-                                   onchange="calculatePrices('{{ booking.id }}_w{{ week_num }}')"
-                                   style="width: 50px;">
-                            <button type="button" class="increment-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded-r border border-green-500"
-                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'mon', 30)">+</button>
-                        </div>
-                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_mon">-</div>
-                    </td>
-                    {% endif %}
                     <!-- Antradienis -->
                     {% if week_data.tue %}
-                    <td class="text-center p-1">
-                        <div class="flex items-center justify-center">
-                            <button type="button" class="decrement-btn bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-l border border-red-500"
+                                <td class="text-center px-1 py-1">
+                                    <div class="flex items-center justify-center">
+                                        <button type="button" class="px-1.5 py-0.5 text-xs bg-red-500 hover:bg-red-600 text-white rounded-l"
                                     onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'tue', -30)">-</button>
-                            <input type="number" class="w-12 px-1 py-1 text-xs border-t border-b border-gray-300 text-center weekday-input" 
+                                        <input type="number" class="w-10 px-1 py-0.5 text-xs border-t border-b border-gray-300 text-center weekday-input" 
                                    data-booking="{{ booking.id }}_w{{ week_num }}"
                                    data-hour="{{ hour }}"
                                    data-day="tue"
                                    data-contacts="{{ pricing.contacts_tue if pricing else 0 }}"
                                    value="0" min="0" max="60" step="30"
                                    onchange="calculatePrices('{{ booking.id }}_w{{ week_num }}')"
-                                   style="width: 50px;">
-                            <button type="button" class="increment-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded-r border border-green-500"
+                                               style="width: 40px;">
+                                        <button type="button" class="px-1.5 py-0.5 text-xs bg-green-500 hover:bg-green-600 text-white rounded-r"
                                     onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'tue', 30)">+</button>
-                        </div>
-                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_tue">-</div>
-                    </td>
+                                    </div>
+                                    <div class="text-xs text-green-600 mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_tue">-</div>
+                                </td>
                     {% endif %}
                     <!-- Trečiadienis -->
                     {% if week_data.wed %}
-                    <td class="text-center p-1">
-                        <div class="flex items-center justify-center">
-                            <button type="button" class="decrement-btn bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-l border border-red-500"
+                                <td class="text-center px-1 py-1">
+                                    <div class="flex items-center justify-center">
+                                        <button type="button" class="px-1.5 py-0.5 text-xs bg-red-500 hover:bg-red-600 text-white rounded-l"
                                     onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'wed', -30)">-</button>
-                            <input type="number" class="w-12 px-1 py-1 text-xs border-t border-b border-gray-300 text-center weekday-input" 
+                                        <input type="number" class="w-10 px-1 py-0.5 text-xs border-t border-b border-gray-300 text-center weekday-input" 
                                    data-booking="{{ booking.id }}_w{{ week_num }}"
                                    data-hour="{{ hour }}"
                                    data-day="wed"
                                    data-contacts="{{ pricing.contacts_wed if pricing else 0 }}"
                                    value="0" min="0" max="60" step="30"
                                    onchange="calculatePrices('{{ booking.id }}_w{{ week_num }}')"
-                                   style="width: 50px;">
-                            <button type="button" class="increment-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded-r border border-green-500"
+                                               style="width: 40px;">
+                                        <button type="button" class="px-1.5 py-0.5 text-xs bg-green-500 hover:bg-green-600 text-white rounded-r"
                                     onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'wed', 30)">+</button>
-                        </div>
-                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_wed">-</div>
-                    </td>
+                                    </div>
+                                    <div class="text-xs text-green-600 mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_wed">-</div>
+                                </td>
                     {% endif %}
                     <!-- Ketvirtadienis -->
                     {% if week_data.thu %}
-                    <td class="text-center p-1">
-                        <div class="flex items-center justify-center">
-                            <button type="button" class="decrement-btn bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-l border border-red-500"
+                                <td class="text-center px-1 py-1">
+                                    <div class="flex items-center justify-center">
+                                        <button type="button" class="px-1.5 py-0.5 text-xs bg-red-500 hover:bg-red-600 text-white rounded-l"
                                     onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'thu', -30)">-</button>
-                            <input type="number" class="w-12 px-1 py-1 text-xs border-t border-b border-gray-300 text-center weekday-input" 
+                                        <input type="number" class="w-10 px-1 py-0.5 text-xs border-t border-b border-gray-300 text-center weekday-input" 
                                    data-booking="{{ booking.id }}_w{{ week_num }}"
                                    data-hour="{{ hour }}"
                                    data-day="thu"
                                    data-contacts="{{ pricing.contacts_thu if pricing else 0 }}"
                                    value="0" min="0" max="60" step="30"
                                    onchange="calculatePrices('{{ booking.id }}_w{{ week_num }}')"
-                                   style="width: 50px;">
-                            <button type="button" class="increment-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded-r border border-green-500"
+                                               style="width: 40px;">
+                                        <button type="button" class="px-1.5 py-0.5 text-xs bg-green-500 hover:bg-green-600 text-white rounded-r"
                                     onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'thu', 30)">+</button>
-                        </div>
-                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_thu">-</div>
-                    </td>
+                                    </div>
+                                    <div class="text-xs text-green-600 mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_thu">-</div>
+                                </td>
                     {% endif %}
                     <!-- Penktadienis -->
                     {% if week_data.fri %}
-                    <td class="text-center p-1">
-                        <div class="flex items-center justify-center">
-                            <button type="button" class="decrement-btn bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-l border border-red-500"
+                                <td class="text-center px-1 py-1">
+                                    <div class="flex items-center justify-center">
+                                        <button type="button" class="px-1.5 py-0.5 text-xs bg-red-500 hover:bg-red-600 text-white rounded-l"
                                     onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'fri', -30)">-</button>
-                            <input type="number" class="w-12 px-1 py-1 text-xs border-t border-b border-gray-300 text-center weekday-input" 
+                                        <input type="number" class="w-10 px-1 py-0.5 text-xs border-t border-b border-gray-300 text-center weekday-input" 
                                    data-booking="{{ booking.id }}_w{{ week_num }}"
                                    data-hour="{{ hour }}"
                                    data-day="fri"
                                    data-contacts="{{ pricing.contacts_fri if pricing else 0 }}"
                                    value="0" min="0" max="60" step="30"
                                    onchange="calculatePrices('{{ booking.id }}_w{{ week_num }}')"
-                                   style="width: 50px;">
-                            <button type="button" class="increment-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded-r border border-green-500"
+                                               style="width: 40px;">
+                                        <button type="button" class="px-1.5 py-0.5 text-xs bg-green-500 hover:bg-green-600 text-white rounded-r"
                                     onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'fri', 30)">+</button>
-                        </div>
-                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_fri">-</div>
-                    </td>
+                                    </div>
+                                    <div class="text-xs text-green-600 mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_fri">-</div>
+                                </td>
                     {% endif %}
                     <!-- Šeštadienis -->
                     {% if week_data.sat %}
-                    <td class="text-center p-1">
-                        <div class="flex items-center justify-center">
-                            <button type="button" class="decrement-btn bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-l border border-red-500"
+                                <td class="text-center px-1 py-1">
+                                    <div class="flex items-center justify-center">
+                                        <button type="button" class="px-1.5 py-0.5 text-xs bg-red-500 hover:bg-red-600 text-white rounded-l"
                                     onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'sat', -30)">-</button>
-                            <input type="number" class="w-12 px-1 py-1 text-xs border-t border-b border-gray-300 text-center weekday-input" 
+                                        <input type="number" class="w-10 px-1 py-0.5 text-xs border-t border-b border-gray-300 text-center weekday-input" 
                                    data-booking="{{ booking.id }}_w{{ week_num }}"
                                    data-hour="{{ hour }}"
                                    data-day="sat"
                                    data-contacts="{{ pricing.contacts_sat if pricing else 0 }}"
                                    value="0" min="0" max="60" step="30"
                                    onchange="calculatePrices('{{ booking.id }}_w{{ week_num }}')"
-                                   style="width: 50px;">
-                            <button type="button" class="increment-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded-r border border-green-500"
+                                               style="width: 40px;">
+                                        <button type="button" class="px-1.5 py-0.5 text-xs bg-green-500 hover:bg-green-600 text-white rounded-r"
                                     onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'sat', 30)">+</button>
-                        </div>
-                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_sat">-</div>
-                    </td>
+                                    </div>
+                                    <div class="text-xs text-green-600 mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_sat">-</div>
+                                </td>
                     {% endif %}
                     <!-- Sekmadienis -->
                     {% if week_data.sun %}
-                    <td class="text-center p-1">
-                        <div class="flex items-center justify-center">
-                            <button type="button" class="decrement-btn bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-l border border-red-500"
+                                <td class="text-center px-1 py-1">
+                                    <div class="flex items-center justify-center">
+                                        <button type="button" class="px-1.5 py-0.5 text-xs bg-red-500 hover:bg-red-600 text-white rounded-l"
                                     onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'sun', -30)">-</button>
-                            <input type="number" class="w-12 px-1 py-1 text-xs border-t border-b border-gray-300 text-center weekday-input" 
+                                        <input type="number" class="w-10 px-1 py-0.5 text-xs border-t border-b border-gray-300 text-center weekday-input" 
                                    data-booking="{{ booking.id }}_w{{ week_num }}"
                                    data-hour="{{ hour }}"
                                    data-day="sun"
                                    data-contacts="{{ pricing.contacts_sun if pricing else 0 }}"
                                    value="0" min="0" max="60" step="30"
                                    onchange="calculatePrices('{{ booking.id }}_w{{ week_num }}')"
-                                   style="width: 50px;">
-                            <button type="button" class="increment-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded-r border border-green-500"
+                                               style="width: 40px;">
+                                        <button type="button" class="px-1.5 py-0.5 text-xs bg-green-500 hover:bg-green-600 text-white rounded-r"
                                     onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'sun', 30)">+</button>
-                        </div>
-                        <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_sun">-</div>
-                    </td>
+                                    </div>
+                                    <div class="text-xs text-green-600 mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_sun">-</div>
+                                </td>
                     {% endif %}
                 </tr>
                 {% endfor %}
                 
-                <!-- Grand total row -->
-                <tr class="bg-green-600 text-white">
-                    <td class="text-center align-middle px-4 py-3">
-                        <strong class="text-sm">VISO</strong>
-                    </td>
-                    <td class="text-center align-middle px-2 py-3">
-                        <strong class="text-sm">-</strong>
-                    </td>
-                    <td class="text-center align-middle px-2 py-3">
-                        <strong class="text-sm">-</strong>
-                    </td>
+                            <!-- Grand total row -->
+                            <tr class="bg-green-600 text-white">
+                                <td class="text-center px-2 py-1 text-xs">
+                                    <strong>VISO</strong>
+                                </td>
+                                <td class="text-center px-2 py-1 text-xs">
+                                    <strong>-</strong>
+                                </td>
+                                <td class="text-center px-2 py-1 text-xs">
+                                    <strong>-</strong>
+                                </td>
                     {% if week_data.mon %}
-                    <td class="text-center align-middle px-2 py-3">
-                        <div class="text-xs opacity-75 mb-1">KAINA</div>
-                        <strong class="day-price-mon text-sm" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
-                    </td>
+                                <td class="text-center px-2 py-1 text-xs">
+                                    <div class="text-xs opacity-80">KAINA</div>
+                                    <strong class="day-price-mon" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
+                                </td>
                     {% endif %}
                     {% if week_data.tue %}
-                    <td class="text-center align-middle px-2 py-3">
-                        <div class="text-xs opacity-75 mb-1">KAINA</div>
-                        <strong class="day-price-tue text-sm" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
-                    </td>
+                                <td class="text-center px-2 py-1 text-xs">
+                                    <div class="text-xs opacity-80">KAINA</div>
+                                    <strong class="day-price-tue" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
+                                </td>
                     {% endif %}
                     {% if week_data.wed %}
-                    <td class="text-center align-middle px-2 py-3">
-                        <div class="text-xs opacity-75 mb-1">KAINA</div>
-                        <strong class="day-price-wed text-sm" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
-                    </td>
+                                <td class="text-center px-2 py-1 text-xs">
+                                    <div class="text-xs opacity-80">KAINA</div>
+                                    <strong class="day-price-wed" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
+                                </td>
                     {% endif %}
                     {% if week_data.thu %}
-                    <td class="text-center align-middle px-2 py-3">
-                        <div class="text-xs opacity-75 mb-1">KAINA</div>
-                        <strong class="day-price-thu text-sm" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
-                    </td>
+                                <td class="text-center px-2 py-1 text-xs">
+                                    <div class="text-xs opacity-80">KAINA</div>
+                                    <strong class="day-price-thu" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
+                                </td>
                     {% endif %}
                     {% if week_data.fri %}
-                    <td class="text-center align-middle px-2 py-3">
-                        <div class="text-xs opacity-75 mb-1">KAINA</div>
-                        <strong class="day-price-fri text-sm" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
-                    </td>
+                                <td class="text-center px-2 py-1 text-xs">
+                                    <div class="text-xs opacity-80">KAINA</div>
+                                    <strong class="day-price-fri" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
+                                </td>
                     {% endif %}
                     {% if week_data.sat %}
-                    <td class="text-center align-middle px-2 py-3">
-                        <div class="text-xs opacity-75 mb-1">KAINA</div>
-                        <strong class="day-price-sat text-sm" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
-                    </td>
+                                <td class="text-center px-2 py-1 text-xs">
+                                    <div class="text-xs opacity-80">KAINA</div>
+                                    <strong class="day-price-sat" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
+                                </td>
                     {% endif %}
                     {% if week_data.sun %}
-                    <td class="text-center align-middle px-2 py-3">
-                        <div class="text-xs opacity-75 mb-1">KAINA</div>
-                        <strong class="day-price-sun text-sm" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
-                    </td>
+                                <td class="text-center px-2 py-1 text-xs">
+                                    <div class="text-xs opacity-80">KAINA</div>
+                                    <strong class="day-price-sun" data-booking="{{ booking.id }}_w{{ week_num }}">0.00€</strong>
+                                </td>
                     {% endif %}
                 </tr>
             </tbody>
-        </table>
+                        </table>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
     </div>
 </div>
-{% endfor %}
 {% endfor %}
 
 {% endif %}
@@ -1686,14 +1699,14 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 }
 
-/* Smooth horizontal scrolling for calendar */
+/* Smooth horizontal scrolling for calendar and week containers */
 .overflow-x-auto {
     scrollbar-width: thin;
     scrollbar-color: #cbd5e1 #f1f5f9;
 }
 
 .overflow-x-auto::-webkit-scrollbar {
-    height: 8px;
+    height: 10px;
 }
 
 .overflow-x-auto::-webkit-scrollbar-track {
@@ -1708,6 +1721,27 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .overflow-x-auto::-webkit-scrollbar-thumb:hover {
     background: #94a3b8;
+}
+
+/* Compact week cards */
+.screen-planning-card {
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    transition: box-shadow 0.2s;
+}
+
+.screen-planning-card:hover {
+    box-shadow: 0 4px 6px rgba(0,0,0,0.15);
+}
+
+/* Compact input styling */
+.weekday-input::-webkit-inner-spin-button,
+.weekday-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.weekday-input {
+    -moz-appearance: textfield;
 }
 
 /* Fade effect for scroll hint */
