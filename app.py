@@ -442,20 +442,29 @@ def get_media_plan_pricing(plan_id):
                 daily_totals[date_str] = 0
             daily_totals[date_str] += pricing.calculated_price
         
-        # Get saved pricing by screen/week for form population
+        # Get saved pricing by booking/week for form population
+        # First, we need to map screen_ids to booking_ids
+        bookings = ScreenBooking.query.filter_by(dooh_plan_id=plan_id).all()
+        screen_to_booking_map = {}
+        for booking in bookings:
+            screen_to_booking_map[booking.screen_id] = booking.id
+        
         saved_pricing = {}
         for pricing in pricing_data:
-            key = f"{pricing.screen_id}_w{pricing.week_number}"
-            if key not in saved_pricing:
-                saved_pricing[key] = {}
-            
-            hour_key = f"{pricing.hour}_{pricing.day_name}"
-            saved_pricing[key][hour_key] = {
-                'selected_value': pricing.selected_value,
-                'calculated_price': pricing.calculated_price,
-                'contacts': pricing.contacts,
-                'date': pricing.date.strftime('%Y-%m-%d')
-            }
+            # Use booking_id instead of screen_id for the key
+            booking_id = screen_to_booking_map.get(pricing.screen_id)
+            if booking_id:
+                key = f"{booking_id}_w{pricing.week_number}"
+                if key not in saved_pricing:
+                    saved_pricing[key] = {}
+                
+                hour_key = f"{pricing.hour}_{pricing.day_name}"
+                saved_pricing[key][hour_key] = {
+                    'selected_value': pricing.selected_value,
+                    'calculated_price': pricing.calculated_price,
+                    'contacts': pricing.contacts,
+                    'date': pricing.date.strftime('%Y-%m-%d')
+                }
         
         return jsonify({
             'success': True,

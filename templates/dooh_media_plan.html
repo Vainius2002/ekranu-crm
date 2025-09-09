@@ -353,112 +353,140 @@
                     <!-- Pirmadienis -->
                     {% if week_data.mon %}
                     <td class="text-center p-1">
-                        <select class="w-20 px-1 py-1 text-xs border border-gray-300 rounded text-center weekday-input" 
-                               data-booking="{{ booking.id }}_w{{ week_num }}"
-                               data-hour="{{ hour }}"
-                               data-day="mon"
-                               data-contacts="{{ pricing.contacts_mon if pricing else 0 }}"
-                               style="width: 70px;">
-                            <option value="0">-</option>
-                            <option value="30">30</option>
-                            <option value="60">60</option>
-                        </select>
+                        <div class="flex items-center justify-center">
+                            <button type="button" class="decrement-btn bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-l border border-red-500"
+                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'mon', -30)">-</button>
+                            <input type="number" class="w-12 px-1 py-1 text-xs border-t border-b border-gray-300 text-center weekday-input" 
+                                   data-booking="{{ booking.id }}_w{{ week_num }}"
+                                   data-hour="{{ hour }}"
+                                   data-day="mon"
+                                   data-contacts="{{ pricing.contacts_mon if pricing else 0 }}"
+                                   value="0" min="0" max="60" step="30"
+                                   onchange="calculatePrices('{{ booking.id }}_w{{ week_num }}')"
+                                   style="width: 50px;">
+                            <button type="button" class="increment-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded-r border border-green-500"
+                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'mon', 30)">+</button>
+                        </div>
                         <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_mon">-</div>
                     </td>
                     {% endif %}
                     <!-- Antradienis -->
                     {% if week_data.tue %}
                     <td class="text-center p-1">
-                        <select class="w-20 px-1 py-1 text-xs border border-gray-300 rounded text-center weekday-input" 
-                               data-booking="{{ booking.id }}_w{{ week_num }}"
-                               data-hour="{{ hour }}"
-                               data-day="tue"
-                               data-contacts="{{ pricing.contacts_tue if pricing else 0 }}"
-                               style="width: 70px;">
-                            <option value="0">-</option>
-                            <option value="30">30</option>
-                            <option value="60">60</option>
-                        </select>
+                        <div class="flex items-center justify-center">
+                            <button type="button" class="decrement-btn bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-l border border-red-500"
+                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'tue', -30)">-</button>
+                            <input type="number" class="w-12 px-1 py-1 text-xs border-t border-b border-gray-300 text-center weekday-input" 
+                                   data-booking="{{ booking.id }}_w{{ week_num }}"
+                                   data-hour="{{ hour }}"
+                                   data-day="tue"
+                                   data-contacts="{{ pricing.contacts_tue if pricing else 0 }}"
+                                   value="0" min="0" max="60" step="30"
+                                   onchange="calculatePrices('{{ booking.id }}_w{{ week_num }}')"
+                                   style="width: 50px;">
+                            <button type="button" class="increment-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded-r border border-green-500"
+                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'tue', 30)">+</button>
+                        </div>
                         <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_tue">-</div>
                     </td>
                     {% endif %}
                     <!-- Trečiadienis -->
                     {% if week_data.wed %}
                     <td class="text-center p-1">
-                        <select class="w-20 px-1 py-1 text-xs border border-gray-300 rounded text-center weekday-input" 
-                               data-booking="{{ booking.id }}_w{{ week_num }}"
-                               data-hour="{{ hour }}"
-                               data-day="wed"
-                               data-contacts="{{ pricing.contacts_wed if pricing else 0 }}"
-                               style="width: 70px;">
-                            <option value="0">-</option>
-                            <option value="30">30</option>
-                            <option value="60">60</option>
-                        </select>
+                        <div class="flex items-center justify-center">
+                            <button type="button" class="decrement-btn bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-l border border-red-500"
+                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'wed', -30)">-</button>
+                            <input type="number" class="w-12 px-1 py-1 text-xs border-t border-b border-gray-300 text-center weekday-input" 
+                                   data-booking="{{ booking.id }}_w{{ week_num }}"
+                                   data-hour="{{ hour }}"
+                                   data-day="wed"
+                                   data-contacts="{{ pricing.contacts_wed if pricing else 0 }}"
+                                   value="0" min="0" max="60" step="30"
+                                   onchange="calculatePrices('{{ booking.id }}_w{{ week_num }}')"
+                                   style="width: 50px;">
+                            <button type="button" class="increment-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded-r border border-green-500"
+                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'wed', 30)">+</button>
+                        </div>
                         <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_wed">-</div>
                     </td>
                     {% endif %}
                     <!-- Ketvirtadienis -->
                     {% if week_data.thu %}
                     <td class="text-center p-1">
-                        <select class="w-20 px-1 py-1 text-xs border border-gray-300 rounded text-center weekday-input" 
-                               data-booking="{{ booking.id }}_w{{ week_num }}"
-                               data-hour="{{ hour }}"
-                               data-day="thu"
-                               data-contacts="{{ pricing.contacts_thu if pricing else 0 }}"
-                               style="width: 70px;">
-                            <option value="0">-</option>
-                            <option value="30">30</option>
-                            <option value="60">60</option>
-                        </select>
+                        <div class="flex items-center justify-center">
+                            <button type="button" class="decrement-btn bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-l border border-red-500"
+                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'thu', -30)">-</button>
+                            <input type="number" class="w-12 px-1 py-1 text-xs border-t border-b border-gray-300 text-center weekday-input" 
+                                   data-booking="{{ booking.id }}_w{{ week_num }}"
+                                   data-hour="{{ hour }}"
+                                   data-day="thu"
+                                   data-contacts="{{ pricing.contacts_thu if pricing else 0 }}"
+                                   value="0" min="0" max="60" step="30"
+                                   onchange="calculatePrices('{{ booking.id }}_w{{ week_num }}')"
+                                   style="width: 50px;">
+                            <button type="button" class="increment-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded-r border border-green-500"
+                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'thu', 30)">+</button>
+                        </div>
                         <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_thu">-</div>
                     </td>
                     {% endif %}
                     <!-- Penktadienis -->
                     {% if week_data.fri %}
                     <td class="text-center p-1">
-                        <select class="w-20 px-1 py-1 text-xs border border-gray-300 rounded text-center weekday-input" 
-                               data-booking="{{ booking.id }}_w{{ week_num }}"
-                               data-hour="{{ hour }}"
-                               data-day="fri"
-                               data-contacts="{{ pricing.contacts_fri if pricing else 0 }}"
-                               style="width: 70px;">
-                            <option value="0">-</option>
-                            <option value="30">30</option>
-                            <option value="60">60</option>
-                        </select>
+                        <div class="flex items-center justify-center">
+                            <button type="button" class="decrement-btn bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-l border border-red-500"
+                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'fri', -30)">-</button>
+                            <input type="number" class="w-12 px-1 py-1 text-xs border-t border-b border-gray-300 text-center weekday-input" 
+                                   data-booking="{{ booking.id }}_w{{ week_num }}"
+                                   data-hour="{{ hour }}"
+                                   data-day="fri"
+                                   data-contacts="{{ pricing.contacts_fri if pricing else 0 }}"
+                                   value="0" min="0" max="60" step="30"
+                                   onchange="calculatePrices('{{ booking.id }}_w{{ week_num }}')"
+                                   style="width: 50px;">
+                            <button type="button" class="increment-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded-r border border-green-500"
+                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'fri', 30)">+</button>
+                        </div>
                         <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_fri">-</div>
                     </td>
                     {% endif %}
                     <!-- Šeštadienis -->
                     {% if week_data.sat %}
                     <td class="text-center p-1">
-                        <select class="w-20 px-1 py-1 text-xs border border-gray-300 rounded text-center weekday-input" 
-                               data-booking="{{ booking.id }}_w{{ week_num }}"
-                               data-hour="{{ hour }}"
-                               data-day="sat"
-                               data-contacts="{{ pricing.contacts_sat if pricing else 0 }}"
-                               style="width: 70px;">
-                            <option value="0">-</option>
-                            <option value="30">30</option>
-                            <option value="60">60</option>
-                        </select>
+                        <div class="flex items-center justify-center">
+                            <button type="button" class="decrement-btn bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-l border border-red-500"
+                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'sat', -30)">-</button>
+                            <input type="number" class="w-12 px-1 py-1 text-xs border-t border-b border-gray-300 text-center weekday-input" 
+                                   data-booking="{{ booking.id }}_w{{ week_num }}"
+                                   data-hour="{{ hour }}"
+                                   data-day="sat"
+                                   data-contacts="{{ pricing.contacts_sat if pricing else 0 }}"
+                                   value="0" min="0" max="60" step="30"
+                                   onchange="calculatePrices('{{ booking.id }}_w{{ week_num }}')"
+                                   style="width: 50px;">
+                            <button type="button" class="increment-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded-r border border-green-500"
+                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'sat', 30)">+</button>
+                        </div>
                         <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_sat">-</div>
                     </td>
                     {% endif %}
                     <!-- Sekmadienis -->
                     {% if week_data.sun %}
                     <td class="text-center p-1">
-                        <select class="w-20 px-1 py-1 text-xs border border-gray-300 rounded text-center weekday-input" 
-                               data-booking="{{ booking.id }}_w{{ week_num }}"
-                               data-hour="{{ hour }}"
-                               data-day="sun"
-                               data-contacts="{{ pricing.contacts_sun if pricing else 0 }}"
-                               style="width: 70px;">
-                            <option value="0">-</option>
-                            <option value="30">30</option>
-                            <option value="60">60</option>
-                        </select>
+                        <div class="flex items-center justify-center">
+                            <button type="button" class="decrement-btn bg-red-500 hover:bg-red-600 text-white text-xs px-2 py-1 rounded-l border border-red-500"
+                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'sun', -30)">-</button>
+                            <input type="number" class="w-12 px-1 py-1 text-xs border-t border-b border-gray-300 text-center weekday-input" 
+                                   data-booking="{{ booking.id }}_w{{ week_num }}"
+                                   data-hour="{{ hour }}"
+                                   data-day="sun"
+                                   data-contacts="{{ pricing.contacts_sun if pricing else 0 }}"
+                                   value="0" min="0" max="60" step="30"
+                                   onchange="calculatePrices('{{ booking.id }}_w{{ week_num }}')"
+                                   style="width: 50px;">
+                            <button type="button" class="increment-btn bg-green-500 hover:bg-green-600 text-white text-xs px-2 py-1 rounded-r border border-green-500"
+                                    onclick="adjustValue('{{ booking.id }}_w{{ week_num }}', '{{ hour }}', 'sun', 30)">+</button>
+                        </div>
                         <div class="text-xs text-green-600 font-medium mt-1 hour-price" id="price_{{ booking.id }}_w{{ week_num }}_{{ hour }}_sun">-</div>
                     </td>
                     {% endif %}
@@ -537,10 +565,12 @@ const planId = {{ plan.id }};
 
 // Mapping of booking IDs to screen IDs
 const bookingToScreenMap = {
-    {% for booking in bookings %}
+    {% for booking in plan.screen_bookings %}
     {{ booking.id }}: {{ booking.screen_id }},
     {% endfor %}
 };
+
+console.log('Booking to Screen Map:', bookingToScreenMap);
 
 // Modal functions
 function showAddScreenModal() {
@@ -778,13 +808,13 @@ function calculateOverallTotals() {
     let totalSlots = 0;
     let totalCost = 0;
     
-    // Sum up all weekday select values and their calculated prices
-    document.querySelectorAll('.weekday-input').forEach(select => {
-        const selectedValue = parseInt(select.value || 0);
-        const bookingId = select.dataset.booking;
-        const hour = parseInt(select.dataset.hour);
-        const day = select.dataset.day;
-        const contacts = parseFloat(select.dataset.contacts || 0);
+    // Sum up all weekday input values and their calculated prices
+    document.querySelectorAll('.weekday-input').forEach(input => {
+        const selectedValue = parseInt(input.value || 0);
+        const bookingId = input.dataset.booking;
+        const hour = parseInt(input.dataset.hour);
+        const day = input.dataset.day;
+        const contacts = parseFloat(input.dataset.contacts || 0);
         
         if (selectedValue > 0 && contacts > 0) {
             // Step 1: SUM = tukst kontaktu * (60 or 30) / 30 * 2
@@ -855,6 +885,24 @@ function calculateTotals() {
     calculateOverallTotals();
 }
 
+// Adjust input value by increment (30 or -30)
+function adjustValue(bookingId, hour, day, increment) {
+    const input = document.querySelector(`input[data-booking="${bookingId}"][data-hour="${hour}"][data-day="${day}"]`);
+    if (input) {
+        const currentValue = parseInt(input.value) || 0;
+        const newValue = Math.max(0, Math.min(60, currentValue + increment)); // Don't allow negative values or values > 60
+        input.value = newValue;
+        
+        // Trigger the calculation
+        calculatePrices(bookingId);
+        
+        // After saving is complete, refresh calendar totals to reflect the changes
+        setTimeout(() => {
+            refreshCalendarTotals();
+        }, 500); // Small delay to ensure save operation completes first
+    }
+}
+
 // Fill all days with specified value (30 or 60)
 function fillAllDays(bookingId, value) {
     const days = ['mon', 'tue', 'wed', 'thu', 'fri', 'sat', 'sun'];
@@ -862,15 +910,20 @@ function fillAllDays(bookingId, value) {
     // Fill all hour/day combinations with the specified value
     for (let hour = 6; hour < 24; hour++) {
         days.forEach(day => {
-            const select = document.querySelector(`select[data-booking="${bookingId}"][data-hour="${hour}"][data-day="${day}"]`);
-            if (select) {
-                select.value = value;
+            const input = document.querySelector(`input[data-booking="${bookingId}"][data-hour="${hour}"][data-day="${day}"]`);
+            if (input) {
+                input.value = value;
             }
         });
     }
     
     // Automatically calculate prices after filling
     calculatePrices(bookingId);
+    
+    // After saving is complete, refresh calendar totals to reflect the changes
+    setTimeout(() => {
+        refreshCalendarTotals();
+    }, 500); // Small delay to ensure save operation completes first
 }
 
 // Clear all days
@@ -881,9 +934,9 @@ function clearAllDays(bookingId) {
         // Clear all hour/day combinations
         for (let hour = 6; hour < 24; hour++) {
             days.forEach(day => {
-                const select = document.querySelector(`select[data-booking="${bookingId}"][data-hour="${hour}"][data-day="${day}"]`);
-                if (select) {
-                    select.value = '0';
+                const input = document.querySelector(`input[data-booking="${bookingId}"][data-hour="${hour}"][data-day="${day}"]`);
+                if (input) {
+                    input.value = '0';
                 }
                 
                 // Clear price displays
@@ -894,8 +947,32 @@ function clearAllDays(bookingId) {
             });
         }
         
-        // Reset totals
+        // Clear day totals
+        days.forEach(day => {
+            const dayPriceElement = document.querySelector(`.day-price-${day}[data-booking="${bookingId}"]`);
+            if (dayPriceElement) {
+                dayPriceElement.textContent = '0.00€';
+            }
+        });
+        
+        // Clear total price displays
+        const totalPriceElement = document.querySelector(`.total-price[data-booking="${bookingId}"]`);
+        if (totalPriceElement) {
+            totalPriceElement.textContent = '0.00';
+        }
+        
+        const cptElement = document.querySelector(`[data-booking="${bookingId}"].cpt-value`);
+        if (cptElement) {
+            cptElement.textContent = '0.00';
+        }
+        
+        // Reset totals and save the cleared data (now includes zero values)
         calculatePrices(bookingId);
+        
+        // After saving is complete, refresh calendar totals to reflect the changes
+        setTimeout(() => {
+            refreshCalendarTotals();
+        }, 1000); // Increased delay to ensure save operation completes first
     }
 }
 
@@ -1071,6 +1148,7 @@ function confirmCreateNewWeek() {
 
 // Save pricing data to database
 function savePricingData(bookingId) {
+    console.log(`Saving pricing data for booking: ${bookingId}`);
     const parts = bookingId.split('_w');
     if (parts.length !== 2) return;
     
@@ -1089,31 +1167,32 @@ function savePricingData(bookingId) {
     
     for (let hour = 6; hour < 24; hour++) {
         days.forEach(day => {
-            const select = document.querySelector(`select[data-booking="${bookingId}"][data-hour="${hour}"][data-day="${day}"]`);
+            const input = document.querySelector(`input[data-booking="${bookingId}"][data-hour="${hour}"][data-day="${day}"]`);
             
-            if (select) {
-                const selectedValue = parseInt(select.value || 0);
-                const contacts = parseFloat(select.dataset.contacts || 0);
+            if (input) {
+                const selectedValue = parseInt(input.value || 0);
+                const contacts = parseFloat(input.dataset.contacts || 0);
                 
-                if (selectedValue > 0 && contacts > 0) {
-                    // Calculate the price using the same formula
-                    const sum = contacts * selectedValue / 30 * 2;
-                    const calculatedPrice = contacts * 1 * sum;
-                    
-                    // Calculate date for this day in this week
-                    const date = getDateForWeekDay(weekNumber, day);
-                    
-                    // Only add if date is valid (within plan range)
-                    if (date) {
-                        pricingData.push({
-                            hour: hour,
-                            day_name: day,
-                            selected_value: selectedValue,
-                            calculated_price: calculatedPrice,
-                            contacts: contacts,
-                            date: date
-                        });
+                // Calculate date for this day in this week
+                const date = getDateForWeekDay(weekNumber, day);
+                
+                // Only add if date is valid (within plan range)
+                if (date) {
+                    // Calculate the price using the same formula (will be 0 if selectedValue is 0)
+                    let calculatedPrice = 0;
+                    if (selectedValue > 0 && contacts > 0) {
+                        const sum = contacts * selectedValue / 30 * 2;
+                        calculatedPrice = contacts * 1 * sum;
                     }
+                    
+                    pricingData.push({
+                        hour: hour,
+                        day_name: day,
+                        selected_value: selectedValue,
+                        calculated_price: calculatedPrice,
+                        contacts: contacts,
+                        date: date
+                    });
                 }
             }
         });
@@ -1194,7 +1273,7 @@ function getDateForWeekDay(weekNumber, dayName) {
 
 // Load saved pricing data and update calendar
 function loadPricingData() {
-    fetch(`/api/media-plan-pricing/${planId}`)
+    return fetch(`/api/media-plan-pricing/${planId}`)
         .then(response => response.json())
         .then(data => {
             if (data.success) {
@@ -1203,12 +1282,16 @@ function loadPricingData() {
                 
                 // Populate form fields with saved data
                 populateFormFields(data.saved_pricing);
+                
+                return data; // Return data for chaining
             } else {
                 console.error('Failed to load pricing data:', data.message);
+                throw new Error(data.message);
             }
         })
         .catch(error => {
             console.error('Error loading pricing data:', error);
+            throw error;
         });
 }
 
@@ -1276,17 +1359,19 @@ function updateCalendarTotals(dailyTotals) {
 
 // Populate form fields with saved data
 function populateFormFields(savedPricing) {
+    console.log('Populating form fields with saved data:', savedPricing);
     Object.keys(savedPricing).forEach(bookingKey => {
+        console.log(`Processing booking: ${bookingKey}`);
         const pricingData = savedPricing[bookingKey];
         
         Object.keys(pricingData).forEach(hourDayKey => {
             const [hour, day] = hourDayKey.split('_');
             const data = pricingData[hourDayKey];
             
-            // Find the select element and set its value
-            const select = document.querySelector(`select[data-booking="${bookingKey}"][data-hour="${hour}"][data-day="${day}"]`);
-            if (select) {
-                select.value = data.selected_value;
+            // Find the input element and set its value
+            const input = document.querySelector(`input[data-booking="${bookingKey}"][data-hour="${hour}"][data-day="${day}"]`);
+            if (input) {
+                input.value = data.selected_value;
                 
                 // Update the price display
                 const priceDisplay = document.getElementById(`price_${bookingKey}_${hour}_${day}`);
@@ -1326,11 +1411,11 @@ function calculatePrices(bookingId) {
         const trpPrice = priceElement ? parseFloat(priceElement.dataset.price) : 0;
         
         days.forEach(day => {
-            const select = document.querySelector(`select[data-booking="${bookingId}"][data-hour="${hour}"][data-day="${day}"]`);
+            const input = document.querySelector(`input[data-booking="${bookingId}"][data-hour="${hour}"][data-day="${day}"]`);
             
-            if (select) {
-                const selectedValue = parseInt(select.value || 0);
-                const contacts = parseFloat(select.dataset.contacts || 0); // contacts in thousands
+            if (input) {
+                const selectedValue = parseInt(input.value || 0);
+                const contacts = parseFloat(input.dataset.contacts || 0); // contacts in thousands
                 
                 if (selectedValue > 0 && contacts > 0) {
                     // Step 1: SUM = tukst kontaktu * (60 or 30) / 30 * 2
@@ -1402,19 +1487,37 @@ function calculatePrices(bookingId) {
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', function() {
     initializeCalendar();
-    calculateTotals();
     
-    // Load saved pricing data and populate forms
-    loadPricingData();
-    
-    // Initialize all screen calculations
-    document.querySelectorAll('.screen-planning-card').forEach(card => {
-        const bookingElement = card.querySelector('[data-booking]');
-        if (bookingElement) {
-            const bookingId = bookingElement.dataset.booking;
-            calculateScreenTotals(bookingId);
-        }
-    });
+    // Load saved pricing data first, then initialize calculations
+    loadPricingData()
+        .then(() => {
+            // After loading saved data, calculate totals
+            calculateTotals();
+            
+            // Initialize all screen calculations
+            document.querySelectorAll('.screen-planning-card').forEach((card, index) => {
+                const bookingElement = card.querySelector('[data-booking]');
+                if (bookingElement) {
+                    const bookingId = bookingElement.dataset.booking;
+                    console.log(`Initializing screen ${index + 1} with booking ID: ${bookingId}`);
+                    calculateScreenTotals(bookingId);
+                }
+            });
+        })
+        .catch((error) => {
+            // If loading saved data fails, still initialize with empty state
+            console.warn('Failed to load saved data, initializing empty:', error);
+            calculateTotals();
+            
+            // Initialize all screen calculations
+            document.querySelectorAll('.screen-planning-card').forEach(card => {
+                const bookingElement = card.querySelector('[data-booking]');
+                if (bookingElement) {
+                    const bookingId = bookingElement.dataset.booking;
+                    calculateScreenTotals(bookingId);
+                }
+            });
+        });
 });
 </script>
 
