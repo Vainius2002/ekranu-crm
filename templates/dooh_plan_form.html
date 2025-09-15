@@ -217,7 +217,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const kampanijaSelect = document.getElementById('kampanija_id');
         const currentValue = kampanijaSelect.value;
 
-        fetch('http://172.20.89.236:5002/api/campaigns/for-ekranu', {
+        fetch('http://localhost:5002/api/campaigns/for-ekranu', {
             headers: {
                 'X-API-Key': 'projects-crm-api-key-change-in-production'  // Use projects-crm API key
             }
@@ -346,7 +346,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const clientSelect = document.getElementById('existing_client_id');
         const currentValue = clientSelect.value;
 
-        fetch('http://172.20.89.236:5001/api/brands', {
+        fetch('http://localhost:5001/api/brands', {
             headers: {
                 'X-API-Key': 'my-agency-crm-api-key-change-in-production'
             }
