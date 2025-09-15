@@ -581,7 +581,7 @@ def new_dooh_plan():
         db.session.add(plan)
         db.session.commit()
         flash('DOOH planas sėkmingai sukurtas!')
-        return redirect(url_for('dooh_plan_screens', id=plan.id))
+        return redirect(url_for('dooh_plan_detail', id=plan.id))
     
     clients = Client.query.all()
     campaigns = Campaign.query.all()
@@ -608,13 +608,13 @@ def add_screen_to_plan(plan_id, screen_id):
     existing_booking = ScreenBooking.query.filter_by(dooh_plan_id=plan_id, screen_id=screen_id).first()
     if existing_booking:
         flash('Ekranas jau pridėtas į planą!')
-        return redirect(url_for('dooh_plan_screens', id=plan_id))
+        return redirect(url_for('dooh_plan_detail', id=plan_id))
     
     booking = ScreenBooking(dooh_plan_id=plan_id, screen_id=screen_id)
     db.session.add(booking)
     db.session.commit()
     flash(f'Ekranas "{screen.name}" pridėtas į planą!')
-    return redirect(url_for('dooh_plan_screens', id=plan_id))
+    return redirect(url_for('dooh_plan_detail', id=plan_id))
 
 @app.route('/dooh-plan/<int:plan_id>/update-broadcast-schedule', methods=['POST'])
 def update_broadcast_schedule(plan_id):
@@ -664,8 +664,8 @@ def update_broadcast_schedule(plan_id):
     except Exception as e:
         db.session.rollback()
         flash(f'Klaida išsaugojant transliacijų planą: {str(e)}', 'error')
-    
-    return redirect(url_for('dooh_plan_screens', id=plan_id))
+
+    return redirect(url_for('dooh_plan_detail', id=plan_id))
 
 @app.route('/dooh-plan/<int:id>/media-plan')
 def dooh_plan_media(id):
@@ -730,11 +730,15 @@ def import_brands():
         
         imported_count = 0
         updated_count = 0
-        
+
         for brand_data in data['brands']:
+            # Only process active brands
+            if brand_data.get('status') != 'active':
+                continue
+
             # Check if client already exists (by external_id or name+company)
             existing_client = None
-            
+
             # First try to find by external_id if provided
             if 'external_id' in brand_data:
                 # We'll store external_id in the company field with a special prefix
@@ -742,7 +746,7 @@ def import_brands():
                     company=brand_data.get('company', ''),
                     name=brand_data['name']
                 ).first()
-            
+
             if existing_client:
                 # Update existing client
                 existing_client.email = brand_data.get('email', existing_client.email)
