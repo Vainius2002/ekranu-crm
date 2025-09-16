@@ -348,10 +348,26 @@ document.addEventListener('DOMContentLoaded', function() {
         .then(response => response.json())
         .then(data => {
             console.log('Received brands data:', data);
-            const brands = Array.isArray(data) ? data : data.brands || data; // Handle both response formats
+
+            // Check if there's an error in the response
+            if (data.error) {
+                console.error('API Error:', data.error);
+                clientSelect.innerHTML = '<option value="">-- Klaida kraunant klientus iš Agency CRM --</option>';
+                return;
+            }
+
+            const brands = Array.isArray(data) ? data : data.brands || [];
 
             // Clear existing options
             clientSelect.innerHTML = '<option value="">-- Pasirinkite --</option>';
+
+            if (brands.length === 0) {
+                const option = document.createElement('option');
+                option.value = '';
+                option.textContent = '-- Nėra galimų klientų --';
+                clientSelect.appendChild(option);
+                return;
+            }
 
             brands.forEach(brand => {
                 const option = document.createElement('option');

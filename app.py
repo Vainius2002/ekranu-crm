@@ -16,10 +16,10 @@ app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
 
-# API Configuration - use localhost for server-to-server communication
-app.config['PROJECTS_CRM_URL'] = os.environ.get('PROJECTS_CRM_URL', 'http://localhost:5002')
+# API Configuration - use server IP for server-to-server communication
+app.config['PROJECTS_CRM_URL'] = os.environ.get('PROJECTS_CRM_URL', 'http://91.99.165.20:5002')
 app.config['PROJECTS_CRM_API_KEY'] = os.environ.get('PROJECTS_CRM_API_KEY', 'projects-crm-api-key-change-in-production')
-app.config['AGENCY_CRM_URL'] = os.environ.get('AGENCY_CRM_URL', 'http://localhost:5001')
+app.config['AGENCY_CRM_URL'] = os.environ.get('AGENCY_CRM_URL', 'http://91.99.165.20:5001')
 app.config['AGENCY_CRM_API_KEY'] = os.environ.get('AGENCY_CRM_API_KEY', 'my-agency-crm-api-key-change-in-production')
 
 db = SQLAlchemy(app)
