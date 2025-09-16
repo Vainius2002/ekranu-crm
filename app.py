@@ -3,13 +3,24 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from datetime import datetime, date
 import os
+import requests
 from werkzeug.utils import secure_filename
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 app = Flask(__name__)
-app.config['SECRET_KEY'] = 'your-secret-key-change-in-production'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///ekranu_crm.db'
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'your-secret-key-change-in-production')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('SQLALCHEMY_DATABASE_URI', 'sqlite:///ekranu_crm.db')
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['UPLOAD_FOLDER'] = 'static/uploads'
+
+# API Configuration - use localhost for server-to-server communication
+app.config['PROJECTS_CRM_URL'] = os.environ.get('PROJECTS_CRM_URL', 'http://localhost:5002')
+app.config['PROJECTS_CRM_API_KEY'] = os.environ.get('PROJECTS_CRM_API_KEY', 'projects-crm-api-key-change-in-production')
+app.config['AGENCY_CRM_URL'] = os.environ.get('AGENCY_CRM_URL', 'http://localhost:5001')
+app.config['AGENCY_CRM_API_KEY'] = os.environ.get('AGENCY_CRM_API_KEY', 'my-agency-crm-api-key-change-in-production')
 
 db = SQLAlchemy(app)
 migrate = Migrate(app, db)
@@ -307,6 +318,67 @@ def screen_pricing(id):
     return render_template('screen_pricing.html', screen=screen, pricing_data=pricing_data)
 
 # API endpoints for dynamic client and campaign loading
+@app.route('/api/proxy/campaigns-from-projects', methods=['GET'])
+def proxy_campaigns_from_projects():
+    """Proxy endpoint to fetch campaigns from projects-crm"""
+    try:
+        # Make request to projects-crm using localhost
+        headers = {
+            'X-API-Key': app.config['PROJECTS_CRM_API_KEY']
+        }
+        response = requests.get(
+            f"{app.config['PROJECTS_CRM_URL']}/api/campaigns/for-ekranu",
+            headers=headers,
+            timeout=10
+        )
+
+        if response.status_code == 200:
+            return jsonify(response.json())
+        else:
+            return jsonify({'error': 'Failed to fetch campaigns from Projects CRM'}), response.status_code
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching campaigns from projects-crm: {str(e)}")
+        return jsonify({'error': 'Connection error to Projects CRM'}), 503
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
+@app.route('/api/proxy/clients-from-agency', methods=['GET'])
+def proxy_clients_from_agency():
+    """Proxy endpoint to fetch clients from agency-crm"""
+    try:
+        # Make request to agency-crm using localhost
+        headers = {
+            'X-API-Key': app.config['AGENCY_CRM_API_KEY']
+        }
+        response = requests.get(
+            f"{app.config['AGENCY_CRM_URL']}/api/brands",
+            headers=headers,
+            timeout=10
+        )
+
+        if response.status_code == 200:
+            data = response.json()
+            # Transform brands to clients format
+            clients = []
+            for brand in data.get('brands', []):
+                clients.append({
+                    'id': brand['id'],
+                    'name': brand['full_name'],
+                    'company': brand['company_name']
+                })
+            return jsonify(clients)
+        else:
+            return jsonify({'error': 'Failed to fetch clients from Agency CRM'}), response.status_code
+
+    except requests.exceptions.RequestException as e:
+        print(f"Error fetching clients from agency-crm: {str(e)}")
+        return jsonify({'error': 'Connection error to Agency CRM'}), 503
+    except Exception as e:
+        print(f"Unexpected error: {str(e)}")
+        return jsonify({'error': 'Internal server error'}), 500
+
 @app.route('/api/clients')
 def api_clients():
     clients = Client.query.all()

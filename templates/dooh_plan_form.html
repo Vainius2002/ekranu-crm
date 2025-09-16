@@ -211,17 +211,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Set initial required attributes
     document.getElementById('existing_client_id').setAttribute('required', 'required');
     
-    // Load kampanijos directly from projects-crm
+    // Load kampanijos through local proxy
     function loadKampanijos() {
         console.log('Loading kampanijos from projects-crm...');
         const kampanijaSelect = document.getElementById('kampanija_id');
         const currentValue = kampanijaSelect.value;
 
-        fetch('http://localhost:5002/api/campaigns/for-ekranu', {
-            headers: {
-                'X-API-Key': 'projects-crm-api-key-change-in-production'  // Use projects-crm API key
-            }
-        })
+        // Use relative URL to proxy endpoint - no need for API key in frontend
+        fetch('/api/proxy/campaigns-from-projects')
         .then(response => response.json())
         .then(kampanijos => {
             console.log('Received kampanijos data:', kampanijos);
@@ -340,21 +337,18 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
     
-    // Load brands directly from my-agency-crm
+    // Load brands through local proxy
     function loadBrandsFromAgencyCRM() {
         console.log('Loading brands from agency-crm...');
         const clientSelect = document.getElementById('existing_client_id');
         const currentValue = clientSelect.value;
 
-        fetch('http://localhost:5001/api/brands', {
-            headers: {
-                'X-API-Key': 'my-agency-crm-api-key-change-in-production'
-            }
-        })
+        // Use relative URL to proxy endpoint - no need for API key in frontend
+        fetch('/api/proxy/clients-from-agency')
         .then(response => response.json())
         .then(data => {
             console.log('Received brands data:', data);
-            const brands = data.brands || data; // Handle both response formats
+            const brands = Array.isArray(data) ? data : data.brands || data; // Handle both response formats
 
             // Clear existing options
             clientSelect.innerHTML = '<option value="">-- Pasirinkite --</option>';
@@ -362,7 +356,8 @@ document.addEventListener('DOMContentLoaded', function() {
             brands.forEach(brand => {
                 const option = document.createElement('option');
                 option.value = brand.id;
-                option.textContent = brand.full_name || `${brand.company_name} - ${brand.name}`;
+                // Use the 'name' field which already contains the formatted name from the proxy
+                option.textContent = brand.name || `${brand.company} - ${brand.id}`;
                 clientSelect.appendChild(option);
             });
 
