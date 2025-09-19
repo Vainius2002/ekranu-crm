@@ -1291,11 +1291,11 @@ function loadPricingData() {
         .then(data => {
             if (data.success) {
                 // Update calendar with daily totals
-                updateCalendarTotals(data.daily_totals);
-                
+                updateCalendarTotals(data.daily_totals, data.daily_screen_totals);
+
                 // Populate form fields with saved data
                 populateFormFields(data.saved_pricing);
-                
+
                 return data; // Return data for chaining
             } else {
                 console.error('Failed to load pricing data:', data.message);
@@ -1316,9 +1316,9 @@ function refreshCalendarTotals() {
             if (data.success) {
                 // Clear existing calendar totals first
                 clearCalendarTotals();
-                
+
                 // Update calendar with fresh daily totals
-                updateCalendarTotals(data.daily_totals);
+                updateCalendarTotals(data.daily_totals, data.daily_screen_totals);
             } else {
                 console.error('Failed to refresh calendar totals:', data.message);
             }
@@ -1344,28 +1344,38 @@ function clearCalendarTotals() {
 }
 
 // Update calendar daily totals
-function updateCalendarTotals(dailyTotals) {
-    // Update the calendar cells with price totals
+function updateCalendarTotals(dailyTotals, dailyScreenTotals) {
+    // Update the overall daily totals (VISO DIENAI row)
     Object.keys(dailyTotals).forEach(dateStr => {
-        const price = dailyTotals[dateStr];
-        
+        const totalPrice = dailyTotals[dateStr];
+
         // Find the corresponding calendar cell
         const dayIndex = Math.floor((new Date(dateStr) - planStartDate) / (1000 * 60 * 60 * 24));
-        
-        // Update day total (replace, not add, since we cleared first)
+
+        // Update day total (VISO DIENAI row)
         const dayTotalElement = document.getElementById(`dayTotal_${dayIndex}`);
         if (dayTotalElement) {
-            dayTotalElement.textContent = price.toFixed(2) + '€';
+            dayTotalElement.textContent = totalPrice.toFixed(2) + '€';
             dayTotalElement.style.fontWeight = 'bold';
             dayTotalElement.style.color = '#059669'; // Green color for totals with saved data
         }
-        
-        // Update individual screen cost displays proportionally 
-        // (This is more complex - for now just show the total in each cell)
-        document.querySelectorAll(`[id^="cost_"][id$="_${dayIndex}"]`).forEach(costElement => {
-            costElement.textContent = price.toFixed(2) + '€';
-            costElement.style.fontWeight = 'bold';
-            costElement.style.color = '#059669'; // Green color
+    });
+
+    // Update individual screen cost displays with their specific totals
+    Object.keys(dailyScreenTotals).forEach(screenId => {
+        const screenData = dailyScreenTotals[screenId];
+
+        Object.keys(screenData).forEach(dateStr => {
+            const screenPrice = screenData[dateStr];
+            const dayIndex = Math.floor((new Date(dateStr) - planStartDate) / (1000 * 60 * 60 * 24));
+
+            // Find the specific cost element for this screen and day
+            const costElement = document.getElementById(`cost_${screenId}_${dayIndex}`);
+            if (costElement) {
+                costElement.textContent = screenPrice.toFixed(2) + '€';
+                costElement.style.fontWeight = 'bold';
+                costElement.style.color = '#059669'; // Green color
+            }
         });
     });
 }

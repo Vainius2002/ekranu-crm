@@ -506,13 +506,25 @@ def get_media_plan_pricing(plan_id):
         # Get all saved pricing data for this plan
         pricing_data = MediaPlanPricing.query.filter_by(dooh_plan_id=plan_id).all()
         
-        # Calculate daily totals
+        # Calculate daily totals (total for all screens)
         daily_totals = {}
+        # Calculate daily totals per screen
+        daily_screen_totals = {}
         for pricing in pricing_data:
             date_str = pricing.date.strftime('%Y-%m-%d')
+            screen_id = pricing.screen_id
+
+            # Overall daily total
             if date_str not in daily_totals:
                 daily_totals[date_str] = 0
             daily_totals[date_str] += pricing.calculated_price
+
+            # Per-screen daily total
+            if screen_id not in daily_screen_totals:
+                daily_screen_totals[screen_id] = {}
+            if date_str not in daily_screen_totals[screen_id]:
+                daily_screen_totals[screen_id][date_str] = 0
+            daily_screen_totals[screen_id][date_str] += pricing.calculated_price
         
         # Get saved pricing by booking/week for form population
         # First, we need to map screen_ids to booking_ids
@@ -541,6 +553,7 @@ def get_media_plan_pricing(plan_id):
         return jsonify({
             'success': True,
             'daily_totals': daily_totals,
+            'daily_screen_totals': daily_screen_totals,
             'saved_pricing': saved_pricing
         })
         
