@@ -723,9 +723,7 @@ function generateMediaPlanCalendar() {
             const isWeekend = date.getDay() === 0 || date.getDay() === 6;
             
             html += `<td class="px-2 py-3 text-center border-r border-slate-300 ${isWeekend ? 'bg-slate-50' : ''}" style="min-width: 80px;">`;
-            html += `<input type="number" class="w-14 px-1 py-1 text-xs border border-slate-300 rounded text-center slots-input focus:ring-2 focus:ring-slate-500 focus:border-slate-500" `;
-            html += `placeholder="0" value="" data-screen-id="${booking.id}" data-day="${day}" onchange="calculateTotals()">`;
-            html += `<div class="text-xs text-slate-500 daily-cost font-medium mt-1" id="cost_${booking.id}_${day}">0.00€</div>`;
+            html += `<div class="text-xs text-slate-500 daily-cost font-medium" id="cost_${booking.id}_${day}" style="font-weight: bold; color: rgb(5, 150, 105);">0.00€</div>`;
             html += `</td>`;
         }
         
