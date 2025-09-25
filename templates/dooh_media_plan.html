@@ -818,26 +818,46 @@ function calculateScreenTotals(bookingId) {
 function calculateOverallTotals() {
     let totalSlots = 0;
     let totalCost = 0;
-    
+
     // Sum up all weekday input values and their calculated prices
-    document.querySelectorAll('.weekday-input').forEach(input => {
+    const allInputs = document.querySelectorAll('.weekday-input');
+    console.log(`Found ${allInputs.length} weekday inputs`);
+
+    // Group inputs by booking to see distribution
+    let bookingCounts = {};
+    allInputs.forEach(input => {
+        const bookingId = input.dataset.booking;
+        if (!bookingCounts[bookingId]) {
+            bookingCounts[bookingId] = 0;
+        }
+        bookingCounts[bookingId]++;
+    });
+    console.log('Input counts by booking:', bookingCounts);
+
+    allInputs.forEach(input => {
         const selectedValue = parseInt(input.value || 0);
         const bookingId = input.dataset.booking;
         const hour = parseInt(input.dataset.hour);
         const day = input.dataset.day;
         const contacts = parseFloat(input.dataset.contacts || 0);
-        
-        if (selectedValue > 0 && contacts > 0) {
-            // Step 1: SUM = tukst kontaktu * (60 or 30) / 30 * 2
-            const sum = contacts * selectedValue / 30 * 2;
-            
-            // Step 2: TUKST. kontaktu * 1 * SUM = kaina
-            const kaina = contacts * 1 * sum;
-            
-            totalSlots += selectedValue;
-            totalCost += kaina;
+
+        if (selectedValue > 0) {
+            console.log(`Counting slot: booking=${bookingId}, hour=${hour}, day=${day}, value=${selectedValue}, contacts=${contacts}`);
+
+            if (contacts > 0) {
+                // Step 1: SUM = tukst kontaktu * (60 or 30) / 30 * 2
+                const sum = contacts * selectedValue / 30 * 2;
+
+                // Step 2: TUKST. kontaktu * 1 * SUM = kaina
+                const kaina = contacts * 1 * sum;
+                totalCost += kaina;
+            }
+
+            totalSlots += 1; // Count each purchased slot as 1 transliacija, regardless of contacts
         }
     });
+
+    console.log(`Total slots calculated: ${totalSlots}`);
     
     // Update summary displays if they exist
     const totalSlotsElement = document.getElementById('totalSlots');
@@ -1441,19 +1461,19 @@ function calculatePrices(bookingId) {
                 if (selectedValue > 0 && contacts > 0) {
                     // Step 1: SUM = tukst kontaktu * (60 or 30) / 30 * 2
                     const sum = contacts * selectedValue / 30 * 2;
-                    
+
                     // Step 2: TUKST. kontaktu * 1 * SUM = kaina
                     const kaina = contacts * 1 * sum;
-                    
+
                     // Display the calculated price
                     const priceDisplay = document.getElementById(`price_${bookingId}_${hour}_${day}`);
                     if (priceDisplay) {
                         priceDisplay.textContent = kaina.toFixed(2) + '€';
                     }
-                    
-                    dayTotals[day] += selectedValue;
+
+                    dayTotals[day] += 1; // Count each slot as 1 transliacija
                     dayPriceTotals[day] += kaina;
-                    totalSlots += selectedValue;
+                    totalSlots += 1; // Count each purchased slot as 1 transliacija
                     totalPrice += kaina;
                 } else {
                     // Clear price display if no value selected
