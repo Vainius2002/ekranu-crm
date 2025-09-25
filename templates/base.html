@@ -49,14 +49,14 @@
                                     </div>
                                 </div>
                                 
-                                <a href="{{ url_for('dooh_plans') }}" 
-                                   class="{% if 'dooh_plan' in request.endpoint %}bg-gray-900 text-white{% else %}text-gray-300 hover:bg-gray-700 hover:text-white{% endif %} rounded-md px-3 py-2 text-sm font-medium">
-                                    DOOH Planai
-                                </a>
-
-                                <a href="{{ url_for('campaigns') }}" 
+                                <a href="{{ url_for('campaigns') }}"
                                    class="{% if 'campaign' in request.endpoint %}bg-gray-900 text-white{% else %}text-gray-300 hover:bg-gray-700 hover:text-white{% endif %} rounded-md px-3 py-2 text-sm font-medium">
                                     Kampanijos
+                                </a>
+
+                                <a href="{{ url_for('dooh_plans') }}"
+                                   class="{% if 'dooh_plan' in request.endpoint %}bg-gray-900 text-white{% else %}text-gray-300 hover:bg-gray-700 hover:text-white{% endif %} rounded-md px-3 py-2 text-sm font-medium">
+                                    DOOH Planai
                                 </a>
                             </div>
                         </div>
