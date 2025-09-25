@@ -793,6 +793,7 @@ def dooh_plan_media(id):
         for i, day_name in enumerate(day_names):
             current_day = week_monday + timedelta(days=i)
             active_days[day_name] = (plan.start_date <= current_day <= plan.end_date)
+            active_days[f'{day_name}_date'] = current_day
         
         week_days.append(active_days)
     

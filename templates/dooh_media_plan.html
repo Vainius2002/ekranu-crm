@@ -322,13 +322,13 @@
                                 <th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 50px;">Kont.</th>
                                 <th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 50px;">€</th>
                                 {% set week_data = week_days[week_num - 1] %}
-                                {% if week_data.mon %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Pr</th>{% endif %}
-                                {% if week_data.tue %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">An</th>{% endif %}
-                                {% if week_data.wed %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Tr</th>{% endif %}
-                                {% if week_data.thu %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Kt</th>{% endif %}
-                                {% if week_data.fri %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Pn</th>{% endif %}
-                                {% if week_data.sat %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Št</th>{% endif %}
-                                {% if week_data.sun %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Sk</th>{% endif %}
+                                {% if week_data.mon %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Pr<br>{{ week_data.mon_date.strftime('%m-%d') }}</th>{% endif %}
+                                {% if week_data.tue %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">An<br>{{ week_data.tue_date.strftime('%m-%d') }}</th>{% endif %}
+                                {% if week_data.wed %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Tr<br>{{ week_data.wed_date.strftime('%m-%d') }}</th>{% endif %}
+                                {% if week_data.thu %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Kt<br>{{ week_data.thu_date.strftime('%m-%d') }}</th>{% endif %}
+                                {% if week_data.fri %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Pn<br>{{ week_data.fri_date.strftime('%m-%d') }}</th>{% endif %}
+                                {% if week_data.sat %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Št<br>{{ week_data.sat_date.strftime('%m-%d') }}</th>{% endif %}
+                                {% if week_data.sun %}<th class="px-2 py-1 text-center text-white text-xs font-medium" style="width: 100px;">Sk<br>{{ week_data.sun_date.strftime('%m-%d') }}</th>{% endif %}
                 </tr>
             </thead>
             <tbody class="bg-white divide-y divide-gray-200">
